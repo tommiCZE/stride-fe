@@ -1,0 +1,53 @@
+const en = {
+  nav: {
+    dashboard: 'Dashboard',
+    inbox: 'Inbox',
+    myWork: 'My Work',
+    reports: 'Reports',
+    team: 'Team',
+    projects: 'Projects',
+  },
+  project: {
+    board: 'Board',
+    backlog: 'Backlog',
+    list: 'List',
+    reports: 'Reports',
+    settings: 'Settings',
+    newTask: 'New Task',
+    tasks: 'tasks',
+  },
+  header: {
+    searchPlaceholder: 'Search tasks, projects… (⌘K)',
+    toggleTheme: 'Toggle theme',
+    help: 'Help',
+    notifications: 'Notifications',
+  },
+  login: {
+    subtitle: 'Modern project management',
+    title: 'Sign in',
+    description: 'Enter your credentials',
+    email: 'E-mail',
+    emailPlaceholder: 'name@company.com',
+    password: 'Password',
+    forgotPassword: 'Forgot password?',
+    submit: 'Sign in',
+    submitting: 'Signing in…',
+    noAccount: "Don't have an account?",
+    register: 'Sign up',
+    footer: '© 2025 Stride · Modern project management',
+    invalidEmail: 'Invalid email address',
+    passwordMin: 'Password must be at least 6 characters',
+    loginFailed: 'Login failed. Try password "stride123" for dev access.',
+    invalidCredentials: 'Invalid credentials',
+  },
+  common: {
+    save: 'Save',
+    cancel: 'Cancel',
+    create: 'Create',
+    edit: 'Edit',
+    delete: 'Delete',
+    loading: 'Loading…',
+  },
+} as const;
+
+export default en;

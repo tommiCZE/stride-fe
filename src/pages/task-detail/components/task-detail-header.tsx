@@ -1,0 +1,54 @@
+import { Box, Button, IconButton, Tooltip, Typography, useTheme } from '@mui/material';
+import TypeIcon from '../../../components/icons/type-icon';
+import {
+  CaretRIcon, ClockIcon, PinIcon, PinFilledIcon,
+  ExpandIcon, CollapseIcon, LinkIcon, MoreIcon, CloseIcon,
+} from '../../../components/icons/icons';
+import type { Task, Project } from '../../../types';
+
+interface Props {
+  task: Task;
+  proj: Project;
+  timer: { taskKey: string | null; running: boolean };
+  pinned: boolean;
+  expanded: boolean;
+  onPin: () => void;
+  onExpand: () => void;
+  onClose: () => void;
+  onStartTimer: (key: string) => void;
+}
+
+export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, onPin, onExpand, onClose, onStartTimer }: Props) {
+  const theme = useTheme();
+  return (
+    <Box sx={{ px: { xs: 1.5, md: 2 }, py: 1, display: 'flex', alignItems: 'center', gap: 1,
+      borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Box sx={{ width: 16, height: 16, borderRadius: 0.5, bgcolor: proj.color,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff', fontSize: 9.5, fontWeight: 700 }}>{proj.key[0]}</Box>
+        <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>{proj.name}</Typography>
+        <CaretRIcon style={{ color: theme.palette.text.disabled }}/>
+        <TypeIcon type={task.type} size={13}/>
+        <Typography sx={{ fontSize: 11.5, color: 'text.secondary', fontFamily: 'ui-monospace, monospace' }}>{task.key}</Typography>
+      </Box>
+      <Box sx={{ flex: 1 }}/>
+      <Button size="small" variant="outlined" startIcon={<ClockIcon/>} onClick={() => onStartTimer(task.key)}>
+        {timer.taskKey === task.key && timer.running ? 'Stopnout timer' : 'Spustit timer'}
+      </Button>
+      <Tooltip title={pinned ? 'Odepnout' : 'Připnout panel'}>
+        <IconButton size="small" onClick={onPin} sx={{ color: pinned ? 'primary.main' : 'text.secondary' }}>
+          {pinned ? <PinFilledIcon/> : <PinIcon/>}
+        </IconButton>
+      </Tooltip>
+      <Tooltip title={expanded ? 'Sbalit' : 'Celé okno'}>
+        <IconButton size="small" onClick={onExpand}>
+          {expanded ? <CollapseIcon/> : <ExpandIcon/>}
+        </IconButton>
+      </Tooltip>
+      <IconButton size="small"><LinkIcon/></IconButton>
+      <IconButton size="small"><MoreIcon/></IconButton>
+      <IconButton size="small" onClick={onClose}><CloseIcon/></IconButton>
+    </Box>
+  );
+}

@@ -1,0 +1,53 @@
+const cs = {
+  nav: {
+    dashboard: 'Dashboard',
+    inbox: 'Doručené',
+    myWork: 'Moje práce',
+    reports: 'Reporty',
+    team: 'Tým',
+    projects: 'Projekty',
+  },
+  project: {
+    board: 'Board',
+    backlog: 'Backlog',
+    list: 'List',
+    reports: 'Reporty',
+    settings: 'Nastavení',
+    newTask: 'Nový task',
+    tasks: 'tasků',
+  },
+  header: {
+    searchPlaceholder: 'Hledat tasky, projekty… (⌘K)',
+    toggleTheme: 'Přepnout téma',
+    help: 'Nápověda',
+    notifications: 'Notifikace',
+  },
+  login: {
+    subtitle: 'Moderní správa projektů',
+    title: 'Přihlásit se',
+    description: 'Zadej své přihlašovací údaje',
+    email: 'E-mail',
+    emailPlaceholder: 'jmeno@firma.cz',
+    password: 'Heslo',
+    forgotPassword: 'Zapomenuté heslo?',
+    submit: 'Přihlásit se',
+    submitting: 'Přihlašování…',
+    noAccount: 'Nemáš účet?',
+    register: 'Zaregistrovat se',
+    footer: '© 2025 Stride · Moderní projektový management',
+    invalidEmail: 'Neplatná e-mailová adresa',
+    passwordMin: 'Heslo musí mít alespoň 6 znaků',
+    loginFailed: 'Přihlášení selhalo. Zkus heslo "stride123" pro dev přístup.',
+    invalidCredentials: 'Neplatné přihlašovací údaje',
+  },
+  common: {
+    save: 'Uložit',
+    cancel: 'Zrušit',
+    create: 'Vytvořit',
+    edit: 'Upravit',
+    delete: 'Smazat',
+    loading: 'Načítání…',
+  },
+} as const;
+
+export default cs;

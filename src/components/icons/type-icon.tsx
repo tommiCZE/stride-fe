@@ -1,0 +1,22 @@
+import { TASK_TYPES } from '../../mocks/data';
+
+interface Props { type: string; size?: number }
+
+export default function TypeIcon({ type, size = 14 }: Props) {
+  const t = TASK_TYPES.find(x => x.id === type);
+  if (!t) return null;
+
+  const glyph = {
+    story: <path d="M5.5 10.5 L9 14 L15 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>,
+    task:  <path d="M5.5 10.5 L9 14 L15 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>,
+    bug:   <circle cx="10" cy="10" r="2.2" fill="#fff"/>,
+    epic:  <path d="M11 4 L6 11 L9.5 11 L9 16 L14 9 L10.5 9 Z" fill="#fff"/>,
+  }[type];
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" style={{ flexShrink: 0 }}>
+      <rect x="2" y="2" width="16" height="16" rx="3.5" fill={t.color}/>
+      {glyph}
+    </svg>
+  );
+}

@@ -1,0 +1,142 @@
+import type { Theme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
+
+export function editorContentSx(theme: Theme, compact?: boolean) {
+  return {
+    '& .tiptap': {
+      outline: 'none', padding: '16px',
+      minHeight: compact ? 80 : 160, fontSize: 13.5, lineHeight: 1.6,
+    },
+    '& .tiptap h2': { fontSize: 17, fontWeight: 700, margin: '8px 0 4px' },
+    '& .tiptap h3': { fontSize: 14.5, fontWeight: 700, margin: '6px 0 2px' },
+    '& .tiptap p':  { margin: '4px 0' },
+    '& .tiptap ul, & .tiptap ol': { paddingLeft: '24px', margin: '4px 0' },
+    '& .tiptap blockquote': {
+      borderLeft: `3px solid ${theme.palette.primary.main}`,
+      paddingLeft: '12px', marginLeft: 0,
+      color: theme.palette.text.secondary, fontStyle: 'italic',
+    },
+    '& .tiptap code': {
+      fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+      backgroundColor: theme.palette.action.hover,
+      padding: '0 4px', borderRadius: '4px', fontSize: '12px',
+    },
+    '& .tiptap pre': {
+      backgroundColor: theme.palette.action.hover,
+      padding: '12px', borderRadius: '6px',
+      border: `1px solid ${theme.palette.divider}`,
+      overflowX: 'auto', margin: '8px 0',
+      fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+      fontSize: '12px', lineHeight: 1.55,
+    },
+    '& .tiptap pre code': { backgroundColor: 'transparent', padding: 0 },
+
+    // Callout bloky
+    '& .tiptap div[data-callout]': {
+      display: 'flex', alignItems: 'flex-start', gap: '8px',
+      padding: '10px 12px', borderRadius: '6px', margin: '6px 0',
+      fontSize: '13px', lineHeight: 1.55, borderLeft: '3px solid',
+    },
+    '& .tiptap div[data-callout]::before': {
+      flexShrink: 0, fontWeight: 700, fontSize: '14px', lineHeight: 1.4, marginTop: '1px',
+    },
+    '& .tiptap div[data-callout][data-tone="info"]': {
+      backgroundColor: alpha(theme.palette.info.main, 0.08),
+      borderColor: theme.palette.info.main,
+      '&::before': { content: '"ℹ"', color: theme.palette.info.main },
+    },
+    '& .tiptap div[data-callout][data-tone="warn"]': {
+      backgroundColor: alpha(theme.palette.warning.main, 0.08),
+      borderColor: theme.palette.warning.main,
+      '&::before': { content: '"⚠"', color: theme.palette.warning.main },
+    },
+    '& .tiptap div[data-callout][data-tone="error"]': {
+      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      borderColor: theme.palette.error.main,
+      '&::before': { content: '"✕"', color: theme.palette.error.main },
+    },
+
+    // Placeholder
+    '& .tiptap p.is-editor-empty:first-child::before': {
+      content: 'attr(data-placeholder)', float: 'left', height: 0,
+      pointerEvents: 'none', color: theme.palette.text.disabled,
+    },
+
+    // Task list (checkboxy)
+    '& .tiptap ul[data-type="taskList"]': {
+      listStyle: 'none', paddingLeft: '4px', margin: '4px 0',
+    },
+    '& .tiptap ul[data-type="taskList"] li': {
+      display: 'flex', alignItems: 'flex-start', gap: '8px', margin: '3px 0',
+    },
+    '& .tiptap ul[data-type="taskList"] li > label': {
+      flexShrink: 0, marginTop: '2px', cursor: 'pointer',
+    },
+    '& .tiptap ul[data-type="taskList"] li > label input[type="checkbox"]': {
+      width: '14px', height: '14px', cursor: 'pointer',
+      accentColor: theme.palette.primary.main,
+    },
+    '& .tiptap ul[data-type="taskList"] li > div': {
+      flex: 1,
+    },
+    '& .tiptap ul[data-type="taskList"] li[data-checked="true"] > div': {
+      color: theme.palette.text.disabled,
+      textDecoration: 'line-through',
+    },
+
+    // Obrázky
+    '& .tiptap img': {
+      maxWidth: '100%', height: 'auto',
+      borderRadius: '6px', margin: '8px 0',
+      border: `1px solid ${theme.palette.divider}`,
+      display: 'block',
+    },
+    '& .tiptap img.ProseMirror-selectednode': {
+      outline: `2px solid ${theme.palette.primary.main}`,
+    },
+
+    // Linky
+    '& .tiptap a': {
+      color: theme.palette.primary.main,
+      textDecoration: 'underline',
+      textUnderlineOffset: '2px',
+      cursor: 'pointer',
+    },
+    '& .tiptap a:hover': {
+      color: theme.palette.primary.dark,
+    },
+
+    // Zvýraznění (Highlight)
+    '& .tiptap mark': {
+      backgroundColor: alpha(theme.palette.warning.main, 0.35),
+      color: 'inherit',
+      borderRadius: '2px',
+      padding: '0 2px',
+    },
+
+    // Tabulky
+    '& .tiptap table': {
+      borderCollapse: 'collapse', width: '100%',
+      margin: '10px 0', fontSize: '13px',
+      tableLayout: 'fixed',
+    },
+    '& .tiptap table td, & .tiptap table th': {
+      border: `1px solid ${theme.palette.divider}`,
+      padding: '6px 10px', verticalAlign: 'top',
+      minWidth: '60px', position: 'relative',
+    },
+    '& .tiptap table th': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.06),
+      fontWeight: 600, textAlign: 'left',
+    },
+    '& .tiptap table .selectedCell:after': {
+      zIndex: 2, position: 'absolute',
+      content: '""', left: 0, right: 0, top: 0, bottom: 0,
+      background: alpha(theme.palette.primary.main, 0.1),
+      pointerEvents: 'none',
+    },
+    '& .tiptap .tableWrapper': {
+      overflowX: 'auto', margin: '8px 0',
+    },
+  } as const;
+}
