@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Box, Button, Card, IconButton, TextField, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { useUiStore } from '../store/ui-store';
 import TypeIcon from './icons/type-icon';
 import PriorityIcon from './icons/priority-icon';
 import { CloseIcon } from './icons/icons';
+import EditorBody, { type EditorBodyHandle } from './editor/editor-body';
 
 export default function CreateTaskModal() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -16,13 +17,22 @@ export default function CreateTaskModal() {
   const [title, setTitle] = useState('');
   const [type, setType] = useState('task');
   const [priority, setPriority] = useState('medium');
+  const descriptionRef = useRef<EditorBodyHandle>(null);
+
+  const handleCreate = () => {
+    if (!title.trim()) return;
+    const description = descriptionRef.current?.getJSON();
+    console.log('Create task', { title, type, priority, description });
+    closeCreateModal();
+  };
 
   return (
     <Box onClick={closeCreateModal}
       sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0,0,0,0.5)',
         zIndex: 1400, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', pt: '8vh' }}>
       <Card onClick={e => e.stopPropagation()}
-        sx={{ width: 640, borderRadius: 1.5, overflow: 'hidden' }}>
+        onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleCreate(); }}
+        sx={{ width: 640, borderRadius: 1.5, overflow: 'visible' }}>
         <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Nový task v {project?.name}</Typography>
           <Box sx={{ flex: 1 }}/>
@@ -52,10 +62,13 @@ export default function CreateTaskModal() {
             sx={{ '& .MuiInputBase-root': { fontSize: 16, fontWeight: 500 } }}
           />
 
-          <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 1.25,
-            fontSize: 13, color: 'text.disabled', minHeight: 80, cursor: 'text' }}>
-            Popis… (slash menu, mentions, code, obrázky)
-          </Box>
+          <EditorBody
+            ref={descriptionRef}
+            initialContent=""
+            placeholder="Popis… (⌘B tučné, ⌘I kurzíva, ⌘K link)"
+            compact
+            hideActions
+          />
 
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.4, borderRadius: 0.8,
@@ -87,7 +100,9 @@ export default function CreateTaskModal() {
           </Typography>
           <Box sx={{ flex: 1 }}/>
           <Button size="small" onClick={closeCreateModal}>Zrušit</Button>
-          <Button size="small" variant="contained" disabled={!title.trim()}>Vytvořit task</Button>
+          <Button size="small" variant="contained" disabled={!title.trim()} onClick={handleCreate}>
+            Vytvořit task
+          </Button>
         </Box>
       </Card>
     </Box>

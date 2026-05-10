@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn dev *)",
+      "Bash(yarn build *)",
+      "Bash(yarn tsc *)",
+      "WebFetch(domain:tiptap.dev)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(yarn node *)",
+      "Bash(yarn add *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Lenovo\\\\IdeaProjects\\\\stride\\\\stride-fe\\\\src\" -Recurse -File)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)"
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import { useEditor, Tiptap } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
@@ -77,15 +77,23 @@ function AttachmentChip({ file, onRemove }: { file: AttachmentFile; onRemove: ()
 
 // ─── main component ──────────────────────────────────────────────────────────
 
+export interface EditorBodyHandle {
+  getJSON: () => JSONContent;
+}
+
 interface Props {
   initialContent: string | JSONContent;
   placeholder: string;
   compact?: boolean;
-  onSave: (json: JSONContent) => void;
-  onCancel: () => void;
+  hideActions?: boolean;
+  onSave?: (json: JSONContent) => void;
+  onCancel?: () => void;
 }
 
-export default function EditorBody({ initialContent, placeholder, compact, onSave, onCancel }: Readonly<Props>) {
+const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
+  { initialContent, placeholder, compact, hideActions, onSave, onCancel }: Readonly<Props>,
+  ref,
+) {
   const theme = useTheme();
   const [isDragOver, setIsDragOver] = useState(false);
   const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
@@ -165,6 +173,10 @@ export default function EditorBody({ initialContent, placeholder, compact, onSav
     },
   });
 
+  useImperativeHandle(ref, () => ({
+    getJSON: () => editor?.getJSON() ?? { type: 'doc', content: [] },
+  }), [editor]);
+
   if (!editor) {
     return <Box sx={{ p: 2, color: 'text.disabled', fontSize: 13 }}>Načítám editor…</Box>;
   }
@@ -219,16 +231,20 @@ export default function EditorBody({ initialContent, placeholder, compact, onSav
         </Box>
       )}
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1,
-        borderTop: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
-        <Box sx={{ fontSize: 11, color: 'text.disabled' }}>⌘B · ⌘I · ⌘K · Ctrl+V nebo drag obrázek/soubor</Box>
-        <Box sx={{ flex: 1 }} />
-        {charCount > 0 && (
-          <Typography variant="caption" sx={{ color: 'text.disabled' }}>{charCount} znaků</Typography>
-        )}
-        <Button size="small" onClick={onCancel}>Zrušit</Button>
-        <Button size="small" variant="contained" onClick={() => onSave(editor.getJSON())}>Uložit</Button>
-      </Box>
+      {!hideActions && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1,
+          borderTop: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
+          <Box sx={{ fontSize: 11, color: 'text.disabled' }}>⌘B · ⌘I · ⌘K · Ctrl+V nebo drag obrázek/soubor</Box>
+          <Box sx={{ flex: 1 }} />
+          {charCount > 0 && (
+            <Typography variant="caption" sx={{ color: 'text.disabled' }}>{charCount} znaků</Typography>
+          )}
+          <Button size="small" onClick={onCancel}>Zrušit</Button>
+          <Button size="small" variant="contained" onClick={() => onSave?.(editor.getJSON())}>Uložit</Button>
+        </Box>
+      )}
     </Box>
   );
-}
+});
+
+export default EditorBody;
