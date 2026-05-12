@@ -1,7 +1,8 @@
 import { Box, Typography } from '@mui/material';
 import { SectionLabel } from '../../../components/ui/ui';
 import { BranchIcon } from '../../../components/icons/icons';
-import { DEV_DATA, getUser, timeAgo } from '../../../mocks/data';
+import { DEV_DATA, getUser } from '../../../mocks/data';
+import { timeAgo } from '../../../utils/time';
 import FluxAvatar from '../../../components/flux-avatar';
 
 function ProviderIcon({ provider, size = 14 }: { provider: 'github' | 'gitlab'; size?: number }) {

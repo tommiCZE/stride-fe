@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Box, useMediaQuery } from '@mui/material';
+import { Box, CircularProgress, useMediaQuery } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
-import { TASKS, DEV_DATA, getUser, getProject, getPriority, getEpic } from '../../mocks/data';
+import { DEV_DATA } from '../../mocks/data';
+import { useTask, useUpdateTask } from '../../hooks/useTasks';
+import { useProjects } from '../../hooks/useProjects';
 import { useUiStore } from '../../store/ui-store';
 import RichEditor from '../../components/editor/rich-editor';
 import { SectionLabel, ColorPill, ColorDot } from '../../components/ui/ui';
@@ -11,10 +13,12 @@ import PriorityIcon from '../../components/icons/priority-icon';
 import { StatusPicker } from './fields/status-picker';
 import { TitleEditor } from './fields/field-editors';
 import TaskDetailHeader from './components/task-detail-header';
-import TaskSubtasks from './components/task-subtasks';
 import TaskDetailTabs from './components/task-detail-tabs';
 import TaskDetailSidebar from './components/task-detail-sidebar';
-import type { Task } from '../../types';
+import { PRIORITIES } from '../../constants/priorities';
+import type { UpdateTaskRequest } from '../../api/types';
+import type { JSONContent } from '@tiptap/core';
+import { attachmentsApi } from '../../api/attachments';
 
 const DetailOverlay = styled(Box, {
   shouldForwardProp: p => p !== 'isFullscreen',
@@ -28,14 +32,29 @@ const DetailOverlay = styled(Box, {
 }));
 
 const DetailPanel = styled(Box, {
-  shouldForwardProp: p => p !== 'isFullscreen',
-})<{ isFullscreen: boolean }>(({ theme, isFullscreen }) => ({
-  width: isFullscreen ? '100%' : 'min(1100px, 96vw)',
+  shouldForwardProp: p => p !== 'isFullscreen' && p !== 'panelWidth',
+})<{ isFullscreen: boolean; panelWidth: number }>(({ theme, isFullscreen, panelWidth }) => ({
+  position: 'relative',
+  width: isFullscreen ? '100%' : panelWidth,
   height: '100%',
   backgroundColor: theme.palette.background.default,
   display: 'flex',
   flexDirection: 'column',
   boxShadow: isFullscreen ? 'none' : `-12px 0 40px ${alpha(theme.palette.common.black, 0.3)}`,
+}));
+
+const ResizeHandle = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  bottom: 0,
+  width: 6,
+  cursor: 'col-resize',
+  zIndex: 1,
+  transition: 'background-color 0.15s',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.35),
+  },
 }));
 
 export default function TaskDetail() {
@@ -48,16 +67,22 @@ export default function TaskDetail() {
 
   const [pinned, setPinned] = useState(() => localStorage.getItem('stride-detail-pinned') === '1');
   const [expanded, setExpanded] = useState(false);
+  const [panelWidth, setPanelWidth] = useState<number>(() => {
+    const saved = localStorage.getItem('stride-detail-width');
+    return saved ? Number(saved) : 900;
+  });
   const [tab, setTab] = useState<'comments' | 'dev' | 'worklog' | 'activity'>('comments');
-  const [localTask, setLocalTask] = useState<Task | null>(() => TASKS.find(t => t.id === taskId) ?? null);
 
-  const updateTask = (fn: (t: Task) => Task) =>
-    setLocalTask(prev => prev ? fn(prev) : null);
+  const { data: task, isLoading } = useTask(taskId ?? '');
+  const { data: projects = [] } = useProjects();
+  const updateTaskMutation = useUpdateTask(task?.projectId);
 
-  useEffect(() => {
-    setLocalTask(TASKS.find(t => t.id === taskId) ?? null);
-    setTab('comments');
-  }, [taskId]);
+  const patchTask = (patch: UpdateTaskRequest) => {
+    if (!task) return;
+    updateTaskMutation.mutate({ id: task.id, body: patch });
+  };
+
+  useEffect(() => { setTab('comments'); }, [taskId]);
 
   useEffect(() => {
     localStorage.setItem('stride-detail-pinned', pinned ? '1' : '0');
@@ -70,57 +95,97 @@ export default function TaskDetail() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!taskId || !localTask) return null;
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = panelWidth;
+    document.body.style.userSelect = 'none';
 
-  const t = localTask;
-  const proj     = getProject(t.project)!;
-  const prio     = getPriority(t.priority)!;
-  const epic     = t.epic ? getEpic(t.epic) : null;
-  const reporter = t.reporter ? getUser(t.reporter) ?? null : null;
+    const onMove = (ev: MouseEvent) => {
+      const next = Math.min(
+        Math.max(startWidth + (startX - ev.clientX), 400),
+        window.innerWidth * 0.97,
+      );
+      setPanelWidth(next);
+    };
+
+    const onUp = () => {
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      setPanelWidth(prev => {
+        localStorage.setItem('stride-detail-width', String(prev));
+        return prev;
+      });
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
+
+  if (!taskId) return null;
+
+  const proj = projects.find(p => p.id === task?.projectId);
+  const prio = PRIORITIES.find(p => p.id === task?.priority);
   const isFullscreen = isMobile || expanded;
-  const dev = DEV_DATA[t.key];
+  const dev = task ? DEV_DATA[task.key] : null;
   const devCount = dev ? dev.branches.length + dev.pulls.length + dev.commits.length : 0;
 
   return (
     <DetailOverlay isFullscreen={isFullscreen} onClick={pinned || isFullscreen ? undefined : closeTask}>
-      <DetailPanel isFullscreen={isFullscreen} onClick={e => e.stopPropagation()}>
+      <DetailPanel isFullscreen={isFullscreen} panelWidth={panelWidth} onClick={e => e.stopPropagation()}>
+        {!isFullscreen && <ResizeHandle onMouseDown={handleResizeStart} />}
 
-        <TaskDetailHeader
-          task={t}
-          proj={proj}
-          timer={timer}
-          pinned={pinned}
-          expanded={expanded}
-          onPin={() => setPinned(p => !p)}
-          onExpand={() => setExpanded(e => !e)}
-          onClose={closeTask}
-          onStartTimer={startTimer}
-        />
-
-        <Box sx={{ flex: 1, display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 300px', lg: '1fr 320px' }, minHeight: 0 }}>
-
-          <Box sx={{ overflowY: 'auto', p: 3 }}>
-            <TitleEditor title={t.title} onChange={title => updateTask(prev => ({ ...prev, title }))}/>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 2, flexWrap: 'wrap' }}>
-              <StatusPicker statusId={t.status} onChange={status => updateTask(prev => ({ ...prev, status }))}/>
-              <ColorPill pillColor={prio.color}><PriorityIcon priority={t.priority}/> {prio.name}</ColorPill>
-              {epic && <ColorPill pillColor={epic.color}><ColorDot dotColor={epic.color}/>{epic.title}</ColorPill>}
-            </Box>
-            <SectionLabel sx={{ mb: 0.75 }}>Popis</SectionLabel>
-            <RichEditor blocks={t.description}/>
-            <TaskSubtasks
-              subtasks={t.subtasks}
-              onToggle={sid => updateTask(prev => ({
-                ...prev,
-                subtasks: prev.subtasks.map(s => s.id === sid ? { ...s, done: !s.done } : s),
-              }))}
-            />
-            <TaskDetailTabs task={t} tab={tab} devCount={devCount} onChange={setTab}/>
+        {isLoading || !task ? (
+          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CircularProgress/>
           </Box>
+        ) : (
+          <>
+            <TaskDetailHeader
+              task={task}
+              proj={proj}
+              timer={timer}
+              pinned={pinned}
+              expanded={expanded}
+              onPin={() => setPinned(p => !p)}
+              onExpand={() => setExpanded(e => !e)}
+              onClose={closeTask}
+              onStartTimer={startTimer}
+            />
 
-          <TaskDetailSidebar task={t} reporter={reporter} updateTask={updateTask}/>
-        </Box>
+            <Box sx={{ flex: 1, display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 300px', lg: '1fr 320px' }, minHeight: 0 }}>
+
+              <Box sx={{ overflowY: 'auto', p: 3 }}>
+                <TitleEditor title={task.title} onChange={title => patchTask({ title })}/>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 2, flexWrap: 'wrap' }}>
+                  <StatusPicker statusId={task.status} onChange={status => patchTask({ status })}/>
+                  {prio && (
+                    <ColorPill pillColor={prio.color}>
+                      <PriorityIcon priority={task.priority}/> {prio.name}
+                    </ColorPill>
+                  )}
+                  {task.epicId && proj && (
+                    <ColorPill pillColor="#a855f7">
+                      <ColorDot dotColor="#a855f7"/>{task.epicId}
+                    </ColorPill>
+                  )}
+                </Box>
+                <SectionLabel sx={{ mb: 0.75 }}>Popis</SectionLabel>
+                <RichEditor
+                  blocks={task.description ?? ''}
+                  showToggle
+                  onSave={(json: JSONContent) => patchTask({ description: JSON.stringify(json) })}
+                  onUploadImage={(file) => attachmentsApi.uploadImage(task.id, file)}
+                />
+                <TaskDetailTabs task={task} tab={tab} devCount={devCount} onChange={setTab}/>
+              </Box>
+
+              <TaskDetailSidebar task={task} onPatch={patchTask}/>
+            </Box>
+          </>
+        )}
       </DetailPanel>
     </DetailOverlay>
   );

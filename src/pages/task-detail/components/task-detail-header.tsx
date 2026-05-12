@@ -4,11 +4,11 @@ import {
   CaretRIcon, ClockIcon, PinIcon, PinFilledIcon,
   ExpandIcon, CollapseIcon, LinkIcon, MoreIcon, CloseIcon,
 } from '../../../components/icons/icons';
-import type { Task, Project } from '../../../types';
+import type { TaskDto, ProjectDto } from '../../../api/types';
 
 interface Props {
-  task: Task;
-  proj: Project;
+  task: TaskDto;
+  proj: ProjectDto | undefined;
   timer: { taskKey: string | null; running: boolean };
   pinned: boolean;
   expanded: boolean;
@@ -24,10 +24,10 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
     <Box sx={{ px: { xs: 1.5, md: 2 }, py: 1, display: 'flex', alignItems: 'center', gap: 1,
       borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexWrap: 'wrap' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-        <Box sx={{ width: 16, height: 16, borderRadius: 0.5, bgcolor: proj.color,
+        <Box sx={{ width: 16, height: 16, borderRadius: 0.5, bgcolor: proj?.color ?? '#64748b',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#fff', fontSize: 9.5, fontWeight: 700 }}>{proj.key[0]}</Box>
-        <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>{proj.name}</Typography>
+          color: '#fff', fontSize: 9.5, fontWeight: 700 }}>{proj?.key[0]}</Box>
+        <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>{proj?.name}</Typography>
         <CaretRIcon style={{ color: theme.palette.text.disabled }}/>
         <TypeIcon type={task.type} size={13}/>
         <Typography sx={{ fontSize: 11.5, color: 'text.secondary', fontFamily: 'ui-monospace, monospace' }}>{task.key}</Typography>

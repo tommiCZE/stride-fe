@@ -1,4 +1,4 @@
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, Tiptap } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
 import { Link } from '@tiptap/extension-link';
@@ -35,12 +35,16 @@ export default function TipTapContent({ json }: Props) {
     ],
   });
 
+  if (!editor) return null;
+
   return (
     <Box sx={{
       ...editorContentSx(theme),
       '& .tiptap': { outline: 'none', padding: 0, minHeight: 0, fontSize: 13.5, lineHeight: 1.6 },
     }}>
-      <EditorContent editor={editor} />
+      <Tiptap editor={editor}>
+        <Tiptap.Content />
+      </Tiptap>
     </Box>
   );
 }

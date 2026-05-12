@@ -3,12 +3,12 @@ import { Comments } from '../panels/comments';
 import { DevPanel } from '../panels/dev-panel';
 import { Worklog } from '../panels/worklog';
 import { TaskActivity } from '../panels/task-activity';
-import type { Task } from '../../../types';
+import type { TaskDto } from '../../../api/types';
 
 type TabKey = 'comments' | 'dev' | 'worklog' | 'activity';
 
 interface Props {
-  task: Task;
+  task: TaskDto;
   tab: TabKey;
   devCount: number;
   onChange: (tab: TabKey) => void;
@@ -16,7 +16,7 @@ interface Props {
 
 export default function TaskDetailTabs({ task, tab, devCount, onChange }: Props) {
   const tabs: [TabKey, string][] = [
-    ['comments', `Komentáře · ${task.comments}`],
+    ['comments', `Komentáře · ${task.commentCount}`],
     ['dev',      devCount > 0 ? `Vývoj · ${devCount}` : 'Vývoj'],
     ['worklog',  `Worklog · ${task.logged}h`],
     ['activity', 'Historie'],
@@ -33,10 +33,10 @@ export default function TaskDetailTabs({ task, tab, devCount, onChange }: Props)
         ))}
       </Box>
       <Box sx={{ mt: 2 }}>
-        {tab === 'comments' && <Comments taskKey={task.key}/>}
+        {tab === 'comments' && <Comments taskId={task.id}/>}
         {tab === 'dev'      && <DevPanel  taskKey={task.key}/>}
-        {tab === 'worklog'  && <Worklog   logged={task.logged} estimate={task.estimate}/>}
-        {tab === 'activity' && <TaskActivity/>}
+        {tab === 'worklog'  && <Worklog   taskId={task.id}/>}
+        {tab === 'activity' && <TaskActivity taskId={task.id}/>}
       </Box>
     </>
   );

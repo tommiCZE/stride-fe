@@ -1,33 +1,27 @@
 import { useState } from 'react';
-import { Box, Button, Card, Typography } from '@mui/material';
-import { USERS } from '../../mocks/data';
+import { Box, Button, Card, CircularProgress, Typography } from '@mui/material';
+import { useTeamMembers, useUpdateMember } from '../../hooks/useTeam';
+import { useAuthStore } from '../../store/auth-store';
 import FluxAvatar from '../../components/flux-avatar';
 import { CardTitle } from '../../components/ui/ui';
 import { PlusIcon } from '../../components/icons/icons';
 import { RoleBadge, StatusBadgeLocal } from './role-badge';
-import type { WorkspaceRole, Status, TeamUser } from './role-badge';
+import type { WorkspaceRole, Status } from './role-badge';
 import { RowMenu } from './row-menu';
 import { InviteDialog } from './invite-dialog';
 
 export default function Team() {
-  const [users, setUsers] = useState<TeamUser[]>(
-    USERS.map(u => ({
-      ...u,
-      workspaceRole: (u.workspaceRole ?? 'member') as WorkspaceRole,
-      status: (u.status ?? 'active') as Status,
-    }))
-  );
+  const { data: members = [], isLoading } = useTeamMembers();
+  const updateMember = useUpdateMember();
+  const currentUserId = useAuthStore(s => s.userId);
   const [inviteOpen, setInviteOpen] = useState(false);
 
-  const total   = users.length;
-  const active  = users.filter(u => u.status === 'active').length;
-  const pending = users.filter(u => u.status === 'pending').length;
+  const total   = members.length;
+  const active  = members.filter(u => u.status === 'ACTIVE').length;
+  const pending = members.filter(u => u.status === 'PENDING').length;
 
   const changeRole = (id: string, role: WorkspaceRole) =>
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, workspaceRole: role } : u));
-
-  const removeUser = (id: string) =>
-    setUsers(prev => prev.filter(u => u.id !== id));
+    updateMember.mutate({ id, body: { workspaceRole: role.toUpperCase() } });
 
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%' }}>
@@ -68,54 +62,56 @@ export default function Team() {
           fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
           color: 'text.secondary', borderBottom: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
           <Box sx={{ flex: 1 }}>Člen</Box>
-          <Box sx={{ width: 120 }}>Role</Box>
           <Box sx={{ width: 90 }}>Oprávnění</Box>
           <Box sx={{ width: 90 }}>Status</Box>
           <Box sx={{ width: 36 }}/>
         </Box>
 
-        {users.map(u => (
-          <Box key={u.id} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.25,
-            borderBottom: 1, borderColor: 'divider', '&:last-child': { borderBottom: 0 },
-            '&:hover': { bgcolor: 'action.hover' } }}>
-            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
-              <FluxAvatar user={u} size={32}/>
-              <Box sx={{ minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2 }}>{u.name}</Typography>
-                  {u.id === 'u1' && (
-                    <Typography sx={{ fontSize: 10.5, color: 'text.disabled' }}>(Vy)</Typography>
-                  )}
+        {isLoading && (
+          <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
+            <CircularProgress size={20}/>
+          </Box>
+        )}
+
+        {members.map(u => {
+          const role = (u.workspaceRole?.toLowerCase() ?? 'member') as WorkspaceRole;
+          const status = (u.status === 'ACTIVE' ? 'active' : 'pending') as Status;
+          return (
+            <Box key={u.id} sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.25,
+              borderBottom: 1, borderColor: 'divider', '&:last-child': { borderBottom: 0 },
+              '&:hover': { bgcolor: 'action.hover' } }}>
+              <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+                <FluxAvatar user={u} size={32}/>
+                <Box sx={{ minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2 }}>{u.name}</Typography>
+                    {u.id === currentUserId && (
+                      <Typography sx={{ fontSize: 10.5, color: 'text.disabled' }}>(Vy)</Typography>
+                    )}
+                  </Box>
+                  <Typography sx={{ fontSize: 11.5, color: 'text.secondary', lineHeight: 1.2 }}>{u.email}</Typography>
                 </Box>
-                <Typography sx={{ fontSize: 11.5, color: 'text.secondary', lineHeight: 1.2 }}>{u.email}</Typography>
+              </Box>
+              <Box sx={{ width: 90 }}>
+                <RoleBadge role={role}/>
+              </Box>
+              <Box sx={{ width: 90 }}>
+                <StatusBadgeLocal status={status}/>
+              </Box>
+              <Box sx={{ width: 36, display: 'flex', justifyContent: 'flex-end' }}>
+                <RowMenu
+                  userId={u.id}
+                  currentRole={role}
+                  onRoleChange={r => changeRole(u.id, r)}
+                  onRemove={() => {}}
+                />
               </Box>
             </Box>
-            <Box sx={{ width: 120 }}>
-              <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>{u.role}</Typography>
-            </Box>
-            <Box sx={{ width: 90 }}>
-              <RoleBadge role={u.workspaceRole}/>
-            </Box>
-            <Box sx={{ width: 90 }}>
-              <StatusBadgeLocal status={u.status}/>
-            </Box>
-            <Box sx={{ width: 36, display: 'flex', justifyContent: 'flex-end' }}>
-              <RowMenu
-                userId={u.id}
-                currentRole={u.workspaceRole}
-                onRoleChange={role => changeRole(u.id, role)}
-                onRemove={() => removeUser(u.id)}
-              />
-            </Box>
-          </Box>
-        ))}
+          );
+        })}
       </Card>
 
-      <InviteDialog
-        open={inviteOpen}
-        onClose={() => setInviteOpen(false)}
-        onInvite={u => setUsers(prev => [...prev, u])}
-      />
+      <InviteDialog open={inviteOpen} onClose={() => setInviteOpen(false)}/>
     </Box>
   );
 }

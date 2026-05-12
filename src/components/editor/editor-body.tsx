@@ -88,10 +88,11 @@ interface Props {
   hideActions?: boolean;
   onSave?: (json: JSONContent) => void;
   onCancel?: () => void;
+  onUploadImage?: (file: File) => Promise<string>;
 }
 
 const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
-  { initialContent, placeholder, compact, hideActions, onSave, onCancel }: Readonly<Props>,
+  { initialContent, placeholder, compact, hideActions, onSave, onCancel, onUploadImage }: Readonly<Props>,
   ref,
 ) {
   const theme = useTheme();
@@ -124,14 +125,12 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
         if (!file) return false;
 
         event.preventDefault();
-        const reader = new FileReader();
-        reader.onload = loadEvent => {
-          const src = loadEvent.target?.result;
-          if (typeof src !== 'string') return;
-          const imageNode = view.state.schema.nodes['image']?.create({ src });
-          if (imageNode) view.dispatch(view.state.tr.replaceSelectionWith(imageNode));
-        };
-        reader.readAsDataURL(file);
+        if (onUploadImage) {
+          onUploadImage(file).then(src => {
+            const imageNode = view.state.schema.nodes['image']?.create({ src });
+            if (imageNode) view.dispatch(view.state.tr.replaceSelectionWith(imageNode));
+          });
+        }
         return true;
       },
       handleDrop: (view, event, _slice, moved) => {
@@ -146,17 +145,14 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
         const docFiles = files.filter(f => !f.type.startsWith('image/'));
 
         // Images → vložit inline na pozici dropu
-        if (imageFiles.length > 0) {
+        if (imageFiles.length > 0 && onUploadImage) {
           const dropPos = view.posAtCoords({ left: event.clientX, top: event.clientY });
           imageFiles.forEach(imgFile => {
-            const reader = new FileReader();
-            reader.onload = e => {
-              const src = e.target?.result;
-              if (typeof src !== 'string' || !dropPos) return;
+            onUploadImage(imgFile).then(src => {
+              if (!dropPos) return;
               const node = view.state.schema.nodes['image']?.create({ src });
               if (node) view.dispatch(view.state.tr.insert(dropPos.pos, node));
-            };
-            reader.readAsDataURL(imgFile);
+            });
           });
         }
 
@@ -206,7 +202,7 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
 
       <Tiptap editor={editor}>
         <Box sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'background.paper' }}>
-          <MenuBar />
+          <MenuBar onUploadImage={onUploadImage} />
         </Box>
         <Box sx={editorContentSx(theme, compact)}>
           <Tiptap.Content />

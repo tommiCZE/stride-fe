@@ -9,6 +9,16 @@ export function blocksToDoc(blocks: RichBlock[] | string | JSONContent): string 
   if (isJsonDoc(blocks)) return blocks;
 
   if (typeof blocks === 'string') {
+    if (blocks.trimStart().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(blocks) as JSONContent;
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch {
+        // not valid JSON
+      }
+    }
     return blocks.trimStart().startsWith('<') ? blocks : `<p>${blocks}</p>`;
   }
 

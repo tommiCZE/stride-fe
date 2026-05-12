@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
-import { Badge, Box, IconButton, InputAdornment, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Badge, Box, IconButton, InputAdornment, Menu, MenuItem, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useUiStore } from '../store/ui-store';
-import { getUser } from '../mocks/data';
+import { useAuthStore } from '../store/auth-store';
 import FluxAvatar from '../components/flux-avatar';
 import LanguageSwitcher from '../components/language-switcher';
 import {
@@ -21,9 +23,22 @@ function fmtTimer(sec: number) {
 
 export default function GlobalHeader() {
   const { themeMode, toggleTheme, setMobileMenu, timer, stopTimer, toggleTimer } = useUiStore();
+  const me = useAuthStore(s => s.user);
+  const logout = useAuthStore(s => s.logout);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+
+  const handleLogout = () => {
+    setAnchor(null);
+    logout();
+    qc.clear();
+    navigate('/login');
+  };
 
   useEffect(() => {
     if (!timer.running) return;
@@ -91,7 +106,28 @@ export default function GlobalHeader() {
           </Badge>
         </IconButton>
       </Tooltip>
-      <FluxAvatar user={getUser('u1')} size={26}/>
+
+      <Box sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        onClick={e => setAnchor(e.currentTarget)}>
+        <FluxAvatar user={me} size={28}/>
+      </Box>
+
+      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ paper: { sx: { minWidth: 200, mt: 0.5 } } }}>
+        <Box sx={{ px: 2, py: 1.25, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2 }}>{me?.name}</Typography>
+          <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>{me?.email}</Typography>
+        </Box>
+        <MenuItem sx={{ fontSize: 13, mt: 0.5 }}
+          onClick={() => { setAnchor(null); navigate('/profile'); }}>
+          Můj profil
+        </MenuItem>
+        <MenuItem sx={{ fontSize: 13, color: 'error.main' }} onClick={handleLogout}>
+          Odhlásit se
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }

@@ -2,16 +2,20 @@ import { useState, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Box, InputAdornment, TextField, Tooltip, Typography } from '@mui/material';
 import {
-  DndContext, DragOverlay,
+  DndContext, DragOverlay, MeasuringStrategy,
   PointerSensor, useSensor, useSensors, closestCorners,
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
-import { TASKS, STATUSES, SPRINTS, getUser } from '../../mocks/data';
+import { arrayMove } from '@dnd-kit/sortable';
+import { useTasks, useUpdateTask } from '../../hooks/useTasks';
+import { useSprints } from '../../hooks/useSprints';
+import { useAuthStore } from '../../store/auth-store';
+import { BOARD_STATUSES } from '../../constants/statuses';
 import FluxAvatar from '../../components/flux-avatar';
 import { SearchIcon, FilterIcon } from '../../components/icons/icons';
 import Column from './column';
 import { TaskCard } from './task-card';
-import type { Task } from '../../types';
+import type { TaskSummaryDto } from '../../api/types';
 
 export default function Board() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -20,42 +24,83 @@ export default function Board() {
   const [search, setSearch] = useState('');
   const [filterAssignee, setFilterAssignee] = useState<string | null>(null);
   const [filterMine, setFilterMine] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>(() => TASKS.filter(t => t.project === projectId));
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [localTasks, setLocalTasks] = useState<TaskSummaryDto[] | null>(null);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const userId = useAuthStore(s => s.userId);
+  const { data: remoteTasks = [] } = useTasks(projectId!);
+  const { data: sprints = [] } = useSprints(projectId!);
+  const updateTask = useUpdateTask(projectId);
 
-  const sprint = SPRINTS.find(s => s.project === projectId && s.state === 'active');
+  const tasks = localTasks ?? remoteTasks;
+
+  const sprint = sprints.find(s => s.state === 'ACTIVE');
 
   const teamMembers = useMemo(() => {
-    const ids = new Set(tasks.map(t => t.assignee).filter(Boolean) as string[]);
-    return [...ids].map(id => getUser(id)!);
+    const seen = new Map<string, { id: string; color: string; initials: string; name: string }>();
+    for (const t of tasks) {
+      if (t.assigneeId && !seen.has(t.assigneeId)) {
+        seen.set(t.assigneeId, {
+          id: t.assigneeId,
+          color: t.assigneeColor ?? '#94a3b8',
+          initials: t.assigneeInitials ?? '?',
+          name: t.assigneeName ?? '',
+        });
+      }
+    }
+    return [...seen.values()];
   }, [tasks]);
 
   const filtered = useMemo(() => tasks.filter(t => {
     if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !t.key.toLowerCase().includes(search.toLowerCase())) return false;
-    if (filterAssignee && t.assignee !== filterAssignee) return false;
-    if (filterMine && t.assignee !== 'u1') return false;
+    if (filterAssignee && t.assigneeId !== filterAssignee) return false;
+    if (filterMine && t.assigneeId !== userId) return false;
     return true;
-  }), [tasks, search, filterAssignee, filterMine]);
+  }), [tasks, search, filterAssignee, filterMine, userId]);
 
   const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
-  const handleDragStart = ({ active }: DragStartEvent) => setActiveId(active.id as string);
+  const handleDragStart = ({ active }: DragStartEvent) => {
+    setActiveId(active.id as string);
+    if (!localTasks) setLocalTasks([...remoteTasks]);
+  };
 
   const handleDragOver = ({ active, over }: DragOverEvent) => {
     if (!over) return;
     const dragged = tasks.find(t => t.id === active.id);
     if (!dragged) return;
-    const newStatus = STATUSES.find(s => s.id === over.id);
-    if (newStatus && dragged.status !== newStatus.id) {
-      setTasks(prev => prev.map(t => t.id === active.id ? { ...t, status: newStatus.id } : t));
-    }
+    const overStatus = BOARD_STATUSES.find(s => s.id === over.id);
+    const overTask = tasks.find(t => t.id === over.id);
+    const targetStatus = overStatus?.id ?? overTask?.status;
+    if (!targetStatus || targetStatus === dragged.status) return;
+    setLocalTasks(prev => (prev ?? remoteTasks).map(t => t.id === active.id ? { ...t, status: targetStatus } : t));
   };
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveId(null);
-    if (!over || active.id === over.id) return;
+    if (!over) { setLocalTasks(null); return; }
+
+    const dragged = tasks.find(t => t.id === active.id);
+    const overTask = tasks.find(t => t.id === over.id);
+
+    if (dragged && overTask && dragged.status === overTask.status && active.id !== over.id) {
+      setLocalTasks(prev => {
+        const arr = prev ?? remoteTasks;
+        const from = arr.findIndex(t => t.id === active.id);
+        const to = arr.findIndex(t => t.id === over.id);
+        return arrayMove(arr, from, to);
+      });
+    }
+
+    if (dragged && dragged.status !== (remoteTasks.find(t => t.id === active.id)?.status)) {
+      updateTask.mutate(
+        { id: active.id as string, body: { status: dragged.status } },
+        { onError: () => setLocalTasks(null) },
+      );
+    } else {
+      setLocalTasks(null);
+    }
   };
 
   return (
@@ -64,10 +109,12 @@ export default function Board() {
         borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexShrink: 0 }}>
         {sprint && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'success.main' }}>● {sprint.name.split(' — ')[0]}</Typography>
-            <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
-              · {new Date(sprint.end).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
-            </Typography>
+            <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'success.main' }}>● {sprint.name}</Typography>
+            {sprint.endDate && (
+              <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+                · {new Date(sprint.endDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
+              </Typography>
+            )}
           </Box>
         )}
         <Box sx={{ flex: 1 }}/>
@@ -99,14 +146,15 @@ export default function Board() {
       <Box sx={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', px: 2, py: 2,
         display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
         <DndContext sensors={sensors} collisionDetection={closestCorners}
+          measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
           onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-          {STATUSES.map(s => (
-            <Column key={s.id} statusId={s.id}
+          {BOARD_STATUSES.map(s => (
+            <Column key={s.id} status={s}
               tasks={filtered.filter(t => t.status === s.id)}
               onTaskClick={openTask}/>
           ))}
           <DragOverlay>
-            {activeTask && <TaskCard task={activeTask} onClick={() => {}} isDragging/>}
+            {activeTask && <TaskCard task={activeTask} onClick={() => {}}/>}
           </DragOverlay>
         </DndContext>
       </Box>

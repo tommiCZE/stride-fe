@@ -12,6 +12,7 @@ import MyWork from './pages/my-work';
 import Team from './pages/team';
 import TaskDetail from './pages/task-detail';
 import Login from './pages/login';
+import Profile from './pages/profile';
 import CreateTaskModal from './components/create-task-modal';
 
 function ProtectedLayout() {
@@ -49,6 +50,7 @@ const router = createBrowserRouter([
       { path: 'my-work',   element: <MyWork /> },
       { path: 'reports',   element: <Reports /> },
       { path: 'team',      element: <Team /> },
+      { path: 'profile',   element: <Profile /> },
       {
         path: 'projects/:projectId',
         children: [

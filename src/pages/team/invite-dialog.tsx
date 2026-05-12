@@ -3,47 +3,35 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   Box, Button, Dialog, DialogActions, DialogContent, DialogTitle,
-  MenuItem, Select, TextField, Typography,
+  MenuItem, Select, Typography,
 } from '@mui/material';
-import { AVATAR_COLORS } from './role-badge';
-import type { WorkspaceRole, TeamUser } from './role-badge';
+import { TextField } from '@mui/material';
+import { useInviteMember } from '../../hooks/useTeam';
 
 const inviteSchema = z.object({
   name:          z.string().min(2, 'Zadejte jméno'),
   email:         z.string().email('Neplatný email'),
-  role:          z.string().min(1, 'Zadejte pracovní roli'),
-  workspaceRole: z.enum(['admin', 'member', 'viewer']),
+  workspaceRole: z.enum(['ADMIN', 'MEMBER', 'VIEWER']),
 });
 type InviteForm = z.infer<typeof inviteSchema>;
 
 interface InviteDialogProps {
   open: boolean;
   onClose: () => void;
-  onInvite: (u: TeamUser) => void;
 }
 
-export function InviteDialog({ open, onClose, onInvite }: InviteDialogProps) {
+export function InviteDialog({ open, onClose }: InviteDialogProps) {
+  const inviteMember = useInviteMember();
   const { control, handleSubmit, reset, formState: { errors } } = useForm<InviteForm>({
     resolver: zodResolver(inviteSchema),
-    defaultValues: { name: '', email: '', role: '', workspaceRole: 'member' },
+    defaultValues: { name: '', email: '', workspaceRole: 'MEMBER' },
   });
 
   const onSubmit = (data: InviteForm) => {
-    const idx = Math.floor(Math.random() * AVATAR_COLORS.length);
-    const initials = data.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-    const newUser: TeamUser = {
-      id: `u${Date.now()}`,
-      name: data.name,
-      initials,
-      color: AVATAR_COLORS[idx],
-      role: data.role,
-      email: data.email,
-      workspaceRole: data.workspaceRole as WorkspaceRole,
-      status: 'pending',
-    };
-    onInvite(newUser);
-    reset();
-    onClose();
+    inviteMember.mutate(
+      { name: data.name, email: data.email, workspaceRole: data.workspaceRole },
+      { onSuccess: () => { reset(); onClose(); } },
+    );
   };
 
   return (
@@ -58,24 +46,22 @@ export function InviteDialog({ open, onClose, onInvite }: InviteDialogProps) {
           <TextField {...field} label="Email" size="small" fullWidth type="email"
             error={!!errors.email} helperText={errors.email?.message}/>
         )}/>
-        <Controller name="role" control={control} render={({ field }) => (
-          <TextField {...field} label="Pracovní role (např. Frontend, QA)" size="small" fullWidth
-            error={!!errors.role} helperText={errors.role?.message}/>
-        )}/>
         <Box>
           <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>Oprávnění</Typography>
           <Controller name="workspaceRole" control={control} render={({ field }) => (
             <Select {...field} size="small" fullWidth sx={{ fontSize: 13 }}>
-              <MenuItem value="admin" sx={{ fontSize: 13 }}>Admin — plný přístup</MenuItem>
-              <MenuItem value="member" sx={{ fontSize: 13 }}>Member — standard</MenuItem>
-              <MenuItem value="viewer" sx={{ fontSize: 13 }}>Viewer — jen čtení</MenuItem>
+              <MenuItem value="ADMIN" sx={{ fontSize: 13 }}>Admin — plný přístup</MenuItem>
+              <MenuItem value="MEMBER" sx={{ fontSize: 13 }}>Member — standard</MenuItem>
+              <MenuItem value="VIEWER" sx={{ fontSize: 13 }}>Viewer — jen čtení</MenuItem>
             </Select>
           )}/>
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
         <Button size="small" onClick={onClose}>Zrušit</Button>
-        <Button size="small" variant="contained" onClick={handleSubmit(onSubmit)}>
+        <Button size="small" variant="contained"
+          disabled={inviteMember.isPending}
+          onClick={handleSubmit(onSubmit)}>
           Odeslat pozvánku
         </Button>
       </DialogActions>

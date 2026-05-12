@@ -120,6 +120,17 @@ export default function RichContent({ blocks }: Props) {
     return <TipTapContent json={blocks} />;
   }
 
+  if (typeof blocks === 'string' && blocks.trimStart().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(blocks) as JSONContent;
+      if (parsed && typeof parsed === 'object') {
+        return <TipTapContent json={parsed} />;
+      }
+    } catch {
+      // not valid JSON, fall through to plain text
+    }
+  }
+
   const items: RichBlock[] = typeof blocks === 'string'
     ? [{ type: 'p', text: blocks }]
     : blocks;

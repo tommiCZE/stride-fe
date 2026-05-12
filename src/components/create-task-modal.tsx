@@ -2,7 +2,10 @@ import { useRef, useState } from 'react';
 import { Box, Button, Card, IconButton, TextField, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
-import { TASK_TYPES, PRIORITIES, PROJECTS } from '../mocks/data';
+import { TASK_TYPES } from '../constants/taskTypes';
+import { PRIORITIES } from '../constants/priorities';
+import { useProjects } from '../hooks/useProjects';
+import { useCreateTask } from '../hooks/useTasks';
 import { useUiStore } from '../store/ui-store';
 import TypeIcon from './icons/type-icon';
 import PriorityIcon from './icons/priority-icon';
@@ -12,18 +15,29 @@ import EditorBody, { type EditorBodyHandle } from './editor/editor-body';
 export default function CreateTaskModal() {
   const { projectId } = useParams<{ projectId: string }>();
   const { closeCreateModal } = useUiStore();
-  const project = PROJECTS.find(p => p.id === projectId) ?? PROJECTS[0];
+  const { data: projects = [] } = useProjects();
+  const createTask = useCreateTask();
+
+  const project = projects.find(p => p.id === projectId) ?? projects[0];
 
   const [title, setTitle] = useState('');
-  const [type, setType] = useState('task');
-  const [priority, setPriority] = useState('medium');
+  const [type, setType] = useState('TASK');
+  const [priority, setPriority] = useState('MEDIUM');
   const descriptionRef = useRef<EditorBodyHandle>(null);
 
   const handleCreate = () => {
-    if (!title.trim()) return;
-    const description = descriptionRef.current?.getJSON();
-    console.log('Create task', { title, type, priority, description });
-    closeCreateModal();
+    if (!title.trim() || !project) return;
+    const descJson = descriptionRef.current?.getJSON();
+    createTask.mutate(
+      {
+        title: title.trim(),
+        projectId: project.id,
+        type,
+        priority,
+        description: descJson ? JSON.stringify(descJson) : undefined,
+      },
+      { onSuccess: closeCreateModal },
+    );
   };
 
   return (
@@ -34,7 +48,9 @@ export default function CreateTaskModal() {
         onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleCreate(); }}
         sx={{ width: 640, borderRadius: 1.5, overflow: 'visible' }}>
         <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Nový task v {project?.name}</Typography>
+          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
+            Nový task{project ? ` v ${project.name}` : ''}
+          </Typography>
           <Box sx={{ flex: 1 }}/>
           <IconButton size="small" onClick={closeCreateModal}><CloseIcon/></IconButton>
         </Box>
@@ -71,10 +87,6 @@ export default function CreateTaskModal() {
           />
 
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.4, borderRadius: 0.8,
-              border: '1px dashed', borderColor: 'divider', fontSize: 12, color: 'text.secondary', cursor: 'default' }}>
-              + Assignee
-            </Box>
             {PRIORITIES.map(p => (
               <Box key={p.id} onClick={() => setPriority(p.id)}
                 sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.4, borderRadius: 0.8,
@@ -86,10 +98,6 @@ export default function CreateTaskModal() {
                 <PriorityIcon priority={p.id}/> {p.name}
               </Box>
             ))}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.4, borderRadius: 0.8,
-              border: '1px dashed', borderColor: 'divider', fontSize: 12, color: 'text.secondary', cursor: 'default' }}>+ Sprint</Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.4, borderRadius: 0.8,
-              border: '1px dashed', borderColor: 'divider', fontSize: 12, color: 'text.secondary', cursor: 'default' }}>+ Estimate</Box>
           </Box>
         </Box>
 
@@ -100,7 +108,9 @@ export default function CreateTaskModal() {
           </Typography>
           <Box sx={{ flex: 1 }}/>
           <Button size="small" onClick={closeCreateModal}>Zrušit</Button>
-          <Button size="small" variant="contained" disabled={!title.trim()} onClick={handleCreate}>
+          <Button size="small" variant="contained"
+            disabled={!title.trim() || createTask.isPending}
+            onClick={handleCreate}>
             Vytvořit task
           </Button>
         </Box>

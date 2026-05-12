@@ -4,6 +4,7 @@ import { SectionLabel } from '../../components/ui/ui';
 import { MoreIcon } from '../../components/icons/icons';
 import { roleLabel } from './role-badge';
 import type { WorkspaceRole } from './role-badge';
+import { useAuthStore } from '../../store/auth-store';
 
 interface RowMenuProps {
   userId: string;
@@ -14,7 +15,8 @@ interface RowMenuProps {
 
 export function RowMenu({ userId, currentRole, onRoleChange, onRemove }: RowMenuProps) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
-  const isMe = userId === 'u1';
+  const currentUserId = useAuthStore(s => s.userId);
+  const isMe = userId === currentUserId;
 
   return (
     <>

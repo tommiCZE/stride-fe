@@ -1,7 +1,7 @@
-import type { User } from '../types';
+import type { UserDto } from '../api/types';
 
 interface Props {
-  user?: User | null;
+  user?: Pick<UserDto, 'color' | 'initials'> | null;
   size?: number;
   ring?: boolean;
 }

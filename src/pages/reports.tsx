@@ -1,29 +1,41 @@
 import { Box, Card, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
-import { TASKS, getUser, getProject } from '../mocks/data';
+import { useProjects } from '../hooks/useProjects';
+import { useAllProjectTasks } from '../hooks/useTasks';
+import { useTeamMembers } from '../hooks/useTeam';
 import FluxAvatar from '../components/flux-avatar';
 import { CardTitle } from '../components/ui/ui';
 
 export default function Reports() {
   const { projectId } = useParams<{ projectId: string }>();
-  const tasks = projectId ? TASKS.filter(t => t.project === projectId) : TASKS;
+
+  const { data: projects = [] } = useProjects();
+  const { data: members = [] } = useTeamMembers();
+  const { data: allTasks } = useAllProjectTasks(projects.map(p => p.id));
+
+  const tasks = projectId ? allTasks.filter(t => t.projectId === projectId) : allTasks;
+
+  const membersById = Object.fromEntries(members.map(u => [u.id, u]));
+  const projectsById = Object.fromEntries(projects.map(p => [p.id, p]));
 
   const byUser: Record<string, number> = {};
   for (const t of tasks) {
-    if (t.assignee) byUser[t.assignee] = (byUser[t.assignee] ?? 0) + (t.logged ?? 0);
+    if (t.assigneeId) byUser[t.assigneeId] = (byUser[t.assigneeId] ?? 0) + (t.logged ?? 0);
   }
   const userRows = Object.entries(byUser)
-    .map(([uid, h]) => ({ user: getUser(uid)!, h }))
+    .map(([uid, h]) => ({ user: membersById[uid], h }))
+    .filter(r => r.user)
     .sort((a, b) => b.h - a.h);
   const maxH = Math.max(...userRows.map(r => r.h), 1);
 
   const byProject: Record<string, number> = {};
-  for (const t of TASKS) {
-    byProject[t.project] = (byProject[t.project] ?? 0) + (t.logged ?? 0);
+  for (const t of allTasks) {
+    byProject[t.projectId] = (byProject[t.projectId] ?? 0) + (t.logged ?? 0);
   }
   const projRows = Object.entries(byProject)
-    .map(([pid, h]) => ({ project: getProject(pid)!, h }))
+    .map(([pid, h]) => ({ project: projectsById[pid], h }))
+    .filter(r => r.project)
     .sort((a, b) => b.h - a.h);
   const maxP = Math.max(...projRows.map(r => r.h), 1);
 
@@ -31,20 +43,22 @@ export default function Reports() {
   const weekData = [4, 6, 3.5, 5, 7, 0, 0];
   const maxD = Math.max(...weekData);
 
+  const totalLogged = allTasks.reduce((s, t) => s + (t.logged ?? 0), 0);
+
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%' }}>
       <Typography sx={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', mb: 0.25 }}>
         Reporty času
       </Typography>
       <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 3 }}>
-        Posledních 14 dní · všichni členové týmu
+        Všichni členové týmu · {projects.length} projektů
       </Typography>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3,1fr)' }, gap: 1.5, mb: 3 }}>
         {[
-          { label: 'Logged celkem',      value: '142.5h', sub: '+18% vs minulý týden', color: '#5A5BFF' },
-          { label: 'Plánováno',          value: '180h',   sub: '79% využití',          color: '#10b981' },
-          { label: 'Průměr / člověka',   value: '17.8h',  sub: 'týdně',               color: '#f59e0b' },
+          { label: 'Logged celkem',      value: `${totalLogged}h`, sub: 've všech projektech', color: '#5A5BFF' },
+          { label: 'Projekty',           value: projects.length,   sub: 'aktivní',             color: '#10b981' },
+          { label: 'Členů týmu',         value: members.length,    sub: 'celkem',              color: '#f59e0b' },
         ].map((s, i) => (
           <Card key={i} sx={{ p: 1.75, borderRadius: 1.5 }}>
             <Typography sx={{ fontSize: 11.5, color: 'text.secondary', fontWeight: 500 }}>{s.label}</Typography>
@@ -68,6 +82,9 @@ export default function Reports() {
                 <Typography sx={{ fontSize: 11.5, fontWeight: 600, width: 36, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.h}h</Typography>
               </Box>
             ))}
+            {userRows.length === 0 && (
+              <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>Žádná data</Typography>
+            )}
           </Box>
         </Card>
 
@@ -86,6 +103,9 @@ export default function Reports() {
                 <Typography sx={{ fontSize: 11.5, fontWeight: 600, width: 36, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.h}h</Typography>
               </Box>
             ))}
+            {projRows.length === 0 && (
+              <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>Žádná data</Typography>
+            )}
           </Box>
         </Card>
 

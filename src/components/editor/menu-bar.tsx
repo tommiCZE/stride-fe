@@ -257,7 +257,7 @@ export function BubbleToolbar() {
   );
 }
 
-export default function MenuBar() {
+export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File) => Promise<string> }) {
   const { editor } = useCurrentEditor();
   const theme = useTheme();
 
@@ -350,9 +350,23 @@ export default function MenuBar() {
 
   const handleInsertImage = (e: React.MouseEvent) => {
     run(e, () => {
-      const url = globalThis.prompt('URL obrázku:');
-      if (!url) return;
-      editor.chain().focus().setImage({ src: url }).run();
+      if (onUploadImage) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/jpeg,image/png,image/gif,image/webp';
+        input.onchange = () => {
+          const file = input.files?.[0];
+          if (!file) return;
+          onUploadImage(file).then(url => {
+            editor.chain().focus().setImage({ src: url }).run();
+          });
+        };
+        input.click();
+      } else {
+        const url = globalThis.prompt('URL obrázku:');
+        if (!url) return;
+        editor.chain().focus().setImage({ src: url }).run();
+      }
     });
   };
 

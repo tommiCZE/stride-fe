@@ -1,14 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { Box, Menu, MenuItem, Popover, Typography, InputBase } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { USERS, PRIORITIES, TASK_TYPES, EPICS, SPRINTS, LABELS } from '../../../mocks/data';
+import { useTeamMembers } from '../../../hooks/useTeam';
+import { useEpics } from '../../../hooks/useEpics';
+import { useSprints } from '../../../hooks/useSprints';
+import { PRIORITIES } from '../../../constants/priorities';
+import { TASK_TYPES } from '../../../constants/taskTypes';
 import FluxAvatar from '../../../components/flux-avatar';
 import PriorityIcon from '../../../components/icons/priority-icon';
 import TypeIcon from '../../../components/icons/type-icon';
 import { FieldPill } from './field-helpers';
-import type { Task } from '../../../types';
+import type { TaskDto, UpdateTaskRequest } from '../../../api/types';
 
-type Updater = (fn: (t: Task) => Task) => void;
+export type PatchFn = (patch: UpdateTaskRequest) => void;
 
 export function TitleEditor({ title, onChange }: { title: string; onChange: (v: string) => void }) {
   const [editing, setEditing] = useState(false);
@@ -51,9 +55,10 @@ export function TitleEditor({ title, onChange }: { title: string; onChange: (v: 
   );
 }
 
-export function AssigneeEditor({ task, setTask }: { task: Task; setTask: Updater }) {
+export function AssigneeEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
-  const assignee = task.assignee ? USERS.find(u => u.id === task.assignee) : null;
+  const { data: members = [] } = useTeamMembers();
+  const assignee = task.assignee;
 
   return (
     <>
@@ -69,12 +74,12 @@ export function AssigneeEditor({ task, setTask }: { task: Task; setTask: Updater
         )}
       </Box>
       <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
-        <MenuItem onClick={() => { setTask(t => ({ ...t, assignee: undefined })); setAnchor(null); }}>
+        <MenuItem onClick={() => { onPatch({ assigneeId: null }); setAnchor(null); }}>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Nepřiřazeno</Typography>
         </MenuItem>
-        {USERS.map(u => (
-          <MenuItem key={u.id} onClick={() => { setTask(t => ({ ...t, assignee: u.id })); setAnchor(null); }}
-            selected={task.assignee === u.id}>
+        {members.map(u => (
+          <MenuItem key={u.id} onClick={() => { onPatch({ assigneeId: u.id }); setAnchor(null); }}
+            selected={task.assigneeId === u.id}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <FluxAvatar user={u} size={20}/>
               <Typography sx={{ fontSize: 12.5 }}>{u.name}</Typography>
@@ -86,9 +91,9 @@ export function AssigneeEditor({ task, setTask }: { task: Task; setTask: Updater
   );
 }
 
-export function PriorityEditor({ task, setTask }: { task: Task; setTask: Updater }) {
+export function PriorityEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
-  const prio = PRIORITIES.find(p => p.id === task.priority)!;
+  const prio = PRIORITIES.find(p => p.id === task.priority) ?? PRIORITIES[2];
 
   return (
     <>
@@ -99,7 +104,7 @@ export function PriorityEditor({ task, setTask }: { task: Task; setTask: Updater
       </Box>
       <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
         {PRIORITIES.map(p => (
-          <MenuItem key={p.id} onClick={() => { setTask(t => ({ ...t, priority: p.id })); setAnchor(null); }}
+          <MenuItem key={p.id} onClick={() => { onPatch({ priority: p.id }); setAnchor(null); }}
             selected={task.priority === p.id}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <PriorityIcon priority={p.id}/>
@@ -112,9 +117,9 @@ export function PriorityEditor({ task, setTask }: { task: Task; setTask: Updater
   );
 }
 
-export function TypeEditor({ task, setTask }: { task: Task; setTask: Updater }) {
+export function TypeEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
-  const type = TASK_TYPES.find(t => t.id === task.type)!;
+  const type = TASK_TYPES.find(t => t.id === task.type) ?? TASK_TYPES[1];
 
   return (
     <>
@@ -123,7 +128,7 @@ export function TypeEditor({ task, setTask }: { task: Task; setTask: Updater }) 
       </Box>
       <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
         {TASK_TYPES.map(tt => (
-          <MenuItem key={tt.id} onClick={() => { setTask(t => ({ ...t, type: tt.id })); setAnchor(null); }}
+          <MenuItem key={tt.id} onClick={() => { onPatch({ type: tt.id }); setAnchor(null); }}
             selected={task.type === tt.id}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TypeIcon type={tt.id} size={14}/>
@@ -136,10 +141,10 @@ export function TypeEditor({ task, setTask }: { task: Task; setTask: Updater }) 
   );
 }
 
-export function EpicEditor({ task, setTask }: { task: Task; setTask: Updater }) {
+export function EpicEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
-  const projectEpics = EPICS.filter(e => e.project === task.project);
-  const epic = task.epic ? projectEpics.find(e => e.id === task.epic) : null;
+  const { data: epics = [] } = useEpics(task.projectId);
+  const epic = task.epicId ? epics.find(e => e.id === task.epicId) : null;
 
   return (
     <>
@@ -153,12 +158,12 @@ export function EpicEditor({ task, setTask }: { task: Task; setTask: Updater }) 
         )}
       </Box>
       <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
-        <MenuItem onClick={() => { setTask(t => ({ ...t, epic: undefined })); setAnchor(null); }}>
+        <MenuItem onClick={() => { onPatch({ epicId: null }); setAnchor(null); }}>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Žádný epic</Typography>
         </MenuItem>
-        {projectEpics.map(e => (
-          <MenuItem key={e.id} onClick={() => { setTask(t => ({ ...t, epic: e.id })); setAnchor(null); }}
-            selected={task.epic === e.id}>
+        {epics.map(e => (
+          <MenuItem key={e.id} onClick={() => { onPatch({ epicId: e.id }); setAnchor(null); }}
+            selected={task.epicId === e.id}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: e.color, flexShrink: 0 }}/>
               <Typography sx={{ fontSize: 12.5 }}>{e.title}</Typography>
@@ -170,27 +175,27 @@ export function EpicEditor({ task, setTask }: { task: Task; setTask: Updater }) 
   );
 }
 
-export function SprintEditor({ task, setTask }: { task: Task; setTask: Updater }) {
+export function SprintEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
-  const projectSprints = SPRINTS.filter(s => s.project === task.project);
-  const sprint = task.sprint ? projectSprints.find(s => s.id === task.sprint) : null;
+  const { data: sprints = [] } = useSprints(task.projectId);
+  const sprint = task.sprintId ? sprints.find(s => s.id === task.sprintId) : null;
 
   return (
     <>
       <Box onClick={e => setAnchor(e.currentTarget)}
         sx={{ cursor: 'default', '&:hover': { bgcolor: 'action.hover' }, px: 0.5, borderRadius: 0.8, display: 'inline-flex' }}>
         <Typography sx={{ fontSize: 12.5 }}>
-          {sprint ? sprint.name.split(' — ')[0] : <Box component="span" sx={{ color: 'text.disabled' }}>Nastavit sprint</Box>}
+          {sprint ? sprint.name : <Box component="span" sx={{ color: 'text.disabled' }}>Nastavit sprint</Box>}
         </Typography>
       </Box>
       <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
-        <MenuItem onClick={() => { setTask(t => ({ ...t, sprint: undefined })); setAnchor(null); }}>
+        <MenuItem onClick={() => { onPatch({ sprintId: null }); setAnchor(null); }}>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Backlog</Typography>
         </MenuItem>
-        {projectSprints.map(s => (
-          <MenuItem key={s.id} onClick={() => { setTask(t => ({ ...t, sprint: s.id })); setAnchor(null); }}
-            selected={task.sprint === s.id}>
-            <Typography sx={{ fontSize: 12.5 }}>{s.name.split(' — ')[0]}</Typography>
+        {sprints.map(s => (
+          <MenuItem key={s.id} onClick={() => { onPatch({ sprintId: s.id }); setAnchor(null); }}
+            selected={task.sprintId === s.id}>
+            <Typography sx={{ fontSize: 12.5 }}>{s.name}</Typography>
           </MenuItem>
         ))}
       </Menu>
@@ -198,64 +203,57 @@ export function SprintEditor({ task, setTask }: { task: Task; setTask: Updater }
   );
 }
 
-export function LabelsEditor({ task, setTask }: { task: Task; setTask: Updater }) {
+export function LabelsEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const labels = task.labels ?? [];
 
-  const toggle = (lid: string) => {
-    setTask(t => ({
-      ...t,
-      labels: t.labels.includes(lid) ? t.labels.filter(l => l !== lid) : [...t.labels, lid],
-    }));
+  const toggle = (id: string) => {
+    const next = labels.some(l => l.id === id)
+      ? labels.filter(l => l.id !== id).map(l => l.id)
+      : [...labels.map(l => l.id), id];
+    onPatch({ labelIds: next });
   };
 
   return (
     <>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}>
-        {task.labels.map(lid => {
-          const l = LABELS.find(x => x.id === lid)!;
-          return <FieldPill key={lid} color={l.color}>{l.name}</FieldPill>;
-        })}
+        {labels.map(l => (
+          <FieldPill key={l.id} color={l.color}>{l.name}</FieldPill>
+        ))}
         <Box onClick={e => setAnchor(e.currentTarget)}>
           <FieldPill dashed>+ přidat</FieldPill>
         </Box>
       </Box>
-      <Popover
-        open={!!anchor}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      >
+      <Popover open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}>
         <Box sx={{ p: 1, display: 'flex', flexWrap: 'wrap', gap: 0.75, maxWidth: 220 }}>
-          {LABELS.map(l => {
-            const active = task.labels.includes(l.id);
+          {labels.map(l => {
+            const active = true;
             return (
-              <Box
-                key={l.id}
-                onClick={() => toggle(l.id)}
-                sx={{
-                  display: 'inline-flex', alignItems: 'center', gap: 0.5,
+              <Box key={l.id} onClick={() => toggle(l.id)}
+                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5,
                   px: 0.75, py: 0.35, borderRadius: 0.8, fontSize: 12, cursor: 'default',
                   transition: 'all 0.12s',
                   bgcolor: active ? alpha(l.color, 0.13) : 'action.hover',
                   color: active ? l.color : 'text.secondary',
-                  border: 1,
-                  borderColor: active ? alpha(l.color, 0.4) : 'transparent',
+                  border: 1, borderColor: active ? alpha(l.color, 0.4) : 'transparent',
                   fontWeight: active ? 600 : 400,
-                  '&:hover': { bgcolor: active ? alpha(l.color, 0.2) : 'action.selected' },
-                }}
-              >
-                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: active ? l.color : 'text.disabled', flexShrink: 0 }}/>
+                  '&:hover': { bgcolor: alpha(l.color, 0.2) } }}>
+                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: l.color, flexShrink: 0 }}/>
                 {l.name}
               </Box>
             );
           })}
+          {labels.length === 0 && (
+            <Typography sx={{ fontSize: 12, color: 'text.disabled', p: 0.5 }}>Žádné štítky</Typography>
+          )}
         </Box>
       </Popover>
     </>
   );
 }
 
-export function EstimateEditor({ task, setTask }: { task: Task; setTask: Updater }) {
+export function EstimateEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(String(task.estimate ?? ''));
   const inputRef = useRef<HTMLInputElement>(null);
@@ -266,8 +264,8 @@ export function EstimateEditor({ task, setTask }: { task: Task; setTask: Updater
   const commit = () => {
     setEditing(false);
     const val = parseFloat(draft);
-    if (!isNaN(val) && val >= 0) setTask(t => ({ ...t, estimate: val }));
-    else if (draft.trim() === '') setTask(t => ({ ...t, estimate: undefined }));
+    if (!isNaN(val) && val >= 0) onPatch({ estimate: val });
+    else if (draft.trim() === '') onPatch({ estimate: null });
     else setDraft(String(task.estimate ?? ''));
   };
 
@@ -297,7 +295,7 @@ export function EstimateEditor({ task, setTask }: { task: Task; setTask: Updater
   );
 }
 
-export function DueDateEditor({ task, setTask }: { task: Task; setTask: Updater }) {
+export function DueDateEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn }) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -305,11 +303,11 @@ export function DueDateEditor({ task, setTask }: { task: Task; setTask: Updater 
 
   const commit = (val: string) => {
     setEditing(false);
-    setTask(t => ({ ...t, due: val || undefined }));
+    onPatch({ dueDate: val || null });
   };
 
-  const display = task.due
-    ? new Date(task.due).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })
+  const display = task.dueDate
+    ? new Date(task.dueDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })
     : null;
 
   if (editing) {
@@ -317,7 +315,7 @@ export function DueDateEditor({ task, setTask }: { task: Task; setTask: Updater 
       <InputBase
         inputRef={inputRef}
         type="date"
-        defaultValue={task.due ?? ''}
+        defaultValue={task.dueDate ?? ''}
         onBlur={e => commit(e.target.value)}
         onChange={e => { if (e.target.value) commit(e.target.value); }}
         autoFocus
@@ -331,14 +329,14 @@ export function DueDateEditor({ task, setTask }: { task: Task; setTask: Updater 
       onClick={() => setEditing(true)}
       sx={{ fontSize: 12.5, cursor: 'text', px: 0.5, borderRadius: 0.5,
         '&:hover': { bgcolor: 'action.hover' },
-        color: task.due ? 'text.primary' : 'text.disabled' }}
+        color: task.dueDate ? 'text.primary' : 'text.disabled' }}
     >
       {display ?? '—'}
     </Typography>
   );
 }
 
-export function LoggedBar({ logged, estimate }: { logged: number; estimate?: number }) {
+export function LoggedBar({ logged, estimate }: { logged: number; estimate?: number | null }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 600 }}>
       {logged}h{estimate != null && ` / ${estimate}h`}

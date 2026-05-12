@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
-import { GIT_INTEGRATIONS, timeAgo } from '../../mocks/data';
+import { GIT_INTEGRATIONS } from '../../mocks/data';
+import { timeAgo } from '../../utils/time';
 import { SectionLabel } from '../../components/ui/ui';
 
 export function ProviderLogo({ provider, size = 18 }: { provider: 'github' | 'gitlab'; size?: number }) {

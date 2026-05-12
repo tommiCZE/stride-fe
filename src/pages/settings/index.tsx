@@ -1,14 +1,19 @@
 import { Box, Button, Card, IconButton, TextField, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { PROJECTS, STATUSES, USERS, GIT_INTEGRATIONS, getUser } from '../../mocks/data';
+import { GIT_INTEGRATIONS } from '../../mocks/data';
 import FluxAvatar from '../../components/flux-avatar';
 import { CardTitle } from '../../components/ui/ui';
 import { PlusIcon, MoreIcon } from '../../components/icons/icons';
 import { IntegrationCard, ProviderLogo } from './integration-card';
+import { useProjects } from '../../hooks/useProjects';
+import { useTeamMembers } from '../../hooks/useTeam';
+import { BOARD_STATUSES } from '../../constants/statuses';
 
 export default function Settings() {
   const { projectId } = useParams<{ projectId: string }>();
-  const project = PROJECTS.find(p => p.id === projectId)!;
+  const { data: projects = [] } = useProjects();
+  const { data: members = [] } = useTeamMembers();
+  const project = projects.find(p => p.id === projectId);
   if (!project) return null;
 
   return (
@@ -26,8 +31,12 @@ export default function Settings() {
           <TextField size="small" defaultValue={project.key} sx={{ width: 140, '& .MuiInputBase-root': { fontFamily: 'ui-monospace, monospace' } }}/>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Lead</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <FluxAvatar user={getUser(project.lead)} size={22}/>
-            <Typography sx={{ fontSize: 13 }}>{getUser(project.lead)?.name}</Typography>
+            {project.lead && (
+              <>
+                <FluxAvatar user={project.lead} size={22}/>
+                <Typography sx={{ fontSize: 13 }}>{project.lead.name}</Typography>
+              </>
+            )}
           </Box>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Barva</Typography>
           <Box sx={{ display: 'flex', gap: 0.75 }}>
@@ -42,7 +51,7 @@ export default function Settings() {
       <Card sx={{ borderRadius: 1.5, p: 2.5, mb: 2 }}>
         <CardTitle sx={{ mb: 1.5 }}>Workflow / sloupce</CardTitle>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          {STATUSES.map(s => (
+          {BOARD_STATUSES.map(s => (
             <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 0.75,
               borderRadius: 1, border: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
               <Box sx={{ color: 'text.disabled', fontSize: 14, userSelect: 'none' }}>≡</Box>
@@ -77,16 +86,16 @@ export default function Settings() {
       <Card sx={{ borderRadius: 1.5, p: 2.5 }}>
         <CardTitle sx={{ mb: 1.5 }}>Členové týmu</CardTitle>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-          {USERS.map(u => (
+          {members.map(u => (
             <Box key={u.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, px: 1, py: 0.75 }}>
               <FluxAvatar user={u} size={26}/>
               <Box sx={{ flex: 1 }}>
                 <Typography sx={{ fontSize: 13, fontWeight: 500 }}>{u.name}</Typography>
-                <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>{u.role}</Typography>
+                <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>{u.email}</Typography>
               </Box>
               <Box sx={{ fontSize: 10.5, fontWeight: 600, px: 0.75, py: 0.2, borderRadius: 0.6,
-                bgcolor: 'action.hover', color: 'text.secondary' }}>
-                {u.id === 'u1' ? 'Admin' : 'Member'}
+                bgcolor: 'action.hover', color: 'text.secondary', textTransform: 'capitalize' }}>
+                {u.workspaceRole.toLowerCase()}
               </Box>
             </Box>
           ))}

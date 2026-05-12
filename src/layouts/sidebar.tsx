@@ -2,7 +2,8 @@ import type { ReactElement } from 'react';
 import { useNavigate, useLocation, useMatch } from 'react-router-dom';
 import { Box, Divider, IconButton, ListItemButton, Typography, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { PROJECTS, getUser } from '../mocks/data';
+import { useProjects } from '../hooks/useProjects';
+import { useAuthStore } from '../store/auth-store';
 import StrideLogoIcon from '../components/icons/stride-logo-icon';
 import FluxAvatar from '../components/flux-avatar';
 import {
@@ -16,7 +17,8 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const projectMatch = useMatch('/projects/:projectId/*');
   const theme = useTheme();
   const { t } = useTranslation();
-  const me = getUser('u1')!;
+  const me = useAuthStore(s => s.user);
+  const { data: projects = [] } = useProjects();
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
@@ -72,7 +74,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
             <PlusIcon/>
           </IconButton>
         </Box>
-        {PROJECTS.map(p => {
+        {projects.map(p => {
           const active = projectMatch?.params.projectId === p.id;
           return (
             <ListItemButton key={p.id} selected={active}
@@ -84,8 +86,8 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
               <Typography sx={{ fontSize: 12.5, fontWeight: active ? 600 : 500, flex: 1,
                 color: active ? 'text.primary' : 'text.secondary',
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</Typography>
-              {p.open > 0 && (
-                <Typography sx={{ fontSize: 10.5, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>{p.open}</Typography>
+              {p.openCount > 0 && (
+                <Typography sx={{ fontSize: 10.5, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>{p.openCount}</Typography>
               )}
             </ListItemButton>
           );
@@ -96,8 +98,8 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
       <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
         <FluxAvatar user={me} size={26}/>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.1 }}>{me.name}</Typography>
-          <Typography sx={{ fontSize: 10.5, color: 'text.secondary', lineHeight: 1.1 }}>{me.role}</Typography>
+          <Typography sx={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.1 }}>{me?.name}</Typography>
+          <Typography sx={{ fontSize: 10.5, color: 'text.secondary', lineHeight: 1.1 }}>{me?.workspaceRole}</Typography>
         </Box>
         <IconButton size="small"><SettingsIcon/></IconButton>
       </Box>

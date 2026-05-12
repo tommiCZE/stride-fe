@@ -3,7 +3,7 @@ import { useNavigate, useMatch } from 'react-router-dom';
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useUiStore } from '../store/ui-store';
-import { PROJECTS } from '../mocks/data';
+import { useProjects } from '../hooks/useProjects';
 import { BoardIcon, BacklogIcon, ListIcon, ReportsIcon, SettingsIcon, PlusIcon } from '../components/icons/icons';
 
 export default function ProjectTopbar() {
@@ -14,10 +14,12 @@ export default function ProjectTopbar() {
   const { openCreateModal } = useUiStore();
   const { t } = useTranslation();
 
+  const { data: projects = [] } = useProjects();
+
   if (!match) return null;
 
   const { projectId, view } = match.params;
-  const project = PROJECTS.find(p => p.id === projectId);
+  const project = projects.find(p => p.id === projectId);
   if (!project) return null;
 
   const tab = (tabView: string, label: string, icon: ReactElement) => {
@@ -45,7 +47,7 @@ export default function ProjectTopbar() {
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography sx={{ fontSize: 14, fontWeight: 600, lineHeight: 1,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{project.name}</Typography>
-          {!isMobile && <Typography sx={{ fontSize: 11, color: 'text.secondary', lineHeight: 1.4 }}>{project.key} · {project.tasks} {t('project.tasks')}</Typography>}
+          {!isMobile && <Typography sx={{ fontSize: 11, color: 'text.secondary', lineHeight: 1.4 }}>{project.key} · {project.taskCount} {t('project.tasks')}</Typography>}
         </Box>
         <Box
           component="button"

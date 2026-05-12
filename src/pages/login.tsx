@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/auth-store';
+import { authApi } from '../api/auth';
 import StrideLogoIcon from '../components/icons/stride-logo-icon';
 
 type FormData = { email: string; password: string };
@@ -40,28 +41,17 @@ export default function Login() {
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { email: 'tomas.knytl@gmail.com', password: '' },
+    defaultValues: { email: 'tomas.knytl@gmail.com', password: 'stride123' },
   });
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     setServerError('');
     try {
-      const res = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(t('login.invalidCredentials'));
-      const json = await res.json();
-      login(json.token);
+      const res = await authApi.login(data);
+      login(res.token, res.user);
     } catch {
-      // Dev shortcut: accept mock login when API is unavailable
-      if (data.password === 'stride123') {
-        login('mock-jwt-token-dev');
-      } else {
-        setServerError(t('login.loginFailed'));
-      }
+      setServerError(t('login.loginFailed'));
     } finally {
       setLoading(false);
     }

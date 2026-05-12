@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Box, Button, Card, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, TextField, Typography, useTheme } from '@mui/material';
 import {
   DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
   closestCenter, useDroppable,
@@ -10,13 +10,14 @@ import {
   SortableContext, verticalListSortingStrategy, useSortable, arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { TASKS, SPRINTS, getUser } from '../mocks/data';
+import { useTasks, useUpdateTask } from '../hooks/useTasks';
+import { useSprints, useUpdateSprint, useCreateSprint } from '../hooks/useSprints';
 import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
 import { MonoKey, StatusBadge } from '../components/ui/ui';
 import { CaretIcon } from '../components/icons/icons';
-import type { Task } from '../types';
+import type { TaskSummaryDto } from '../api/types';
 
 function GripIcon() {
   return (
@@ -29,7 +30,7 @@ function GripIcon() {
 }
 
 interface RowProps {
-  task: Task;
+  task: TaskSummaryDto;
   onOpen: (id: string) => void;
   showEstimate?: boolean;
   isLast?: boolean;
@@ -38,6 +39,9 @@ interface RowProps {
 function SortableRow({ task: t, onOpen, showEstimate, isLast }: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: t.id });
+  const assignee = t.assigneeId
+    ? { color: t.assigneeColor ?? '#94a3b8', initials: t.assigneeInitials ?? '?' }
+    : undefined;
 
   return (
     <Box
@@ -52,22 +56,13 @@ function SortableRow({ task: t, onOpen, showEstimate, isLast }: RowProps) {
         '&:hover .grip': { opacity: 1 },
       }}
     >
-      <Box
-        className="grip"
-        {...attributes}
-        {...listeners}
-        sx={{
-          opacity: 0, cursor: 'grab', pl: 1, pr: 0.25, py: 0.85,
-          color: 'text.disabled', flexShrink: 0,
-          '&:active': { cursor: 'grabbing' },
-        }}
-      >
+      <Box className="grip" {...attributes} {...listeners}
+        sx={{ opacity: 0, cursor: 'grab', pl: 1, pr: 0.25, py: 0.85,
+          color: 'text.disabled', flexShrink: 0, '&:active': { cursor: 'grabbing' } }}>
         <GripIcon />
       </Box>
-      <Box
-        onClick={() => !isDragging && onOpen(t.id)}
-        sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 0.85, minWidth: 0, cursor: 'default' }}
-      >
+      <Box onClick={() => !isDragging && onOpen(t.id)}
+        sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 0.85, minWidth: 0, cursor: 'default' }}>
         <PriorityIcon priority={t.priority} />
         <TypeIcon type={t.type} size={13} />
         <MonoKey sx={{ minWidth: 60 }}>{t.key}</MonoKey>
@@ -80,7 +75,7 @@ function SortableRow({ task: t, onOpen, showEstimate, isLast }: RowProps) {
             {t.estimate ?? '—'}
           </Box>
         )}
-        <FluxAvatar user={t.assignee ? getUser(t.assignee) : undefined} size={18} />
+        <FluxAvatar user={assignee} size={18} />
       </Box>
     </Box>
   );
@@ -102,79 +97,92 @@ export default function Backlog() {
   const openTask = (id: string) => setSearchParams({ task: id });
   const theme = useTheme();
 
-  const sprints = SPRINTS.filter(s => s.project === projectId);
-  const [tasks, setTasks] = useState<Task[]>(() =>
-    TASKS.filter(t => t.project === projectId)
-  );
+  const { data: remoteTasks = [] } = useTasks(projectId!);
+  const { data: sprints = [] } = useSprints(projectId!);
+  const updateTask = useUpdateTask(projectId);
+  const updateSprint = useUpdateSprint(projectId!);
+  const createSprint = useCreateSprint();
+  const [newSprintName, setNewSprintName] = useState('');
+
+  const [localTasks, setLocalTasks] = useState<TaskSummaryDto[] | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const tasks = localTasks ?? remoteTasks;
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const sprintColor = (state: string) =>
-    state === 'active'    ? theme.palette.success.main
-    : state === 'planned' ? theme.palette.primary.main
+    state === 'ACTIVE'    ? theme.palette.success.main
+    : state === 'PLANNED' ? theme.palette.primary.main
     : theme.palette.text.secondary;
 
   const sprintLabel = (state: string) =>
-    state === 'active' ? 'Aktivní' : state === 'planned' ? 'Plánovaný' : 'Hotový';
+    state === 'ACTIVE' ? 'Aktivní' : state === 'PLANNED' ? 'Plánovaný' : 'Hotový';
 
   const getContainerTasks = (sprintId: string | null) =>
     sprintId === null
-      ? tasks.filter(t => !t.sprint)
-      : tasks.filter(t => t.sprint === sprintId);
+      ? tasks.filter(t => !t.sprintId)
+      : tasks.filter(t => t.sprintId === sprintId);
 
-  const handleDragStart = ({ active }: DragStartEvent) => setActiveId(active.id as string);
+  const handleDragStart = ({ active }: DragStartEvent) => {
+    setActiveId(active.id as string);
+    if (!localTasks) setLocalTasks([...remoteTasks]);
+  };
 
   const handleDragOver = ({ active, over }: DragOverEvent) => {
     if (!over) return;
     const overId = over.id as string;
 
-    setTasks(prev => {
-      const activeTask = prev.find(t => t.id === active.id);
-      if (!activeTask) return prev;
+    setLocalTasks(prev => {
+      const arr = prev ?? remoteTasks;
+      const activeTask = arr.find(t => t.id === active.id);
+      if (!activeTask) return arr;
 
-      const overTask = prev.find(t => t.id === overId);
+      const overTask = arr.find(t => t.id === overId);
       const targetSprint = overTask
-        ? (overTask.sprint ?? null)
+        ? (overTask.sprintId ?? null)
         : overId === 'backlog' ? null : overId;
 
-      const sourceSprint = activeTask.sprint ?? null;
-      if (sourceSprint === targetSprint) return prev;
+      const sourceSprint = activeTask.sprintId ?? null;
+      if (sourceSprint === targetSprint) return arr;
 
-      return prev.map(t =>
-        t.id === active.id
-          ? { ...t, sprint: targetSprint === null ? undefined : targetSprint }
-          : t
+      return arr.map(t =>
+        t.id === active.id ? { ...t, sprintId: targetSprint } : t
       );
     });
   };
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveId(null);
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id) { setLocalTasks(null); return; }
 
-    setTasks(prev => {
-      const activeTask = prev.find(t => t.id === active.id);
-      const overTask = prev.find(t => t.id === over.id);
-      if (!activeTask || !overTask) return prev;
+    const activeTask = tasks.find(t => t.id === active.id);
+    const overTask = tasks.find(t => t.id === over.id);
 
-      const activeSprint = activeTask.sprint ?? null;
-      const overSprint = overTask.sprint ?? null;
-      if (activeSprint !== overSprint) return prev;
+    // Reorder within same sprint
+    if (activeTask && overTask && activeTask.sprintId === overTask.sprintId) {
+      setLocalTasks(prev => {
+        const arr = prev ?? remoteTasks;
+        const bucket = arr.filter(t => t.sprintId === activeTask.sprintId);
+        const rest = arr.filter(t => t.sprintId !== activeTask.sprintId);
+        const from = bucket.findIndex(t => t.id === active.id);
+        const to = bucket.findIndex(t => t.id === over.id);
+        if (from === -1 || to === -1) return arr;
+        return [...rest, ...arrayMove(bucket, from, to)];
+      });
+      return;
+    }
 
-      const bucket = activeSprint === null
-        ? prev.filter(t => !t.sprint)
-        : prev.filter(t => t.sprint === activeSprint);
-      const rest = activeSprint === null
-        ? prev.filter(t => t.sprint)
-        : prev.filter(t => t.sprint !== activeSprint);
-
-      const oldIdx = bucket.findIndex(t => t.id === active.id);
-      const newIdx = bucket.findIndex(t => t.id === over.id);
-      if (oldIdx === -1 || newIdx === -1) return prev;
-
-      return [...rest, ...arrayMove(bucket, oldIdx, newIdx)];
-    });
+    // Sprint changed — persist to BE
+    const originalSprintId = remoteTasks.find(t => t.id === active.id)?.sprintId ?? null;
+    const newSprintId = activeTask?.sprintId ?? null;
+    if (newSprintId !== originalSprintId) {
+      updateTask.mutate(
+        { id: active.id as string, body: { sprintId: newSprintId } },
+        { onError: () => setLocalTasks(null), onSuccess: () => setLocalTasks(null) },
+      );
+    } else {
+      setLocalTasks(null);
+    }
   };
 
   const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
@@ -195,15 +203,30 @@ export default function Backlog() {
                 <Box>
                   <Typography sx={{ fontSize: 13.5, fontWeight: 700 }}>{sp.name}</Typography>
                   <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
-                    {new Date(sp.start).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })} –{' '}
-                    {new Date(sp.end).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })} · {sprintTasks.length} tasků · {totalE}h plán / {totalL}h logged
+                    {sp.startDate && new Date(sp.startDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
+                    {sp.startDate && sp.endDate && ' – '}
+                    {sp.endDate && new Date(sp.endDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
+                    {' · '}{sprintTasks.length} tasků · {totalE}h plán / {totalL}h logged
                   </Typography>
                 </Box>
                 <Box sx={{ flex: 1 }}/>
                 <StatusBadge badgeColor={sprintColor(sp.state)} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: 10.5 }}>
                   {sprintLabel(sp.state)}
                 </StatusBadge>
-                {sp.state === 'planned' && <Button size="small" variant="contained">Spustit sprint</Button>}
+                {sp.state === 'PLANNED' && (
+                  <Button size="small" variant="contained"
+                    disabled={updateSprint.isPending}
+                    onClick={() => updateSprint.mutate({ id: sp.id, body: { state: 'ACTIVE' } })}>
+                    Spustit sprint
+                  </Button>
+                )}
+                {sp.state === 'ACTIVE' && (
+                  <Button size="small" variant="outlined" color="inherit"
+                    disabled={updateSprint.isPending}
+                    onClick={() => updateSprint.mutate({ id: sp.id, body: { state: 'COMPLETED' } })}>
+                    Dokončit sprint
+                  </Button>
+                )}
               </Box>
               <DroppableList id={sp.id}>
                 <SortableContext items={sprintTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
@@ -231,6 +254,29 @@ export default function Backlog() {
               ))}
             </SortableContext>
           </DroppableList>
+          <Box sx={{ p: 1.5, borderTop: getContainerTasks(null).length > 0 ? 1 : 0, borderColor: 'divider',
+            display: 'flex', gap: 1, alignItems: 'center' }}>
+            <TextField
+              size="small" placeholder="Název nového sprintu…" value={newSprintName}
+              onChange={e => setNewSprintName(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && newSprintName.trim() && projectId) {
+                  createSprint.mutate({ name: newSprintName.trim(), projectId },
+                    { onSuccess: () => setNewSprintName('') });
+                }
+              }}
+              sx={{ flex: 1, '& .MuiInputBase-root': { height: 30, fontSize: 12.5 } }}
+            />
+            <Button size="small" variant="outlined"
+              disabled={!newSprintName.trim() || createSprint.isPending}
+              onClick={() => {
+                if (!newSprintName.trim() || !projectId) return;
+                createSprint.mutate({ name: newSprintName.trim(), projectId },
+                  { onSuccess: () => setNewSprintName('') });
+              }}>
+              Nový sprint
+            </Button>
+          </Box>
         </Card>
       </Box>
 

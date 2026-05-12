@@ -1,4 +1,4 @@
-import { TASK_TYPES } from '../../mocks/data';
+import { TASK_TYPES } from '../../constants/taskTypes';
 
 interface Props { type: string; size?: number }
 
@@ -7,10 +7,10 @@ export default function TypeIcon({ type, size = 14 }: Props) {
   if (!t) return null;
 
   const glyph = {
-    story: <path d="M5.5 10.5 L9 14 L15 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>,
-    task:  <path d="M5.5 10.5 L9 14 L15 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>,
-    bug:   <circle cx="10" cy="10" r="2.2" fill="#fff"/>,
-    epic:  <path d="M11 4 L6 11 L9.5 11 L9 16 L14 9 L10.5 9 Z" fill="#fff"/>,
+    STORY: <path d="M5.5 10.5 L9 14 L15 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>,
+    TASK:  <path d="M5.5 10.5 L9 14 L15 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>,
+    BUG:   <circle cx="10" cy="10" r="2.2" fill="#fff"/>,
+    EPIC:  <path d="M11 4 L6 11 L9.5 11 L9 16 L14 9 L10.5 9 Z" fill="#fff"/>,
   }[type];
 
   return (

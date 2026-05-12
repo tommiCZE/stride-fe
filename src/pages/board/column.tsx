@@ -1,24 +1,26 @@
 import { Box, IconButton, Typography } from '@mui/material';
+import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { getStatus } from '../../mocks/data';
-import { PlusIcon, MoreIcon } from '../../components/icons/icons';
+import { MoreIcon } from '../../components/icons/icons';
 import { SortableTaskCard } from './task-card';
-import type { Task } from '../../types';
+import type { TaskSummaryDto } from '../../api/types';
+import type { BoardStatus } from '../../constants/statuses';
 
 interface ColumnProps {
-  statusId: string;
-  tasks: Task[];
+  status: BoardStatus;
+  tasks: TaskSummaryDto[];
   onTaskClick: (id: string) => void;
 }
 
-export default function Column({ statusId, tasks, onTaskClick }: ColumnProps) {
-  const status = getStatus(statusId)!;
+export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
   const count = tasks.length;
   const isWipBreached = status.wip != null && count > status.wip;
+  const { setNodeRef, isOver } = useDroppable({ id: status.id });
 
   return (
     <Box sx={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column',
-      bgcolor: 'action.hover', borderRadius: 1.5, border: 1, borderColor: 'transparent',
+      bgcolor: 'action.hover', borderRadius: 1.5, border: 1,
+      borderColor: isOver ? 'primary.main' : 'transparent',
       maxHeight: '100%', minHeight: 0 }}>
       <Box sx={{ px: 1.25, py: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
         <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: status.color }}/>
@@ -33,11 +35,10 @@ export default function Column({ statusId, tasks, onTaskClick }: ColumnProps) {
           </Box>
         )}
         <Box sx={{ flex: 1 }}/>
-        <IconButton size="small" sx={{ p: 0.25 }}><PlusIcon/></IconButton>
         <IconButton size="small" sx={{ p: 0.25 }}><MoreIcon/></IconButton>
       </Box>
 
-      <Box sx={{ px: 1, pb: 1, display: 'flex', flexDirection: 'column', gap: 0.75,
+      <Box ref={setNodeRef} sx={{ px: 1, pb: 1, display: 'flex', flexDirection: 'column', gap: 0.75,
         overflowY: 'auto', flex: 1, minHeight: 0 }}>
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map(t => (
@@ -50,11 +51,6 @@ export default function Column({ statusId, tasks, onTaskClick }: ColumnProps) {
             Žádné tasky
           </Box>
         )}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, p: 0.5, borderRadius: 1,
-          color: 'text.disabled', fontSize: 11.5, cursor: 'default',
-          '&:hover': { bgcolor: 'action.hover', color: 'text.secondary' } }}>
-          <PlusIcon/> Přidat task
-        </Box>
       </Box>
     </Box>
   );

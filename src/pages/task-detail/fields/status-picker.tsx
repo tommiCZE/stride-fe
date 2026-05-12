@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Box, Menu, MenuItem } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { STATUSES, getStatus } from '../../../mocks/data';
+import { BOARD_STATUSES } from '../../../constants/statuses';
 
 export function StatusPicker({ statusId, onChange }: { statusId: string; onChange: (id: string) => void }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
-  const status = getStatus(statusId)!;
+  const status = BOARD_STATUSES.find(s => s.id === statusId) ?? BOARD_STATUSES[0];
+
   return (
     <>
       <Box onClick={e => setAnchor(e.currentTarget)}
@@ -19,7 +20,7 @@ export function StatusPicker({ statusId, onChange }: { statusId: string; onChang
         <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="m4 6 4 4 4-4"/></svg>
       </Box>
       <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
-        {STATUSES.map(s => (
+        {BOARD_STATUSES.map(s => (
           <MenuItem key={s.id} onClick={() => { onChange(s.id); setAnchor(null); }}>
             <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: s.color, mr: 1 }}/>
             {s.name}

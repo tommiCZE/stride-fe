@@ -15,6 +15,7 @@ interface Props {
   onCancel?: () => void;
   showToggle?: boolean;
   compact?: boolean;
+  onUploadImage?: (file: File) => Promise<string>;
 }
 
 export default function RichEditor({
@@ -25,6 +26,7 @@ export default function RichEditor({
   onCancel,
   showToggle = true,
   compact = false,
+  onUploadImage,
 }: Readonly<Props>) {
   const [editing, setEditing] = useState(initialEditable);
 
@@ -36,13 +38,25 @@ export default function RichEditor({
         compact={compact}
         onSave={json => { onSave?.(json); setEditing(false); }}
         onCancel={() => { setEditing(false); onCancel?.(); }}
+        onUploadImage={onUploadImage}
       />
     );
   }
 
+  const isEmpty = !blocks || (typeof blocks === 'string' && !blocks.trim());
+
   return (
     <Box sx={{ position: 'relative', '&:hover .flux-edit-pencil': { opacity: 1 } }}>
-      <RichContent blocks={blocks} />
+      {isEmpty && showToggle ? (
+        <Box onClick={() => setEditing(true)}
+          sx={{ px: 1, py: 0.75, borderRadius: 1, border: 1, borderStyle: 'dashed',
+            borderColor: 'divider', color: 'text.disabled', fontSize: 13.5, lineHeight: 1.6,
+            cursor: 'text', '&:hover': { borderColor: 'primary.main', color: 'text.secondary' } }}>
+          {placeholder}
+        </Box>
+      ) : (
+        <RichContent blocks={blocks} />
+      )}
       {showToggle && (
         <Tooltip title="Upravit">
           <Box className="flux-edit-pencil" onClick={() => setEditing(true)}
