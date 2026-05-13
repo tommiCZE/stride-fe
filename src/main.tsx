@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { buildTheme } from './theme';
 import { useUiStore } from './store/ui-store';
 import App from './App';
+import AppErrorBoundary from './components/error-boundary/app-error-boundary';
 import './locales';
 import './index.css';
 
@@ -21,7 +22,9 @@ function ThemedApp() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <App />
+      <AppErrorBoundary>
+        <App />
+      </AppErrorBoundary>
     </ThemeProvider>
   );
 }
