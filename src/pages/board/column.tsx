@@ -1,8 +1,12 @@
-import { Box, IconButton, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Box, IconButton, TextField, Typography } from '@mui/material';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { MoreIcon } from '../../components/icons/icons';
+import { useParams } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
+import { PlusIcon, MoreIcon } from '../../components/icons/icons';
 import { SortableTaskCard } from './task-card';
+import { useCreateTask } from '../../hooks/useTasks';
 import type { TaskSummaryDto } from '../../api/types';
 import type { BoardStatus } from '../../constants/statuses';
 
@@ -16,6 +20,42 @@ export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
   const count = tasks.length;
   const isWipBreached = status.wip != null && count > status.wip;
   const { setNodeRef, isOver } = useDroppable({ id: status.id });
+  const { projectId } = useParams<{ projectId: string }>();
+  const { enqueueSnackbar } = useSnackbar();
+  const createTask = useCreateTask();
+
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState('');
+
+  const resetAdding = () => {
+    setAdding(false);
+    setDraft('');
+  };
+
+  const submit = () => {
+    const title = draft.trim();
+    if (!title || !projectId || createTask.isPending) return;
+    createTask.mutate(
+      { projectId, title, status: status.id, type: 'TASK', priority: 'MEDIUM' },
+      {
+        onSuccess: () => {
+          resetAdding();
+          enqueueSnackbar('Task vytvořen', { variant: 'success' });
+        },
+        onError: () => {
+          enqueueSnackbar('Chyba při vytváření tasku', { variant: 'error' });
+        },
+      },
+    );
+  };
+
+  const handleBlur = () => {
+    if (!draft.trim()) {
+      resetAdding();
+      return;
+    }
+    submit();
+  };
 
   return (
     <Box sx={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column',
@@ -30,11 +70,12 @@ export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
         {status.wip && (
           <Box sx={{ ml: 0.25, fontSize: 9.5, fontWeight: 700, px: 0.5, borderRadius: 0.5,
             bgcolor: isWipBreached ? 'error.main' : 'action.selected',
-            color: isWipBreached ? '#fff' : 'text.secondary' }}>
+            color: isWipBreached ? 'common.white' : 'text.secondary' }}>
             WIP {status.wip}
           </Box>
         )}
         <Box sx={{ flex: 1 }}/>
+        <IconButton size="small" sx={{ p: 0.25 }} onClick={() => setAdding(true)}><PlusIcon/></IconButton>
         <IconButton size="small" sx={{ p: 0.25 }}><MoreIcon/></IconButton>
       </Box>
 
@@ -45,10 +86,48 @@ export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
             <SortableTaskCard key={t.id} task={t} onClick={() => onTaskClick(t.id)}/>
           ))}
         </SortableContext>
-        {tasks.length === 0 && (
+        {tasks.length === 0 && !adding && (
           <Box sx={{ p: 2, textAlign: 'center', color: 'text.disabled', fontSize: 11.5,
             border: 1, borderColor: 'divider', borderStyle: 'dashed', borderRadius: 1 }}>
             Žádné tasky
+          </Box>
+        )}
+        {adding ? (
+          <TextField
+            autoFocus
+            value={draft}
+            disabled={createTask.isPending}
+            placeholder="Název úkolu…"
+            onChange={e => setDraft(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                submit();
+              } else if (e.key === 'Escape') {
+                e.preventDefault();
+                resetAdding();
+              }
+            }}
+            sx={{ '& .MuiOutlinedInput-root': { fontSize: 12.5, bgcolor: 'background.paper' },
+              '& .MuiOutlinedInput-input': { px: 1, py: 0.75 } }}
+          />
+        ) : (
+          <Box
+            role="button"
+            tabIndex={0}
+            onClick={() => setAdding(true)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setAdding(true);
+              }
+            }}
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, p: 0.5, borderRadius: 1,
+              color: 'text.disabled', fontSize: 11.5, cursor: 'pointer', userSelect: 'none',
+              '&:hover': { bgcolor: 'action.hover', color: 'text.secondary' },
+              '&:focus-visible': { outline: 1, outlineColor: 'primary.main', outlineOffset: 1 } }}>
+            <PlusIcon/> Přidat úkol
           </Box>
         )}
       </Box>
