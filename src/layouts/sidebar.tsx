@@ -8,7 +8,7 @@ import StrideLogoIcon from '../components/icons/stride-logo-icon';
 import FluxAvatar from '../components/flux-avatar';
 import {
   PlusIcon, BellIcon, DashboardIcon, ReportsIcon, SettingsIcon,
-  CaretIcon, CheckIcon, TeamIcon,
+  CaretIcon, CheckIcon, TeamIcon, CalendarIcon,
 } from '../components/icons/icons';
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -57,6 +57,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         {navItem('/dashboard', t('nav.dashboard'), <DashboardIcon/>)}
         {navItem('/inbox',     t('nav.inbox'),     <BellIcon/>,   3)}
         {navItem('/my-work',   t('nav.myWork'),    <CheckIcon/>,  7)}
+        {navItem('/calendar',  t('nav.calendar'),  <CalendarIcon/>)}
         {navItem('/reports',   t('nav.reports'),   <ReportsIcon/>)}
         {navItem('/team',      t('nav.team'),      <TeamIcon/>)}
       </Box>

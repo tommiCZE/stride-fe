@@ -5,6 +5,7 @@ const cs = {
     myWork: 'Moje práce',
     reports: 'Reporty',
     team: 'Tým',
+    calendar: 'Kalendář',
     projects: 'Projekty',
   },
   project: {

@@ -5,6 +5,7 @@ const en = {
     myWork: 'My Work',
     reports: 'Reports',
     team: 'Team',
+    calendar: 'Calendar',
     projects: 'Projects',
   },
   project: {

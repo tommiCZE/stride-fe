@@ -1,4 +1,6 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet, useSearchParams } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material';
 import { useAuthStore } from './store/auth-store';
 import { useUiStore } from './store/ui-store';
 import AppLayout from './layouts/app-layout';
@@ -16,6 +18,16 @@ import Profile from './pages/profile';
 import CreateTaskModal from './components/create-task-modal';
 import KeyboardHelpDialog from './components/keyboard-help/keyboard-help-dialog';
 import { useKeyboardShortcuts } from './hooks/use-keyboard-shortcuts';
+
+const Calendar = lazy(() => import('./pages/calendar'));
+
+function PageFallback() {
+  return (
+    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+      <CircularProgress size={20}/>
+    </Box>
+  );
+}
 
 function ProtectedLayout() {
   const token = useAuthStore(s => s.token);
@@ -50,6 +62,7 @@ const router = createBrowserRouter([
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'inbox',     element: <MyWork /> },
       { path: 'my-work',   element: <MyWork /> },
+      { path: 'calendar',  element: <Suspense fallback={<PageFallback />}><Calendar /></Suspense> },
       { path: 'reports',   element: <Reports /> },
       { path: 'team',      element: <Team /> },
       { path: 'profile',   element: <Profile /> },
