@@ -17,6 +17,7 @@ import Login from './pages/login';
 import Profile from './pages/profile';
 import CreateTaskModal from './components/create-task-modal';
 import KeyboardHelpDialog from './components/keyboard-help/keyboard-help-dialog';
+import CommandPalette from './components/command-palette/CommandPalette';
 import { useKeyboardShortcuts } from './hooks/use-keyboard-shortcuts';
 
 const Calendar = lazy(() => import('./pages/calendar'));
@@ -82,11 +83,12 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  const { open, setOpen } = useKeyboardShortcuts();
+  const { open, setOpen, paletteOpen, setPaletteOpen } = useKeyboardShortcuts();
   return (
     <>
       <RouterProvider router={router} />
       <KeyboardHelpDialog open={open} onClose={() => setOpen(false)} />
+      {paletteOpen && <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />}
     </>
   );
 }

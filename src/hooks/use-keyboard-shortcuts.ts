@@ -11,17 +11,30 @@ function isEditableTarget(target: EventTarget | null): boolean {
 /**
  * Global keyboard shortcuts for the app shell.
  * - `?` opens the keyboard help dialog (unless focus is in an editable field)
- * - `Escape` closes it
+ * - `Cmd/Ctrl+K` opens the global command palette (works even from inputs)
+ * - `Escape` closes whichever overlay is open
  *
  * `e.key === '?'` is layout-agnostic — the browser reports the resulting
  * character regardless of which physical key/modifier produces it.
  */
 export function useKeyboardShortcuts() {
   const [open, setOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Cmd/Ctrl+K — toggles command palette, intentionally works in inputs too.
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setPaletteOpen(prev => !prev);
+        return;
+      }
+
       if (e.key === 'Escape') {
+        if (paletteOpen) {
+          setPaletteOpen(false);
+          return;
+        }
         if (open) setOpen(false);
         return;
       }
@@ -35,7 +48,7 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [open]);
+  }, [open, paletteOpen]);
 
-  return { open, setOpen };
+  return { open, setOpen, paletteOpen, setPaletteOpen };
 }
