@@ -2,29 +2,28 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Paper, Popper, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { TASKS, getStatus } from '../../../mocks/data';
-import type { Task } from '../../../types';
-
-/**
- * Wraps editor content and adds:
- *   1. click handler on `.issue-link` → navigate to /projects/<projectId>/board?task=<id>
- *   2. hover tooltip on `.issue-link` → title + status badge (MUI Popper)
- *
- * Uses event delegation so this works for both editable and read-only editors
- * without TipTap NodeView complexity.
- */
+import { useQueryClient } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
+import { BOARD_STATUSES } from '../../../constants/statuses';
+import type { TaskSummaryDto } from '../../../api/types';
 
 interface HoverState {
   el: HTMLElement;
-  task: Task;
+  task: TaskSummaryDto;
 }
 
-function lookupTaskByKey(key: string): Task | undefined {
-  return TASKS.find(t => t.key === key);
+function lookupTaskByKey(qc: QueryClient, key: string): TaskSummaryDto | undefined {
+  const queries = qc.getQueriesData<TaskSummaryDto[]>({ queryKey: ['tasks', 'list'] });
+  for (const [, list] of queries) {
+    const match = list?.find(t => t.key === key);
+    if (match) return match;
+  }
+  return undefined;
 }
 
 export function IssueLinkLayer({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [hover, setHover] = useState<HoverState | null>(null);
 
@@ -44,9 +43,9 @@ export function IssueLinkLayer({ children }: { children: React.ReactNode }) {
       event.stopPropagation();
       const key = link.getAttribute('data-issue-key');
       if (!key) return;
-      const task = lookupTaskByKey(key);
-      if (!task) return; // task not found → do nothing
-      navigate(`/projects/${task.project}/board?task=${task.id}`);
+      const task = lookupTaskByKey(qc, key);
+      if (!task) return;
+      navigate(`/projects/${task.projectId}/board?task=${task.id}`);
     };
 
     const onMouseOver = (event: MouseEvent) => {
@@ -54,7 +53,7 @@ export function IssueLinkLayer({ children }: { children: React.ReactNode }) {
       if (!link) return;
       const key = link.getAttribute('data-issue-key');
       if (!key) return;
-      const task = lookupTaskByKey(key);
+      const task = lookupTaskByKey(qc, key);
       if (!task) return;
       setHover(prev => (prev?.el === link ? prev : { el: link, task }));
     };
@@ -75,7 +74,7 @@ export function IssueLinkLayer({ children }: { children: React.ReactNode }) {
       container.removeEventListener('mouseover', onMouseOver);
       container.removeEventListener('mouseout', onMouseOut);
     };
-  }, [navigate]);
+  }, [navigate, qc]);
 
   return (
     <Box ref={containerRef}>
@@ -93,8 +92,8 @@ export function IssueLinkLayer({ children }: { children: React.ReactNode }) {
   );
 }
 
-function IssueLinkTooltipContent({ task }: { task: Task }) {
-  const status = getStatus(task.status);
+function IssueLinkTooltipContent({ task }: { task: TaskSummaryDto }) {
+  const status = BOARD_STATUSES.find(s => s.id === task.status);
   return (
     <Paper
       elevation={6}

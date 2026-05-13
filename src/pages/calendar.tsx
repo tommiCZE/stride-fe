@@ -7,8 +7,10 @@ import type { SelectChangeEvent } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import dayjs, { Dayjs } from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { TASKS, PROJECTS, getStatus, getProject } from '../mocks/data';
-import type { Task } from '../types';
+import { useProjects } from '../hooks/useProjects';
+import { useAllProjectTasks } from '../hooks/useTasks';
+import { BOARD_STATUSES } from '../constants/statuses';
+import type { TaskSummaryDto } from '../api/types';
 import PriorityIcon from '../components/icons/priority-icon';
 import { CaretIcon } from '../components/icons/icons';
 import { ColorDot } from '../components/ui/ui';
@@ -26,12 +28,12 @@ function buildMonthGrid(anchor: Dayjs): Dayjs[] {
 }
 
 interface TaskPillProps {
-  task: Task;
+  task: TaskSummaryDto;
   onOpen: (id: string) => void;
 }
 
 function TaskPill({ task, onOpen }: TaskPillProps) {
-  const status = getStatus(task.status);
+  const status = BOARD_STATUSES.find(s => s.id === task.status);
   const color = status?.color ?? '#64748b';
   return (
     <Tooltip title={`${task.key} — ${task.title}`} placement="top" disableInteractive>
@@ -78,7 +80,7 @@ interface DayCellProps {
   day: Dayjs;
   isCurrentMonth: boolean;
   isToday: boolean;
-  tasks: Task[];
+  tasks: TaskSummaryDto[];
   onOpen: (id: string) => void;
 }
 
@@ -153,24 +155,25 @@ export default function Calendar() {
   const [anchor, setAnchor] = useState<Dayjs>(() => dayjs());
   const [projectId, setProjectId] = useState<string>(ALL_PROJECTS);
 
+  const { data: projects = [] } = useProjects();
+  const projectIds = projectId === ALL_PROJECTS ? projects.map(p => p.id) : [projectId];
+  const { data: allTasks } = useAllProjectTasks(projectIds);
+
   const today = dayjs();
   const grid = useMemo(() => buildMonthGrid(anchor), [anchor]);
   const currentMonth = anchor.month();
 
   const tasksByDay = useMemo(() => {
-    const map = new Map<string, Task[]>();
-    const filtered = projectId === ALL_PROJECTS
-      ? TASKS
-      : TASKS.filter(task => task.project === projectId);
-    filtered.forEach(task => {
-      if (!task.due) return;
-      const key = dayjs(task.due).format('YYYY-MM-DD');
+    const map = new Map<string, TaskSummaryDto[]>();
+    allTasks.forEach(task => {
+      if (!task.dueDate) return;
+      const key = dayjs(task.dueDate).format('YYYY-MM-DD');
       const arr = map.get(key);
       if (arr) arr.push(task);
       else map.set(key, [task]);
     });
     return map;
-  }, [projectId]);
+  }, [allTasks]);
 
   const openTask = (id: string) => setSearchParams({ task: id });
 
@@ -183,7 +186,7 @@ export default function Calendar() {
   };
 
   const monthLabel = anchor.toDate().toLocaleDateString('cs-CZ', { month: 'long', year: 'numeric' });
-  const project = projectId === ALL_PROJECTS ? null : getProject(projectId);
+  const project = projectId === ALL_PROJECTS ? null : projects.find(p => p.id === projectId);
 
   return (
     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', bgcolor: 'background.default', minHeight: 0 }}>
@@ -207,7 +210,7 @@ export default function Calendar() {
           sx={{ minWidth: 180, fontSize: 13 }}
         >
           <MenuItem value={ALL_PROJECTS}>{t('nav.projects')} — vše</MenuItem>
-          {PROJECTS.map(p => (
+          {projects.map(p => (
             <MenuItem key={p.id} value={p.id}>
               <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
                 <ColorDot dotColor={p.color} dotSize={8} />
