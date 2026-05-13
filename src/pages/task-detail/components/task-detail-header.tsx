@@ -4,7 +4,9 @@ import TypeIcon from '../../../components/icons/type-icon';
 import {
   CaretRIcon, ClockIcon, PinIcon, PinFilledIcon,
   ExpandIcon, CollapseIcon, LinkIcon, MoreIcon, CloseIcon,
+  EyeIcon, EyeFilledIcon,
 } from '../../../components/icons/icons';
+import { useIsWatching, useToggleWatch } from '../../../hooks/useWatchers';
 import type { TaskDto, ProjectDto } from '../../../api/types';
 
 interface Props {
@@ -39,6 +41,25 @@ function CopyLinkButton({ taskId }: { taskId: string }) {
 
 export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, onPin, onExpand, onClose, onStartTimer }: Props) {
   const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
+  const isWatching = useIsWatching(task.id);
+  const toggleWatch = useToggleWatch(task.id);
+
+  const handleWatchClick = () => {
+    if (toggleWatch.isPending) return;
+    toggleWatch.mutate(isWatching, {
+      onSuccess: (nowWatching) => {
+        enqueueSnackbar(
+          nowWatching ? 'Sledujete tento úkol' : 'Přestali jste sledovat',
+          { variant: 'success' },
+        );
+      },
+      onError: () => {
+        enqueueSnackbar('Akci se nepodařilo provést', { variant: 'error' });
+      },
+    });
+  };
+
   return (
     <Box sx={{ px: { xs: 1.5, md: 2 }, py: 1, display: 'flex', alignItems: 'center', gap: 1,
       borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexWrap: 'wrap' }}>
@@ -55,6 +76,20 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
       <Button size="small" variant="outlined" startIcon={<ClockIcon/>} onClick={() => onStartTimer(task.key)}>
         {timer.taskKey === task.key && timer.running ? 'Stopnout timer' : 'Spustit timer'}
       </Button>
+      <Tooltip title={isWatching ? 'Přestat sledovat' : 'Sledovat'}>
+        <span>
+          <IconButton
+            size="small"
+            onClick={handleWatchClick}
+            disabled={toggleWatch.isPending}
+            sx={{ color: isWatching ? 'primary.main' : 'text.secondary' }}
+            aria-pressed={isWatching}
+            aria-label={isWatching ? 'Přestat sledovat' : 'Sledovat'}
+          >
+            {isWatching ? <EyeFilledIcon/> : <EyeIcon/>}
+          </IconButton>
+        </span>
+      </Tooltip>
       <Tooltip title={pinned ? 'Odepnout' : 'Připnout panel'}>
         <IconButton size="small" onClick={onPin} sx={{ color: pinned ? 'primary.main' : 'text.secondary' }}>
           {pinned ? <PinFilledIcon/> : <PinIcon/>}

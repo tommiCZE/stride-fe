@@ -1,4 +1,4 @@
-import { Box, Divider, Typography } from '@mui/material';
+import { Box, Divider, Tooltip, Typography } from '@mui/material';
 import { SectionLabel } from '../../../components/ui/ui';
 import FluxAvatar from '../../../components/flux-avatar';
 import { FieldRow } from '../fields/field-helpers';
@@ -7,6 +7,7 @@ import {
   SprintEditor, LabelsEditor, EstimateEditor, DueDateEditor, LoggedBar,
   type PatchFn,
 } from '../fields/field-editors';
+import { useWatchers } from '../../../hooks/useWatchers';
 import type { TaskDto } from '../../../api/types';
 
 interface Props {
@@ -15,6 +16,8 @@ interface Props {
 }
 
 export default function TaskDetailSidebar({ task, onPatch }: Props) {
+  const { data: watchers } = useWatchers(task.id);
+
   return (
     <Box sx={{ borderLeft: { xs: 0, md: 1 }, borderTop: { xs: 1, md: 0 }, borderColor: 'divider',
       bgcolor: 'background.paper', overflowY: 'auto', p: 2, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
@@ -58,6 +61,21 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
             Vytvořeno {new Date(task.createdAt).toLocaleDateString('cs-CZ')}
           </Typography>
         </>
+      )}
+      <Divider sx={{ my: 1 }}/>
+      <SectionLabel>Sledující</SectionLabel>
+      {watchers && watchers.length > 0 ? (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          {watchers.map(w => (
+            <Tooltip key={w.id} title={w.name}>
+              <span><FluxAvatar user={w} size={22}/></span>
+            </Tooltip>
+          ))}
+        </Box>
+      ) : (
+        <Typography sx={{ fontSize: 11.5, color: 'text.disabled' }}>
+          Nikdo zatím nesleduje
+        </Typography>
       )}
     </Box>
   );
