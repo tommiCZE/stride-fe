@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Box, InputAdornment, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Button, InputAdornment, TextField, Tooltip, Typography } from '@mui/material';
 import {
   DndContext, DragOverlay, MeasuringStrategy,
   PointerSensor, useSensor, useSensors, closestCorners,
@@ -10,11 +10,13 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { useTasks, useUpdateTask } from '../../hooks/useTasks';
 import { useSprints } from '../../hooks/useSprints';
 import { useAuthStore } from '../../store/auth-store';
+import { useUiStore } from '../../store/ui-store';
 import { BOARD_STATUSES } from '../../constants/statuses';
 import FluxAvatar from '../../components/flux-avatar';
-import { SearchIcon, FilterIcon } from '../../components/icons/icons';
+import { SearchIcon, FilterIcon, BoardIcon, PlusIcon } from '../../components/icons/icons';
 import Column from './column';
 import { TaskCard } from './task-card';
+import EmptyState from '../../components/empty-state/EmptyState';
 import type { TaskSummaryDto } from '../../api/types';
 
 export default function Board() {
@@ -26,6 +28,7 @@ export default function Board() {
   const [filterMine, setFilterMine] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localTasks, setLocalTasks] = useState<TaskSummaryDto[] | null>(null);
+  const openCreateModal = useUiStore(s => s.openCreateModal);
 
   const userId = useAuthStore(s => s.userId);
   const { data: remoteTasks = [] } = useTasks(projectId!);
@@ -143,21 +146,41 @@ export default function Board() {
         </Box>
       </Box>
 
-      <Box sx={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', px: 2, py: 2,
-        display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
-        <DndContext sensors={sensors} collisionDetection={closestCorners}
-          measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
-          onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-          {BOARD_STATUSES.map(s => (
-            <Column key={s.id} status={s}
-              tasks={filtered.filter(t => t.status === s.id)}
-              onTaskClick={openTask}/>
-          ))}
-          <DragOverlay>
-            {activeTask && <TaskCard task={activeTask} onClick={() => {}}/>}
-          </DragOverlay>
-        </DndContext>
-      </Box>
+      {tasks.length === 0 ? (
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <EmptyState
+            icon={<BoardIcon />}
+            title="Žádné úkoly v tomto sprintu"
+            description="Začni přidáním prvního úkolu. Můžeš ho přetáhnout mezi sloupci podle jeho stavu."
+            action={
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<PlusIcon />}
+                onClick={openCreateModal}
+              >
+                Vytvořit první úkol
+              </Button>
+            }
+          />
+        </Box>
+      ) : (
+        <Box sx={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', px: 2, py: 2,
+          display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+          <DndContext sensors={sensors} collisionDetection={closestCorners}
+            measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
+            onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
+            {BOARD_STATUSES.map(s => (
+              <Column key={s.id} status={s}
+                tasks={filtered.filter(t => t.status === s.id)}
+                onTaskClick={openTask}/>
+            ))}
+            <DragOverlay>
+              {activeTask && <TaskCard task={activeTask} onClick={() => {}}/>}
+            </DragOverlay>
+          </DndContext>
+        </Box>
+      )}
     </Box>
   );
 }

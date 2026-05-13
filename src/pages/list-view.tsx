@@ -6,7 +6,9 @@ import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
 import { MonoKey, StatusBadge, ColorDot } from '../components/ui/ui';
-import { FilterIcon } from '../components/icons/icons';
+import { FilterIcon, ListIcon, PlusIcon } from '../components/icons/icons';
+import EmptyState from '../components/empty-state/EmptyState';
+import { useUiStore } from '../store/ui-store';
 
 const COLS = [
   { key: 'key',      label: 'Key',      w: 84 },
@@ -25,6 +27,29 @@ export default function ListView() {
   const [, setSearchParams] = useSearchParams();
   const openTask = (id: string) => setSearchParams({ task: id });
   const { data: tasks = [] } = useTasks(projectId!);
+  const openCreateModal = useUiStore(s => s.openCreateModal);
+
+  if (tasks.length === 0) {
+    return (
+      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.paper', height: '100%' }}>
+        <EmptyState
+          icon={<ListIcon />}
+          title="Žádné úkoly"
+          description="V tomto projektu zatím nejsou žádné úkoly. Vytvoř první a začni sledovat práci."
+          action={
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<PlusIcon />}
+              onClick={openCreateModal}
+            >
+              Vytvořit úkol
+            </Button>
+          }
+        />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'background.paper', height: '100%' }}>

@@ -1,4 +1,4 @@
-import { Box, Card, Typography } from '@mui/material';
+import { Box, Button, Card, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProjects } from '../hooks/useProjects';
@@ -8,7 +8,8 @@ import { BOARD_STATUSES } from '../constants/statuses';
 import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
-import { PlusIcon } from '../components/icons/icons';
+import { PlusIcon, DashboardIcon } from '../components/icons/icons';
+import EmptyState from '../components/empty-state/EmptyState';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -113,6 +114,18 @@ export default function Dashboard() {
               <PlusIcon style={{ width: 12, height: 12 }}/> Nový projekt
             </Box>
           </Box>
+          {projects.length === 0 ? (
+            <EmptyState
+              icon={<DashboardIcon />}
+              title="Zatím žádné projekty"
+              description="Vytvoř svůj první projekt a začni organizovat tasky, sprinty a celý tým na jednom místě."
+              action={
+                <Button variant="contained" size="small" startIcon={<PlusIcon />}>
+                  Nový projekt
+                </Button>
+              }
+            />
+          ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', md: 'repeat(3,1fr)' }, gap: 1.5, p: 1.5 }}>
             {projects.map(p => {
               const done = p.taskCount - p.openCount;
@@ -144,6 +157,7 @@ export default function Dashboard() {
               );
             })}
           </Box>
+          )}
         </Card>
       </Box>
     </Box>

@@ -16,7 +16,8 @@ import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
 import { MonoKey, StatusBadge } from '../components/ui/ui';
-import { CaretIcon } from '../components/icons/icons';
+import { CaretIcon, BacklogIcon, PlusIcon } from '../components/icons/icons';
+import EmptyState from '../components/empty-state/EmptyState';
 import type { TaskSummaryDto } from '../api/types';
 
 function GripIcon() {
@@ -186,6 +187,24 @@ export default function Backlog() {
   };
 
   const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
+  const backlogTasks = getContainerTasks(null);
+
+  if (sprints.length === 0 && backlogTasks.length === 0) {
+    return (
+      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', height: '100%' }}>
+        <EmptyState
+          icon={<BacklogIcon />}
+          title="Zatím žádné sprinty"
+          description="Vytvoř první sprint a začni plánovat práci týmu. Tasky můžeš přetáhnout z backlogu do sprintu."
+          action={
+            <Button variant="contained" size="small" startIcon={<PlusIcon />}>
+              Vytvořit sprint
+            </Button>
+          }
+        />
+      </Box>
+    );
+  }
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter}
