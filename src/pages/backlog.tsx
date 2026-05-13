@@ -19,6 +19,7 @@ import PriorityIcon from '../components/icons/priority-icon';
 import { MonoKey, StatusBadge } from '../components/ui/ui';
 import { CaretIcon, BacklogIcon, PlusIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
+import QueryError from '../components/query-error/QueryError';
 import SprintBurndownChart from '../components/charts/SprintBurndownChart';
 import type { TaskSummaryDto } from '../api/types';
 
@@ -101,8 +102,18 @@ export default function Backlog() {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
 
-  const { data: remoteTasks = [] } = useTasks(projectId!);
-  const { data: sprints = [] } = useSprints(projectId!);
+  const {
+    data: remoteTasks = [],
+    isError: tasksError,
+    error: tasksErrorObj,
+    refetch: refetchTasks,
+  } = useTasks(projectId!);
+  const {
+    data: sprints = [],
+    isError: sprintsError,
+    error: sprintsErrorObj,
+    refetch: refetchSprints,
+  } = useSprints(projectId!);
   const updateTask = useUpdateTask(projectId);
   const updateSprint = useUpdateSprint(projectId!);
   const createSprint = useCreateSprint();
@@ -191,6 +202,20 @@ export default function Backlog() {
 
   const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
   const backlogTasks = getContainerTasks(null);
+
+  if (tasksError || sprintsError) {
+    return (
+      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', height: '100%' }}>
+        <QueryError
+          error={tasksError ? tasksErrorObj : sprintsErrorObj}
+          onRetry={() => {
+            if (tasksError) void refetchTasks();
+            if (sprintsError) void refetchSprints();
+          }}
+        />
+      </Box>
+    );
+  }
 
   if (sprints.length === 0 && backlogTasks.length === 0) {
     return (

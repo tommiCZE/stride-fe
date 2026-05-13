@@ -11,6 +11,7 @@ import PriorityIcon from '../components/icons/priority-icon';
 import { MonoKey, StatusBadge, ColorDot } from '../components/ui/ui';
 import { FilterIcon, ListIcon, PlusIcon, DownloadIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
+import QueryError from '../components/query-error/QueryError';
 import { useUiStore } from '../store/ui-store';
 
 const COLS = [
@@ -30,9 +31,22 @@ export default function ListView() {
   const [, setSearchParams] = useSearchParams();
   const { enqueueSnackbar } = useSnackbar();
   const openTask = (id: string) => setSearchParams({ task: id });
-  const { data: tasks = [] } = useTasks(projectId!);
+  const {
+    data: tasks = [],
+    isError: tasksError,
+    error: tasksErrorObj,
+    refetch: refetchTasks,
+  } = useTasks(projectId!);
   const { data: projects = [] } = useProjects();
   const openCreateModal = useUiStore(s => s.openCreateModal);
+
+  if (tasksError) {
+    return (
+      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.paper', height: '100%' }}>
+        <QueryError error={tasksErrorObj} onRetry={() => { void refetchTasks(); }} />
+      </Box>
+    );
+  }
 
   if (tasks.length === 0) {
     return (

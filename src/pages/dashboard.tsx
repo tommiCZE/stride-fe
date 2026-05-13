@@ -9,6 +9,7 @@ import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
 import { PlusIcon, DashboardIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
+import QueryError from '../components/query-error/QueryError';
 import ActivityFeed from '../components/activity-feed';
 
 export default function Dashboard() {
@@ -18,8 +19,18 @@ export default function Dashboard() {
 
   const me = useAuthStore(s => s.user);
   const userId = useAuthStore(s => s.userId);
-  const { data: projects = [] } = useProjects();
-  const { data: allTasks } = useAllProjectTasks(projects.map(p => p.id));
+  const {
+    data: projects = [],
+    isError: projectsError,
+    error: projectsErrorObj,
+    refetch: refetchProjects,
+  } = useProjects();
+  const {
+    data: allTasks,
+    isError: tasksError,
+    error: tasksErrorObj,
+    refetch: refetchAllTasks,
+  } = useAllProjectTasks(projects.map(p => p.id));
   const myTasks = allTasks.filter(t => t.assigneeId === userId);
 
   const today = new Date();
@@ -61,7 +72,16 @@ export default function Dashboard() {
             <Box sx={{ flex: 1 }}/>
             <Typography sx={{ fontSize: 11.5, color: 'primary.main', cursor: 'default' }}>Vše →</Typography>
           </Box>
-          {myTasks.slice(0, 6).map(t => {
+          {tasksError && (
+            <Box sx={{ p: 1.5 }}>
+              <QueryError
+                compact
+                error={tasksErrorObj}
+                onRetry={() => { void refetchAllTasks(); }}
+              />
+            </Box>
+          )}
+          {!tasksError && myTasks.slice(0, 6).map(t => {
             const status = BOARD_STATUSES.find(s => s.id === t.status);
             return (
               <Box key={t.id} onClick={() => openTask(t.id)}
@@ -84,7 +104,7 @@ export default function Dashboard() {
               </Box>
             );
           })}
-          {myTasks.length === 0 && (
+          {!tasksError && myTasks.length === 0 && (
             <Box sx={{ px: 1.5, py: 2, color: 'text.disabled', fontSize: 12.5, textAlign: 'center' }}>
               Žádné přiřazené tasky
             </Box>
@@ -114,7 +134,14 @@ export default function Dashboard() {
               <PlusIcon style={{ width: 12, height: 12 }}/> Nový projekt
             </Box>
           </Box>
-          {projects.length === 0 ? (
+          {projectsError ? (
+            <Box sx={{ p: 1.5 }}>
+              <QueryError
+                error={projectsErrorObj}
+                onRetry={() => { void refetchProjects(); }}
+              />
+            </Box>
+          ) : projects.length === 0 ? (
             <EmptyState
               icon={<DashboardIcon />}
               title="Zatím žádné projekty"

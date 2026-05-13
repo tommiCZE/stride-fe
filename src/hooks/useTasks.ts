@@ -56,9 +56,13 @@ export function useAllProjectTasks(projectIds: string[]) {
       enabled: !!id,
     })),
   });
+  const erroredResult = results.find(r => r.isError);
   return {
     data: results.flatMap(r => r.data ?? []),
     isLoading: results.some(r => r.isLoading),
+    isError: results.some(r => r.isError),
+    error: erroredResult?.error ?? null,
+    refetch: () => Promise.all(results.map(r => r.refetch())),
   };
 }
 

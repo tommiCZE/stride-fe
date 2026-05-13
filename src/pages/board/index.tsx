@@ -25,6 +25,7 @@ import Column from './column';
 import { TaskCard } from './task-card';
 import SaveFilterDialog from './save-filter-dialog';
 import EmptyState from '../../components/empty-state/EmptyState';
+import QueryError from '../../components/query-error/QueryError';
 import type { TaskSummaryDto } from '../../api/types';
 
 export default function Board() {
@@ -39,7 +40,12 @@ export default function Board() {
   const openCreateModal = useUiStore(s => s.openCreateModal);
 
   const userId = useAuthStore(s => s.userId);
-  const { data: remoteTasks = [] } = useTasks(projectId!);
+  const {
+    data: remoteTasks = [],
+    isError: tasksError,
+    error: tasksErrorObj,
+    refetch: refetchTasks,
+  } = useTasks(projectId!);
   const { data: sprints = [] } = useSprints(projectId!);
   const updateTask = useUpdateTask(projectId);
 
@@ -293,7 +299,9 @@ export default function Board() {
         onSave={handleSaveCurrent}
       />
 
-      {tasks.length === 0 ? (
+      {tasksError ? (
+        <QueryError error={tasksErrorObj} onRetry={() => { void refetchTasks(); }} />
+      ) : tasks.length === 0 ? (
         <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <EmptyState
             icon={<BoardIcon />}

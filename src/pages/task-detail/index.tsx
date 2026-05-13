@@ -9,6 +9,7 @@ import { useTask, useUpdateTask } from '../../hooks/useTasks';
 import { useProjects } from '../../hooks/useProjects';
 import { useUiStore } from '../../store/ui-store';
 import RichEditor from '../../components/editor/rich-editor';
+import QueryError from '../../components/query-error/QueryError';
 import { SectionLabel, ColorPill, ColorDot } from '../../components/ui/ui';
 import PriorityIcon from '../../components/icons/priority-icon';
 import { StatusPicker } from './fields/status-picker';
@@ -76,7 +77,7 @@ export default function TaskDetail() {
   });
   const [tab, setTab] = useState<'comments' | 'dev' | 'worklog' | 'activity' | 'attachments'>('comments');
 
-  const { data: task, isLoading } = useTask(taskId ?? '');
+  const { data: task, isLoading, isError: taskError, error: taskErrorObj, refetch: refetchTask } = useTask(taskId ?? '');
   const { data: projects = [] } = useProjects();
   const updateTaskMutation = useUpdateTask(task?.projectId);
 
@@ -144,7 +145,9 @@ export default function TaskDetail() {
       <DetailPanel isFullscreen={isFullscreen} panelWidth={panelWidth} onClick={e => e.stopPropagation()}>
         {!isFullscreen && <ResizeHandle onMouseDown={handleResizeStart} />}
 
-        {isLoading || !task ? (
+        {taskError ? (
+          <QueryError error={taskErrorObj} onRetry={() => { void refetchTask(); }} />
+        ) : isLoading || !task ? (
           <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CircularProgress/>
           </Box>
