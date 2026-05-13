@@ -1,6 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Box, Button, InputAdornment, TextField, Tooltip, Typography } from '@mui/material';
+import {
+  Box, Button, Divider, InputAdornment, ListItemIcon, ListItemText,
+  Menu, MenuItem, TextField, Tooltip, Typography,
+} from '@mui/material';
+import { useSnackbar } from 'notistack';
 import {
   DndContext, DragOverlay, MeasuringStrategy,
   PointerSensor, useSensor, useSensors, closestCorners,
@@ -13,9 +17,13 @@ import { useAuthStore } from '../../store/auth-store';
 import { useUiStore } from '../../store/ui-store';
 import { BOARD_STATUSES } from '../../constants/statuses';
 import FluxAvatar from '../../components/flux-avatar';
-import { SearchIcon, FilterIcon, BoardIcon, PlusIcon } from '../../components/icons/icons';
+import {
+  SearchIcon, FilterIcon, BoardIcon, CaretIcon, StarIcon, PlusIcon, CloseIcon, CheckIcon,
+} from '../../components/icons/icons';
+import { useSavedFiltersStore } from '../../store/saved-filters-store';
 import Column from './column';
 import { TaskCard } from './task-card';
+import SaveFilterDialog from './save-filter-dialog';
 import EmptyState from '../../components/empty-state/EmptyState';
 import type { TaskSummaryDto } from '../../api/types';
 
@@ -34,6 +42,64 @@ export default function Board() {
   const { data: remoteTasks = [] } = useTasks(projectId!);
   const { data: sprints = [] } = useSprints(projectId!);
   const updateTask = useUpdateTask(projectId);
+
+  const { enqueueSnackbar } = useSnackbar();
+  const savedFilters = useSavedFiltersStore(s => s.filters);
+  const addSavedFilter = useSavedFiltersStore(s => s.addFilter);
+  const removeSavedFilter = useSavedFiltersStore(s => s.removeFilter);
+
+  const projectFilters = useMemo(
+    () => savedFilters.filter(f => f.projectId === projectId),
+    [savedFilters, projectId],
+  );
+
+  const [activeFilterId, setActiveFilterId] = useState<string | null>(null);
+  const [viewsAnchor, setViewsAnchor] = useState<HTMLElement | null>(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+
+  const activeFilter = activeFilterId
+    ? projectFilters.find(f => f.id === activeFilterId) ?? null
+    : null;
+
+  const closeViewsMenu = () => setViewsAnchor(null);
+
+  const applySavedFilter = (id: string) => {
+    const f = projectFilters.find(x => x.id === id);
+    if (!f) return;
+    setSearch(f.filters.search ?? '');
+    setFilterAssignee(f.filters.assigneeId ?? null);
+    setFilterMine(f.filters.mine ?? false);
+    setActiveFilterId(f.id);
+    closeViewsMenu();
+  };
+
+  const clearFilters = () => {
+    setSearch('');
+    setFilterAssignee(null);
+    setFilterMine(false);
+    setActiveFilterId(null);
+    closeViewsMenu();
+  };
+
+  const handleSaveCurrent = (name: string) => {
+    if (!projectId) return;
+    const created = addSavedFilter(name, projectId, {
+      search: search || undefined,
+      assigneeId: filterAssignee,
+      mine: filterMine,
+    });
+    setActiveFilterId(created.id);
+    setSaveDialogOpen(false);
+    enqueueSnackbar('Filtr uložen', { variant: 'success' });
+  };
+
+  const handleDeleteActive = () => {
+    if (!activeFilter) return;
+    removeSavedFilter(activeFilter.id);
+    setActiveFilterId(null);
+    closeViewsMenu();
+    enqueueSnackbar('Filtr smazán', { variant: 'info' });
+  };
 
   const tasks = localTasks ?? remoteTasks;
 
@@ -144,7 +210,88 @@ export default function Board() {
           fontSize: 12, color: 'text.secondary', bgcolor: 'action.hover', cursor: 'default' }}>
           <FilterIcon/> Filtry
         </Box>
+        <Tooltip title="Uložená zobrazení filtrů">
+          <Box
+            onClick={(e) => setViewsAnchor(e.currentTarget)}
+            sx={{
+              display: 'flex', alignItems: 'center', gap: 0.5,
+              px: 1, py: 0.4, borderRadius: 1,
+              fontSize: 12, fontWeight: activeFilter ? 600 : 400,
+              bgcolor: activeFilter ? 'primary.main' : 'action.hover',
+              color: activeFilter ? 'primary.contrastText' : 'text.secondary',
+              cursor: 'default', maxWidth: 180, overflow: 'hidden',
+              textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}
+          >
+            <StarIcon/>
+            <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {activeFilter ? activeFilter.name : 'Uložená zobrazení'}
+            </Box>
+            <CaretIcon/>
+          </Box>
+        </Tooltip>
+
+        <Menu
+          anchorEl={viewsAnchor}
+          open={!!viewsAnchor}
+          onClose={closeViewsMenu}
+          slotProps={{ paper: { sx: { minWidth: 240, mt: 0.5 } } }}
+        >
+          <MenuItem onClick={clearFilters} selected={!activeFilterId}>
+            <ListItemIcon sx={{ minWidth: 28 }}>
+              {!activeFilterId ? <CheckIcon/> : <Box sx={{ width: 12 }}/>}
+            </ListItemIcon>
+            <ListItemText
+              primary="Bez filtru"
+              slotProps={{ primary: { sx: { fontSize: 13 } } }}
+            />
+          </MenuItem>
+
+          {projectFilters.length > 0 && <Divider/>}
+
+          {projectFilters.map(f => (
+            <MenuItem
+              key={f.id}
+              onClick={() => applySavedFilter(f.id)}
+              selected={activeFilterId === f.id}
+            >
+              <ListItemIcon sx={{ minWidth: 28 }}>
+                {activeFilterId === f.id ? <CheckIcon/> : <Box sx={{ width: 12 }}/>}
+              </ListItemIcon>
+              <ListItemText
+                primary={f.name}
+                slotProps={{ primary: { sx: { fontSize: 13 } } }}
+              />
+            </MenuItem>
+          ))}
+
+          <Divider/>
+
+          <MenuItem onClick={() => { closeViewsMenu(); setSaveDialogOpen(true); }}>
+            <ListItemIcon sx={{ minWidth: 28 }}><PlusIcon/></ListItemIcon>
+            <ListItemText
+              primary="Uložit aktuální filtr…"
+              slotProps={{ primary: { sx: { fontSize: 13 } } }}
+            />
+          </MenuItem>
+
+          {activeFilter && (
+            <MenuItem onClick={handleDeleteActive} sx={{ color: 'error.main' }}>
+              <ListItemIcon sx={{ minWidth: 28, color: 'error.main' }}><CloseIcon/></ListItemIcon>
+              <ListItemText
+                primary="Smazat tento filtr"
+                slotProps={{ primary: { sx: { fontSize: 13 } } }}
+              />
+            </MenuItem>
+          )}
+        </Menu>
       </Box>
+
+      <SaveFilterDialog
+        open={saveDialogOpen}
+        onClose={() => setSaveDialogOpen(false)}
+        onSave={handleSaveCurrent}
+      />
 
       {tasks.length === 0 ? (
         <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
