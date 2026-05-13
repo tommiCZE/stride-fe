@@ -1,4 +1,5 @@
 import { Box, Button, IconButton, Tooltip, Typography, useTheme } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import TypeIcon from '../../../components/icons/type-icon';
 import {
   CaretRIcon, ClockIcon, PinIcon, PinFilledIcon,
@@ -16,6 +17,24 @@ interface Props {
   onExpand: () => void;
   onClose: () => void;
   onStartTimer: (key: string) => void;
+}
+
+function CopyLinkButton({ taskId }: { taskId: string }) {
+  const { enqueueSnackbar } = useSnackbar();
+  const handleCopy = async () => {
+    const url = `${window.location.origin}${window.location.pathname}?task=${taskId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      enqueueSnackbar('Odkaz zkopírován', { variant: 'success' });
+    } catch {
+      enqueueSnackbar('Kopírování odkazu selhalo', { variant: 'error' });
+    }
+  };
+  return (
+    <Tooltip title="Kopírovat odkaz">
+      <IconButton size="small" onClick={handleCopy}><LinkIcon/></IconButton>
+    </Tooltip>
+  );
 }
 
 export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, onPin, onExpand, onClose, onStartTimer }: Props) {
@@ -46,7 +65,7 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
           {expanded ? <CollapseIcon/> : <ExpandIcon/>}
         </IconButton>
       </Tooltip>
-      <IconButton size="small"><LinkIcon/></IconButton>
+      <CopyLinkButton taskId={task.id}/>
       <IconButton size="small"><MoreIcon/></IconButton>
       <IconButton size="small" onClick={onClose}><CloseIcon/></IconButton>
     </Box>
