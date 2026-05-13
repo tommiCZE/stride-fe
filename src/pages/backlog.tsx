@@ -19,6 +19,7 @@ import PriorityIcon from '../components/icons/priority-icon';
 import { MonoKey, StatusBadge } from '../components/ui/ui';
 import { CaretIcon, BacklogIcon, PlusIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
+import SprintBurndownChart from '../components/charts/SprintBurndownChart';
 import type { TaskSummaryDto } from '../api/types';
 
 function GripIcon() {
@@ -255,6 +256,11 @@ export default function Backlog() {
                   </Button>
                 )}
               </Box>
+              {sp.state === 'ACTIVE' && (
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <SprintBurndownChart sprintId={sp.id} sprintName={sp.name} />
+                </Box>
+              )}
               <DroppableList id={sp.id}>
                 <SortableContext items={sprintTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                   {sprintTasks.map((t, i) => (
