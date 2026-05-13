@@ -106,6 +106,29 @@ export function editorContentSx(theme: Theme, compact?: boolean) {
       color: theme.palette.primary.dark,
     },
 
+    // Issue link – #KEY-NUM
+    '& .tiptap a.issue-link': {
+      display: 'inline-block',
+      padding: '0 4px',
+      borderRadius: '4px',
+      fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+      fontSize: '0.92em',
+      fontWeight: 600,
+      textDecoration: 'none',
+      color: theme.palette.primary.main,
+      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+      cursor: 'pointer',
+      lineHeight: 1.3,
+      verticalAlign: 'baseline',
+      transition: 'background-color 0.12s, border-color 0.12s',
+    },
+    '& .tiptap a.issue-link:hover': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.18),
+      borderColor: alpha(theme.palette.primary.main, 0.4),
+      color: theme.palette.primary.dark,
+    },
+
     // Zvýraznění (Highlight)
     '& .tiptap mark': {
       backgroundColor: alpha(theme.palette.warning.main, 0.35),

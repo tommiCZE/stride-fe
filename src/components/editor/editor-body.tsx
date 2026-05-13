@@ -16,6 +16,8 @@ import { alpha } from '@mui/material/styles';
 import type { AttachmentFile } from '../../types';
 import MenuBar, { BubbleToolbar } from './menu-bar';
 import { CalloutNode } from './callout-extension';
+import { IssueLink } from './extensions/issue-link';
+import { IssueLinkLayer } from './extensions/issue-link-handlers';
 import { editorContentSx } from './editor-content-styles';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -112,6 +114,7 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
       Underline,
       CharacterCount,
       TableKit,
+      IssueLink,
     ],
     content: initialContent,
     autofocus: 'end',
@@ -204,9 +207,11 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
         <Box sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'background.paper' }}>
           <MenuBar onUploadImage={onUploadImage} />
         </Box>
-        <Box sx={editorContentSx(theme, compact)}>
-          <Tiptap.Content />
-        </Box>
+        <IssueLinkLayer>
+          <Box sx={editorContentSx(theme, compact)}>
+            <Tiptap.Content />
+          </Box>
+        </IssueLinkLayer>
         <BubbleToolbar />
       </Tiptap>
 

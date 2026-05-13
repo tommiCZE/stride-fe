@@ -10,6 +10,8 @@ import { Underline } from '@tiptap/extension-underline';
 import { TableKit } from '@tiptap/extension-table';
 import { Box, useTheme } from '@mui/material';
 import { CalloutNode } from './callout-extension';
+import { IssueLink } from './extensions/issue-link';
+import { IssueLinkLayer } from './extensions/issue-link-handlers';
 import { editorContentSx } from './editor-content-styles';
 
 interface Props {
@@ -32,19 +34,22 @@ export default function TipTapContent({ json }: Props) {
       Highlight,
       Underline,
       TableKit,
+      IssueLink,
     ],
   });
 
   if (!editor) return null;
 
   return (
-    <Box sx={{
-      ...editorContentSx(theme),
-      '& .tiptap': { outline: 'none', padding: 0, minHeight: 0, fontSize: 13.5, lineHeight: 1.6 },
-    }}>
-      <Tiptap editor={editor}>
-        <Tiptap.Content />
-      </Tiptap>
-    </Box>
+    <IssueLinkLayer>
+      <Box sx={{
+        ...editorContentSx(theme),
+        '& .tiptap': { outline: 'none', padding: 0, minHeight: 0, fontSize: 13.5, lineHeight: 1.6 },
+      }}>
+        <Tiptap editor={editor}>
+          <Tiptap.Content />
+        </Tiptap>
+      </Box>
+    </IssueLinkLayer>
   );
 }
