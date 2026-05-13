@@ -19,6 +19,7 @@ import { CalloutNode } from './callout-extension';
 import { IssueLink } from './extensions/issue-link';
 import { IssueLinkLayer } from './extensions/issue-link-handlers';
 import { SlashMenu } from './extensions/slash-menu';
+import { PasteImage } from './extensions/paste-image';
 import { editorContentSx } from './editor-content-styles';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -117,11 +118,16 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
       TableKit,
       IssueLink,
       SlashMenu,
+      ...(onUploadImage ? [PasteImage.configure({ onUpload: onUploadImage })] : []),
     ],
     content: initialContent,
     autofocus: 'end',
     editorProps: {
       handlePaste: (view, event) => {
+        // When an uploader is configured the PasteImage extension owns
+        // image paste handling (it shows a placeholder + replaces on success).
+        if (onUploadImage) return false;
+
         const items = Array.from(event.clipboardData?.items ?? []);
         const imageItem = items.find(item => item.type.startsWith('image/'));
         if (!imageItem) return false;
@@ -130,12 +136,6 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
         if (!file) return false;
 
         event.preventDefault();
-        if (onUploadImage) {
-          onUploadImage(file).then(src => {
-            const imageNode = view.state.schema.nodes['image']?.create({ src });
-            if (imageNode) view.dispatch(view.state.tr.replaceSelectionWith(imageNode));
-          });
-        }
         return true;
       },
       handleDrop: (view, event, _slice, moved) => {
@@ -144,20 +144,30 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
         const files = Array.from(event.dataTransfer?.files ?? []);
         if (!files.length) return false;
 
-        event.preventDefault();
-
         const imageFiles = files.filter(f => f.type.startsWith('image/'));
         const docFiles = files.filter(f => !f.type.startsWith('image/'));
 
-        // Images → vložit inline na pozici dropu
-        if (imageFiles.length > 0 && onUploadImage) {
+        // If the only files are images and we have an uploader, let the
+        // PasteImage extension handle them (placeholder + replace UX).
+        if (onUploadImage && docFiles.length === 0) return false;
+
+        event.preventDefault();
+
+        // Mixed drop with uploader: PasteImage won't get the image files
+        // because preventDefault stopped re-dispatch. Upload them here.
+        if (onUploadImage && imageFiles.length > 0) {
           const dropPos = view.posAtCoords({ left: event.clientX, top: event.clientY });
-          imageFiles.forEach(imgFile => {
-            onUploadImage(imgFile).then(src => {
-              if (!dropPos) return;
-              const node = view.state.schema.nodes['image']?.create({ src });
-              if (node) view.dispatch(view.state.tr.insert(dropPos.pos, node));
-            });
+          const insertAt = dropPos?.pos ?? view.state.selection.from;
+          imageFiles.forEach(file => {
+            void onUploadImage(file)
+              .then(url => {
+                const node = view.state.schema.nodes['image']?.create({ src: url, alt: file.name });
+                if (node) view.dispatch(view.state.tr.insert(insertAt, node));
+              })
+              .catch((err: unknown) => {
+                const error = err instanceof Error ? err : new Error('Image upload failed');
+                window.dispatchEvent(new CustomEvent('stride-upload-error', { detail: { error, file } }));
+              });
           });
         }
 
