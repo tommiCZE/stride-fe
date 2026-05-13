@@ -10,6 +10,7 @@ import {
   SortableContext, verticalListSortingStrategy, useSortable, arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useSnackbar } from 'notistack';
 import { useTasks, useUpdateTask } from '../hooks/useTasks';
 import { useSprints, useUpdateSprint, useCreateSprint } from '../hooks/useSprints';
 import FluxAvatar from '../components/flux-avatar';
@@ -97,6 +98,7 @@ export default function Backlog() {
   const [, setSearchParams] = useSearchParams();
   const openTask = (id: string) => setSearchParams({ task: id });
   const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
 
   const { data: remoteTasks = [] } = useTasks(projectId!);
   const { data: sprints = [] } = useSprints(projectId!);
@@ -235,14 +237,20 @@ export default function Backlog() {
                 {sp.state === 'PLANNED' && (
                   <Button size="small" variant="contained"
                     disabled={updateSprint.isPending}
-                    onClick={() => updateSprint.mutate({ id: sp.id, body: { state: 'ACTIVE' } })}>
+                    onClick={() => updateSprint.mutate(
+                      { id: sp.id, body: { state: 'ACTIVE' } },
+                      { onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" aktivován`, { variant: 'success' }) },
+                    )}>
                     Spustit sprint
                   </Button>
                 )}
                 {sp.state === 'ACTIVE' && (
                   <Button size="small" variant="outlined" color="inherit"
                     disabled={updateSprint.isPending}
-                    onClick={() => updateSprint.mutate({ id: sp.id, body: { state: 'COMPLETED' } })}>
+                    onClick={() => updateSprint.mutate(
+                      { id: sp.id, body: { state: 'COMPLETED' } },
+                      { onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" dokončen`, { variant: 'success' }) },
+                    )}>
                     Dokončit sprint
                   </Button>
                 )}

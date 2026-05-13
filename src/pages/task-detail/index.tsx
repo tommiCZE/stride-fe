@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Box, CircularProgress, useMediaQuery } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
+import { useSnackbar } from 'notistack';
 import { DEV_DATA } from '../../mocks/data';
 import { useTask, useUpdateTask } from '../../hooks/useTasks';
 import { useProjects } from '../../hooks/useProjects';
@@ -16,6 +17,7 @@ import TaskDetailHeader from './components/task-detail-header';
 import TaskDetailTabs from './components/task-detail-tabs';
 import TaskDetailSidebar from './components/task-detail-sidebar';
 import { PRIORITIES } from '../../constants/priorities';
+import { BOARD_STATUSES } from '../../constants/statuses';
 import type { UpdateTaskRequest } from '../../api/types';
 import type { JSONContent } from '@tiptap/core';
 import { attachmentsApi } from '../../api/attachments';
@@ -61,6 +63,7 @@ export default function TaskDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { timer, startTimer } = useUiStore();
   const isMobile = useMediaQuery((t: Theme) => t.breakpoints.down('md'));
+  const { enqueueSnackbar } = useSnackbar();
 
   const taskId = searchParams.get('task');
   const closeTask = () => setSearchParams({});
@@ -77,9 +80,14 @@ export default function TaskDetail() {
   const { data: projects = [] } = useProjects();
   const updateTaskMutation = useUpdateTask(task?.projectId);
 
-  const patchTask = (patch: UpdateTaskRequest) => {
+  const patchTask = (patch: UpdateTaskRequest, opts?: { successMessage?: string }) => {
     if (!task) return;
-    updateTaskMutation.mutate({ id: task.id, body: patch });
+    updateTaskMutation.mutate(
+      { id: task.id, body: patch },
+      opts?.successMessage
+        ? { onSuccess: () => enqueueSnackbar(opts.successMessage!, { variant: 'success' }) }
+        : undefined,
+    );
   };
 
   useEffect(() => { setTab('comments'); }, [taskId]);
@@ -160,7 +168,13 @@ export default function TaskDetail() {
               <Box sx={{ overflowY: 'auto', p: 3 }}>
                 <TitleEditor title={task.title} onChange={title => patchTask({ title })}/>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 2, flexWrap: 'wrap' }}>
-                  <StatusPicker statusId={task.status} onChange={status => patchTask({ status })}/>
+                  <StatusPicker
+                    statusId={task.status}
+                    onChange={status => {
+                      const name = BOARD_STATUSES.find(s => s.id === status)?.name ?? status;
+                      patchTask({ status }, { successMessage: `Status změněn na "${name}"` });
+                    }}
+                  />
                   {prio && (
                     <ColorPill pillColor={prio.color}>
                       <PriorityIcon priority={task.priority}/> {prio.name}

@@ -74,6 +74,7 @@ const RAW_RUNTIME_STATE =
           ["i18next", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:26.0.10"],\
           ["i18next-browser-languagedetector", "npm:8.2.1"],\
           ["lowlight", "npm:3.3.0"],\
+          ["notistack", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.0.2"],\
           ["react", "npm:19.2.5"],\
           ["react-dom", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:19.2.5"],\
           ["react-error-boundary", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:6.1.1"],\
@@ -2967,6 +2968,13 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["clsx", [\
+      ["npm:1.2.1", {\
+        "packageLocation": "../../../../../../.yarn/berry/cache/clsx-npm-1.2.1-77792dc182-10c0.zip/node_modules/clsx/",\
+        "packageDependencies": [\
+          ["clsx", "npm:1.2.1"]\
+        ],\
+        "linkType": "HARD"\
+      }],\
       ["npm:2.1.1", {\
         "packageLocation": "../../../../../../.yarn/berry/cache/clsx-npm-2.1.1-96125b98be-10c0.zip/node_modules/clsx/",\
         "packageDependencies": [\
@@ -3655,6 +3663,28 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["goober", [\
+      ["npm:2.1.19", {\
+        "packageLocation": "../../../../../../.yarn/berry/cache/goober-npm-2.1.19-aac45abee4-10c0.zip/node_modules/goober/",\
+        "packageDependencies": [\
+          ["goober", "npm:2.1.19"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:02dd9316d6ca62de66b3b114ce21333eaec952c4e0421ad91b5dabbe8ecc0324f8065fea3f4005a0414a6a9ca245e2a6dfe16ea57ad5d9108036d8b64d201f56#npm:2.1.19", {\
+        "packageLocation": "./.yarn/__virtual__/goober-virtual-8c71de5bee/7/.yarn/berry/cache/goober-npm-2.1.19-aac45abee4-10c0.zip/node_modules/goober/",\
+        "packageDependencies": [\
+          ["@types/csstype", null],\
+          ["csstype", "npm:3.2.3"],\
+          ["goober", "virtual:02dd9316d6ca62de66b3b114ce21333eaec952c4e0421ad91b5dabbe8ecc0324f8065fea3f4005a0414a6a9ca245e2a6dfe16ea57ad5d9108036d8b64d201f56#npm:2.1.19"]\
+        ],\
+        "packagePeers": [\
+          "@types/csstype",\
+          "csstype"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["gopd", [\
       ["npm:1.2.0", {\
         "packageLocation": "../../../../../../.yarn/berry/cache/gopd-npm-1.2.0-df89ffa78e-10c0.zip/node_modules/gopd/",\
@@ -4254,6 +4284,35 @@ const RAW_RUNTIME_STATE =
         "packageDependencies": [\
           ["abbrev", "npm:4.0.0"],\
           ["nopt", "npm:9.0.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["notistack", [\
+      ["npm:3.0.2", {\
+        "packageLocation": "../../../../../../.yarn/berry/cache/notistack-npm-3.0.2-eb3fad6fc9-10c0.zip/node_modules/notistack/",\
+        "packageDependencies": [\
+          ["notistack", "npm:3.0.2"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.0.2", {\
+        "packageLocation": "./.yarn/__virtual__/notistack-virtual-02dd9316d6/7/.yarn/berry/cache/notistack-npm-3.0.2-eb3fad6fc9-10c0.zip/node_modules/notistack/",\
+        "packageDependencies": [\
+          ["@types/react", "npm:19.2.14"],\
+          ["@types/react-dom", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:19.2.3"],\
+          ["clsx", "npm:1.2.1"],\
+          ["csstype", "npm:3.2.3"],\
+          ["goober", "virtual:02dd9316d6ca62de66b3b114ce21333eaec952c4e0421ad91b5dabbe8ecc0324f8065fea3f4005a0414a6a9ca245e2a6dfe16ea57ad5d9108036d8b64d201f56#npm:2.1.19"],\
+          ["notistack", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.0.2"],\
+          ["react", "npm:19.2.5"],\
+          ["react-dom", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:19.2.5"]\
+        ],\
+        "packagePeers": [\
+          "@types/react-dom",\
+          "@types/react",\
+          "react-dom",\
+          "react"\
         ],\
         "linkType": "HARD"\
       }]\
@@ -4994,6 +5053,7 @@ const RAW_RUNTIME_STATE =
           ["i18next", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:26.0.10"],\
           ["i18next-browser-languagedetector", "npm:8.2.1"],\
           ["lowlight", "npm:3.3.0"],\
+          ["notistack", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.0.2"],\
           ["react", "npm:19.2.5"],\
           ["react-dom", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:19.2.5"],\
           ["react-error-boundary", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:6.1.1"],\

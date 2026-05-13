@@ -6,6 +6,7 @@ import {
   MenuItem, Select, Typography,
 } from '@mui/material';
 import { TextField } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import { useInviteMember } from '../../hooks/useTeam';
 
 const inviteSchema = z.object({
@@ -21,6 +22,7 @@ interface InviteDialogProps {
 }
 
 export function InviteDialog({ open, onClose }: InviteDialogProps) {
+  const { enqueueSnackbar } = useSnackbar();
   const inviteMember = useInviteMember();
   const { control, handleSubmit, reset, formState: { errors } } = useForm<InviteForm>({
     resolver: zodResolver(inviteSchema),
@@ -30,7 +32,13 @@ export function InviteDialog({ open, onClose }: InviteDialogProps) {
   const onSubmit = (data: InviteForm) => {
     inviteMember.mutate(
       { name: data.name, email: data.email, workspaceRole: data.workspaceRole },
-      { onSuccess: () => { reset(); onClose(); } },
+      {
+        onSuccess: () => {
+          enqueueSnackbar(`Pozvánka odeslána na ${data.email}`, { variant: 'success' });
+          reset();
+          onClose();
+        },
+      },
     );
   };
 

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Box, Button, Card, IconButton, TextField, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 import { TASK_TYPES } from '../constants/taskTypes';
 import { PRIORITIES } from '../constants/priorities';
 import { useProjects } from '../hooks/useProjects';
@@ -15,6 +16,7 @@ import EditorBody, { type EditorBodyHandle } from './editor/editor-body';
 export default function CreateTaskModal() {
   const { projectId } = useParams<{ projectId: string }>();
   const { closeCreateModal } = useUiStore();
+  const { enqueueSnackbar } = useSnackbar();
   const { data: projects = [] } = useProjects();
   const createTask = useCreateTask();
 
@@ -36,7 +38,12 @@ export default function CreateTaskModal() {
         priority,
         description: descJson ? JSON.stringify(descJson) : undefined,
       },
-      { onSuccess: closeCreateModal },
+      {
+        onSuccess: () => {
+          enqueueSnackbar('Task vytvořen', { variant: 'success' });
+          closeCreateModal();
+        },
+      },
     );
   };
 

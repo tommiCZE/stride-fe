@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { SnackbarProvider } from 'notistack';
 import { buildTheme } from './theme';
 import { useUiStore } from './store/ui-store';
 import App from './App';
@@ -23,7 +24,13 @@ function ThemedApp() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AppErrorBoundary>
-        <App />
+        <SnackbarProvider
+          maxSnack={3}
+          autoHideDuration={3000}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <App />
+        </SnackbarProvider>
       </AppErrorBoundary>
     </ThemeProvider>
   );

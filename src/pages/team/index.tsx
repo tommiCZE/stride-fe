@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Box, Button, Card, CircularProgress, Typography } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import { useTeamMembers, useUpdateMember } from '../../hooks/useTeam';
 import { useAuthStore } from '../../store/auth-store';
 import FluxAvatar from '../../components/flux-avatar';
@@ -11,6 +12,7 @@ import { RowMenu } from './row-menu';
 import { InviteDialog } from './invite-dialog';
 
 export default function Team() {
+  const { enqueueSnackbar } = useSnackbar();
   const { data: members = [], isLoading } = useTeamMembers();
   const updateMember = useUpdateMember();
   const currentUserId = useAuthStore(s => s.userId);
@@ -21,7 +23,10 @@ export default function Team() {
   const pending = members.filter(u => u.status === 'PENDING').length;
 
   const changeRole = (id: string, role: WorkspaceRole) =>
-    updateMember.mutate({ id, body: { workspaceRole: role.toUpperCase() } });
+    updateMember.mutate(
+      { id, body: { workspaceRole: role.toUpperCase() } },
+      { onSuccess: () => enqueueSnackbar('Oprávnění aktualizováno', { variant: 'success' }) },
+    );
 
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%' }}>

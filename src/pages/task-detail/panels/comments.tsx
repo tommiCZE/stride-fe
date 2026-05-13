@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Box, Button, CircularProgress, Typography } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import { useComments, useCreateComment } from '../../../hooks/useComments';
 import { useAuthStore } from '../../../store/auth-store';
 import FluxAvatar from '../../../components/flux-avatar';
@@ -16,6 +17,7 @@ function timeAgo(iso: string) {
 }
 
 export function Comments({ taskId }: { taskId: string }) {
+  const { enqueueSnackbar } = useSnackbar();
   const { data: comments = [], isLoading } = useComments(taskId);
   const createComment = useCreateComment(taskId);
   const me = useAuthStore(s => s.user);
@@ -25,7 +27,11 @@ export function Comments({ taskId }: { taskId: string }) {
   const submit = () => {
     if (!draft.trim()) return;
     createComment.mutate({ text: draft }, {
-      onSuccess: () => { setDraft(''); setComposing(false); },
+      onSuccess: () => {
+        setDraft('');
+        setComposing(false);
+        enqueueSnackbar('Komentář přidán', { variant: 'success' });
+      },
     });
   };
 
