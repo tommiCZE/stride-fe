@@ -167,12 +167,14 @@ export interface CommentDto {
   userId: string;
   user: UserDto;
   text: string;
+  parentCommentId: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateCommentRequest {
   text: string;
+  parentCommentId?: string | null;
 }
 
 export interface UpdateCommentRequest {
