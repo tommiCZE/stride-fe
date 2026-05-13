@@ -1,12 +1,15 @@
 import { Box, Button, TextField, Typography } from '@mui/material';
 import { useParams, useSearchParams } from 'react-router-dom';
+import Papa from 'papaparse';
+import { useSnackbar } from 'notistack';
 import { useTasks } from '../hooks/useTasks';
+import { useProjects } from '../hooks/useProjects';
 import { BOARD_STATUSES } from '../constants/statuses';
 import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
 import { MonoKey, StatusBadge, ColorDot } from '../components/ui/ui';
-import { FilterIcon, ListIcon, PlusIcon } from '../components/icons/icons';
+import { FilterIcon, ListIcon, PlusIcon, DownloadIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
 import { useUiStore } from '../store/ui-store';
 
@@ -25,8 +28,10 @@ const COLS = [
 export default function ListView() {
   const { projectId } = useParams<{ projectId: string }>();
   const [, setSearchParams] = useSearchParams();
+  const { enqueueSnackbar } = useSnackbar();
   const openTask = (id: string) => setSearchParams({ task: id });
   const { data: tasks = [] } = useTasks(projectId!);
+  const { data: projects = [] } = useProjects();
   const openCreateModal = useUiStore(s => s.openCreateModal);
 
   if (tasks.length === 0) {
@@ -51,6 +56,34 @@ export default function ListView() {
     );
   }
 
+  const handleExportCsv = () => {
+    if (tasks.length === 0) return;
+    const rows = tasks.map(t => ({
+      'Klíč': t.key,
+      'Typ': t.type,
+      'Priorita': t.priority,
+      'Název': t.title,
+      'Přiřazeno': t.assigneeName ?? '',
+      'Status': BOARD_STATUSES.find(s => s.id === t.status)?.name ?? t.status,
+      'Odhad': t.estimate ?? '',
+      'Logged': t.logged,
+      'Due date': t.dueDate ?? '',
+    }));
+    const csv = Papa.unparse(rows);
+    const blob = new Blob(['﻿', csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const projectKey = projects.find(p => p.id === projectId)?.key ?? projectId ?? 'export';
+    const date = new Date().toISOString().slice(0, 10);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `stride-tasks-${projectKey}-${date}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    enqueueSnackbar('Export hotov', { variant: 'success' });
+  };
+
   return (
     <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'background.paper', height: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, gap: 1, borderBottom: 1, borderColor: 'divider',
@@ -58,6 +91,8 @@ export default function ListView() {
         <TextField placeholder="Filtr…" size="small"
           sx={{ width: 200, '& .MuiOutlinedInput-root': { height: 26, fontSize: 12.5 } }}/>
         <Button size="small" variant="outlined" startIcon={<FilterIcon/>}>Filtry</Button>
+        <Button size="small" variant="outlined" startIcon={<DownloadIcon/>}
+          onClick={handleExportCsv} disabled={tasks.length === 0}>Export</Button>
         <Box sx={{ flex: 1 }}/>
         <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>{tasks.length} tasků</Typography>
       </Box>
