@@ -50,6 +50,7 @@ const RAW_RUNTIME_STATE =
           ["@tiptap/extension-image", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@tiptap/extension-link", "virtual:64300bdfaafc1aff75837319d308de3354a5f9d04e6240f91019af311aa85fd73f72c9325ecb7ff3a7452a35942687ce1a6aa4189d6264f9b8f0ff05ad9020fa#npm:3.23.1"],\
           ["@tiptap/extension-list", "virtual:64300bdfaafc1aff75837319d308de3354a5f9d04e6240f91019af311aa85fd73f72c9325ecb7ff3a7452a35942687ce1a6aa4189d6264f9b8f0ff05ad9020fa#npm:3.23.1"],\
+          ["@tiptap/extension-mention", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@tiptap/extension-placeholder", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@tiptap/extension-table", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@tiptap/extension-task-item", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
@@ -60,7 +61,7 @@ const RAW_RUNTIME_STATE =
           ["@tiptap/pm", "npm:3.23.1"],\
           ["@tiptap/react", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@tiptap/starter-kit", "npm:3.23.1"],\
-          ["@tiptap/suggestion", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.2"],\
+          ["@tiptap/suggestion", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@types/node", "npm:24.12.2"],\
           ["@types/react", "npm:19.2.14"],\
           ["@types/react-dom", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:19.2.3"],\
@@ -2026,6 +2027,36 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["@tiptap/extension-mention", [\
+      ["npm:3.23.1", {\
+        "packageLocation": "../../../../../../.yarn/berry/cache/@tiptap-extension-mention-npm-3.23.1-5b84ca45e6-10c0.zip/node_modules/@tiptap/extension-mention/",\
+        "packageDependencies": [\
+          ["@tiptap/extension-mention", "npm:3.23.1"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1", {\
+        "packageLocation": "./.yarn/__virtual__/@tiptap-extension-mention-virtual-35302ff5f6/7/.yarn/berry/cache/@tiptap-extension-mention-npm-3.23.1-5b84ca45e6-10c0.zip/node_modules/@tiptap/extension-mention/",\
+        "packageDependencies": [\
+          ["@tiptap/core", "virtual:64300bdfaafc1aff75837319d308de3354a5f9d04e6240f91019af311aa85fd73f72c9325ecb7ff3a7452a35942687ce1a6aa4189d6264f9b8f0ff05ad9020fa#npm:3.23.1"],\
+          ["@tiptap/extension-mention", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
+          ["@tiptap/pm", "npm:3.23.1"],\
+          ["@tiptap/suggestion", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
+          ["@types/tiptap__core", null],\
+          ["@types/tiptap__pm", null],\
+          ["@types/tiptap__suggestion", null]\
+        ],\
+        "packagePeers": [\
+          "@tiptap/core",\
+          "@tiptap/pm",\
+          "@tiptap/suggestion",\
+          "@types/tiptap__core",\
+          "@types/tiptap__pm",\
+          "@types/tiptap__suggestion"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["@tiptap/extension-ordered-list", [\
       ["npm:3.23.1", {\
         "packageLocation": "../../../../../../.yarn/berry/cache/@tiptap-extension-ordered-list-npm-3.23.1-270a9635f8-10c0.zip/node_modules/@tiptap/extension-ordered-list/",\
@@ -2370,19 +2401,19 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["@tiptap/suggestion", [\
-      ["npm:3.23.2", {\
-        "packageLocation": "../../../../../../.yarn/berry/cache/@tiptap-suggestion-npm-3.23.2-139fb1a2a6-10c0.zip/node_modules/@tiptap/suggestion/",\
+      ["npm:3.23.1", {\
+        "packageLocation": "../../../../../../.yarn/berry/cache/@tiptap-suggestion-npm-3.23.1-1865770d41-10c0.zip/node_modules/@tiptap/suggestion/",\
         "packageDependencies": [\
-          ["@tiptap/suggestion", "npm:3.23.2"]\
+          ["@tiptap/suggestion", "npm:3.23.1"]\
         ],\
         "linkType": "SOFT"\
       }],\
-      ["virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.2", {\
-        "packageLocation": "./.yarn/__virtual__/@tiptap-suggestion-virtual-048a420416/7/.yarn/berry/cache/@tiptap-suggestion-npm-3.23.2-139fb1a2a6-10c0.zip/node_modules/@tiptap/suggestion/",\
+      ["virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1", {\
+        "packageLocation": "./.yarn/__virtual__/@tiptap-suggestion-virtual-ee2c7877f4/7/.yarn/berry/cache/@tiptap-suggestion-npm-3.23.1-1865770d41-10c0.zip/node_modules/@tiptap/suggestion/",\
         "packageDependencies": [\
           ["@tiptap/core", "virtual:64300bdfaafc1aff75837319d308de3354a5f9d04e6240f91019af311aa85fd73f72c9325ecb7ff3a7452a35942687ce1a6aa4189d6264f9b8f0ff05ad9020fa#npm:3.23.1"],\
           ["@tiptap/pm", "npm:3.23.1"],\
-          ["@tiptap/suggestion", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.2"],\
+          ["@tiptap/suggestion", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@types/tiptap__core", null],\
           ["@types/tiptap__pm", null]\
         ],\
@@ -4974,6 +5005,7 @@ const RAW_RUNTIME_STATE =
           ["@tiptap/extension-image", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@tiptap/extension-link", "virtual:64300bdfaafc1aff75837319d308de3354a5f9d04e6240f91019af311aa85fd73f72c9325ecb7ff3a7452a35942687ce1a6aa4189d6264f9b8f0ff05ad9020fa#npm:3.23.1"],\
           ["@tiptap/extension-list", "virtual:64300bdfaafc1aff75837319d308de3354a5f9d04e6240f91019af311aa85fd73f72c9325ecb7ff3a7452a35942687ce1a6aa4189d6264f9b8f0ff05ad9020fa#npm:3.23.1"],\
+          ["@tiptap/extension-mention", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@tiptap/extension-placeholder", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@tiptap/extension-table", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@tiptap/extension-task-item", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
@@ -4984,7 +5016,7 @@ const RAW_RUNTIME_STATE =
           ["@tiptap/pm", "npm:3.23.1"],\
           ["@tiptap/react", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@tiptap/starter-kit", "npm:3.23.1"],\
-          ["@tiptap/suggestion", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.2"],\
+          ["@tiptap/suggestion", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:3.23.1"],\
           ["@types/node", "npm:24.12.2"],\
           ["@types/react", "npm:19.2.14"],\
           ["@types/react-dom", "virtual:7a97c57ac7ea56a0c4b186ba72d596538c1bbfe065ed74239136e74f713f706ed9a311d40804e593b36b1a2a1657b4765a25e51e268ee3dd2d3502b406e816b4#npm:19.2.3"],\

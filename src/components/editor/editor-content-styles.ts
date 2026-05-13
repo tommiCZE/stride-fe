@@ -128,6 +128,30 @@ export function editorContentSx(theme: Theme, compact?: boolean) {
       borderColor: alpha(theme.palette.primary.main, 0.4),
       color: theme.palette.primary.dark,
     },
+    // @mentions
+    '& .tiptap span[data-mention]': {
+      display: 'inline-block',
+      padding: '0 6px',
+      borderRadius: '10px',
+      fontWeight: 600,
+      fontSize: '12.5px',
+      lineHeight: 1.5,
+      color: theme.palette.primary.main,
+      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+      border: `1px solid ${alpha(theme.palette.primary.main, 0.22)}`,
+      cursor: 'default',
+      whiteSpace: 'nowrap',
+    },
+    '& .tiptap span[data-mention]:hover': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.18),
+    },
+    // Suggestion decoration (visible while typing `@foo`)
+    '& .tiptap span.suggestion': {
+      color: theme.palette.primary.main,
+      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+      borderRadius: '4px',
+      padding: '0 2px',
+    },
 
     // Zvýraznění (Highlight)
     '& .tiptap mark': {

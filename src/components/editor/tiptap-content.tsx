@@ -8,11 +8,24 @@ import { TaskItem } from '@tiptap/extension-task-item';
 import { Highlight } from '@tiptap/extension-highlight';
 import { Underline } from '@tiptap/extension-underline';
 import { TableKit } from '@tiptap/extension-table';
+import { Mention } from '@tiptap/extension-mention';
 import { Box, useTheme } from '@mui/material';
 import { CalloutNode } from './callout-extension';
 import { IssueLink } from './extensions/issue-link';
 import { IssueLinkLayer } from './extensions/issue-link-handlers';
 import { editorContentSx } from './editor-content-styles';
+
+const MentionReadOnly = Mention.configure({
+  HTMLAttributes: { 'data-mention': 'true', class: 'mention' },
+  renderHTML: ({ options, node }) => [
+    'span',
+    {
+      ...options.HTMLAttributes,
+      'data-mention-user-id': node.attrs.id ?? '',
+    },
+    `@${node.attrs.label ?? node.attrs.id}`,
+  ],
+});
 
 interface Props {
   json: JSONContent;
@@ -35,6 +48,7 @@ export default function TipTapContent({ json }: Props) {
       Underline,
       TableKit,
       IssueLink,
+      MentionReadOnly,
     ],
   });
 

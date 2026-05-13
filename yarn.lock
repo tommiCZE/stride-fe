@@ -987,25 +987,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-devtools@npm:5.100.10":
-  version: 5.100.10
-  resolution: "@tanstack/query-devtools@npm:5.100.10"
-  checksum: 10c0/aa56f1b72487061d19cb2decbe3e4ac83b7fbfec26869a2aa728216718318a641032db9b9bf8a63725908f06d7031c0d01ff0162c0a552568ecaa6d936a93d2c
-  languageName: node
-  linkType: hard
-
-"@tanstack/react-query-devtools@npm:^5.100.10":
-  version: 5.100.10
-  resolution: "@tanstack/react-query-devtools@npm:5.100.10"
-  dependencies:
-    "@tanstack/query-devtools": "npm:5.100.10"
-  peerDependencies:
-    "@tanstack/react-query": ^5.100.10
-    react: ^18 || ^19
-  checksum: 10c0/806a8347ed87a4f8674ca43f7c998dbc56a705548350033e11eefe46608bdeb9505120d586d87d38355fa85d532dfdd9456c2656bb8c91974ab5402ebfacb607
-  languageName: node
-  linkType: hard
-
 "@tanstack/react-query@npm:^5.100.6":
   version: 5.100.6
   resolution: "@tanstack/react-query@npm:5.100.6"
@@ -1239,6 +1220,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tiptap/extension-mention@npm:3.23.1":
+  version: 3.23.1
+  resolution: "@tiptap/extension-mention@npm:3.23.1"
+  peerDependencies:
+    "@tiptap/core": 3.23.1
+    "@tiptap/pm": 3.23.1
+    "@tiptap/suggestion": 3.23.1
+  checksum: 10c0/04b270d4b49acd723792292ce4f8343ed8ec8564bc5917c6959179d49ad4fd0f5b636a00269732694d8e9a43f7b61877e9f688321649a7555915ccca60d1b5c3
+  languageName: node
+  linkType: hard
+
 "@tiptap/extension-ordered-list@npm:^3.23.1":
   version: 3.23.1
   resolution: "@tiptap/extension-ordered-list@npm:3.23.1"
@@ -1417,13 +1409,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/suggestion@npm:^3.23.1":
-  version: 3.23.2
-  resolution: "@tiptap/suggestion@npm:3.23.2"
+"@tiptap/suggestion@npm:3.23.1":
+  version: 3.23.1
+  resolution: "@tiptap/suggestion@npm:3.23.1"
   peerDependencies:
-    "@tiptap/core": 3.23.2
-    "@tiptap/pm": 3.23.2
-  checksum: 10c0/23f96b1a87f3ce45916a4eb3657a4655b7c6d2f39d6796bcc5fb4a6b1b0e335ecac221a80637815b460f1ab9d65ac9018ec847144902a4504d4d2c629e6cc65e
+    "@tiptap/core": 3.23.1
+    "@tiptap/pm": 3.23.1
+  checksum: 10c0/13234369ae3446e95678f4861c77a0ec42d7c11a2bfb0f559286418b2cd6ce90e279026ccb7e67641db24874aff5fbe1eb16430c99013f28dc6877b0ba6eb9e7
   languageName: node
   linkType: hard
 
@@ -1466,30 +1458,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
-  version: 25.7.0
-  resolution: "@types/node@npm:25.7.0"
-  dependencies:
-    undici-types: "npm:~7.21.0"
-  checksum: 10c0/47ec7eaca154c36ad6d1ac0270e6e254eedf20b9dc49afe3bc76e4f7eba29ceac705f8903b162aeaf40e3941101ffe76ffb374989359ea3ef8c8509d8b443f55
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:^24.12.2":
   version: 24.12.2
   resolution: "@types/node@npm:24.12.2"
   dependencies:
     undici-types: "npm:~7.16.0"
   checksum: 10c0/710050c42f89075c4479e4e1e4c2532486b0c41b1e2a8a13ad88641c88b88cdaea87414e19224f30028719737bd70e327edcaa184d50e86b9418941edd7eb02b
-  languageName: node
-  linkType: hard
-
-"@types/papaparse@npm:^5.5.2":
-  version: 5.5.2
-  resolution: "@types/papaparse@npm:5.5.2"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/27b097b6f8f204b20ade1f2cbf4798eb38caa5fbfa3180fd0faa5e3f9aea371c1786ae180d56f3287556463eefe3100c953e316ea6ee99d7ae1d04111cfc9e50
   languageName: node
   linkType: hard
 
@@ -1852,13 +1826,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:^1.1.0":
-  version: 1.2.1
-  resolution: "clsx@npm:1.2.1"
-  checksum: 10c0/34dead8bee24f5e96f6e7937d711978380647e936a22e76380290e35486afd8634966ce300fc4b74a32f3762c7d4c0303f442c3e259f4ce02374eb0c82834f27
-  languageName: node
-  linkType: hard
-
 "clsx@npm:^2.1.1":
   version: 2.1.1
   resolution: "clsx@npm:2.1.1"
@@ -1920,7 +1887,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csstype@npm:^3.0.10, csstype@npm:^3.0.2, csstype@npm:^3.2.2, csstype@npm:^3.2.3":
+"csstype@npm:^3.0.2, csstype@npm:^3.2.2, csstype@npm:^3.2.3":
   version: 3.2.3
   resolution: "csstype@npm:3.2.3"
   checksum: 10c0/cd29c51e70fa822f1cecd8641a1445bed7063697469d35633b516e60fe8c1bde04b08f6c5b6022136bb669b64c63d4173af54864510fbb4ee23281801841a3ce
@@ -2411,15 +2378,6 @@ __metadata:
   version: 17.5.0
   resolution: "globals@npm:17.5.0"
   checksum: 10c0/92828102ed2f5637907725f0478038bed02fc83e9fc89300bb753639ba7c022b6c02576fc772117302b431b204591db1f2fa909d26f3f0a9852cc856a941df3f
-  languageName: node
-  linkType: hard
-
-"goober@npm:^2.0.33":
-  version: 2.1.19
-  resolution: "goober@npm:2.1.19"
-  peerDependencies:
-    csstype: ^3.0.10
-  checksum: 10c0/f6a01f2e8abfef571ac539f96e650dcde964e7c0bef6c9055a8c8e110624ccd7b51ab90706a806ca570a56141ea689d355fb1cec3ee9209499c249638883990d
   languageName: node
   linkType: hard
 
@@ -2956,19 +2914,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"notistack@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "notistack@npm:3.0.2"
-  dependencies:
-    clsx: "npm:^1.1.0"
-    goober: "npm:^2.0.33"
-  peerDependencies:
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/82a0270ee1b9e70bc1dfad4d7e1d2bbb6dc08ac887b920986dcfa58cc2aa975bd48b71f7cf3afc2e11badd142ba9ade5f708c858ee2080b9d4cd950b80c43811
-  languageName: node
-  linkType: hard
-
 "object-assign@npm:^4.1.1":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
@@ -3012,13 +2957,6 @@ __metadata:
   dependencies:
     p-limit: "npm:^3.0.2"
   checksum: 10c0/2290d627ab7903b8b70d11d384fee714b797f6040d9278932754a6860845c4d3190603a0772a663c8cb5a7b21d1b16acb3a6487ebcafa9773094edc3dfe6009a
-  languageName: node
-  linkType: hard
-
-"papaparse@npm:^5.5.3":
-  version: 5.5.3
-  resolution: "papaparse@npm:5.5.3"
-  checksum: 10c0/623aae6a35703308fd5a39d616fb3837231ebc70697346355ea508154d3f24df75b6554b736afc1924192205518a5db14e75f5e1cf35d154326050a37cdd9447
   languageName: node
   linkType: hard
 
@@ -3272,15 +3210,6 @@ __metadata:
   peerDependencies:
     react: ^19.2.5
   checksum: 10c0/8067606e9f58e4c2e8cb5f09570217dbc71c4843ebcaa20ae2085912d3e3a351f17d8f7c1713313cdda7f272840c8c34ff6c860fcb840862071bceea218e0c63
-  languageName: node
-  linkType: hard
-
-"react-error-boundary@npm:^6.1.1":
-  version: 6.1.1
-  resolution: "react-error-boundary@npm:6.1.1"
-  peerDependencies:
-    react: ^18.0.0 || ^19.0.0
-  checksum: 10c0/4c72112bd930629e73015515804f95e375f9d83bea07cbc0557eb44752c8e8fc57ce141126b8eed2d9301d3bd1e030ce1f59d0e71f70fc0d10a29b31ec2cf2c5
   languageName: node
   linkType: hard
 
@@ -3564,7 +3493,6 @@ __metadata:
     "@mui/system": "npm:^9.0.0"
     "@mui/x-date-pickers": "npm:^9.0.4"
     "@tanstack/react-query": "npm:^5.100.6"
-    "@tanstack/react-query-devtools": "npm:^5.100.10"
     "@tiptap/core": "npm:^3.23.1"
     "@tiptap/extension-bubble-menu": "npm:^3.23.1"
     "@tiptap/extension-character-count": "npm:^3.23.1"
@@ -3575,6 +3503,7 @@ __metadata:
     "@tiptap/extension-image": "npm:^3.23.1"
     "@tiptap/extension-link": "npm:^3.23.1"
     "@tiptap/extension-list": "npm:^3.23.1"
+    "@tiptap/extension-mention": "npm:3.23.1"
     "@tiptap/extension-placeholder": "npm:^3.23.1"
     "@tiptap/extension-table": "npm:^3.23.1"
     "@tiptap/extension-task-item": "npm:^3.23.1"
@@ -3585,9 +3514,8 @@ __metadata:
     "@tiptap/pm": "npm:^3.23.1"
     "@tiptap/react": "npm:^3.23.1"
     "@tiptap/starter-kit": "npm:^3.23.1"
-    "@tiptap/suggestion": "npm:^3.23.1"
+    "@tiptap/suggestion": "npm:3.23.1"
     "@types/node": "npm:^24.12.2"
-    "@types/papaparse": "npm:^5.5.2"
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     "@vitejs/plugin-react": "npm:^6.0.1"
@@ -3601,11 +3529,8 @@ __metadata:
     i18next: "npm:^26.0.10"
     i18next-browser-languagedetector: "npm:^8.2.1"
     lowlight: "npm:^3.3.0"
-    notistack: "npm:^3.0.2"
-    papaparse: "npm:^5.5.3"
     react: "npm:^19.2.5"
     react-dom: "npm:^19.2.5"
-    react-error-boundary: "npm:^6.1.1"
     react-hook-form: "npm:^7.74.0"
     react-i18next: "npm:^17.0.7"
     react-router-dom: "npm:^7.14.2"
@@ -3718,13 +3643,6 @@ __metadata:
   version: 7.16.0
   resolution: "undici-types@npm:7.16.0"
   checksum: 10c0/3033e2f2b5c9f1504bdc5934646cb54e37ecaca0f9249c983f7b1fc2e87c6d18399ebb05dc7fd5419e02b2e915f734d872a65da2e3eeed1813951c427d33cc9a
-  languageName: node
-  linkType: hard
-
-"undici-types@npm:~7.21.0":
-  version: 7.21.0
-  resolution: "undici-types@npm:7.21.0"
-  checksum: 10c0/c3b4ae5f066c398acb1962505b56214ecd72843f7d7827fcc2df7a48a63d1639d3608c580ac09f836253d21fa7ba8f1a04440569ed9d332474ad01b8a010db87
   languageName: node
   linkType: hard
 

@@ -1,4 +1,4 @@
-import { useState, forwardRef, useImperativeHandle } from 'react';
+import { useState, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import { useEditor, Tiptap } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
@@ -21,6 +21,8 @@ import { IssueLinkLayer } from './extensions/issue-link-handlers';
 import { SlashMenu } from './extensions/slash-menu';
 import { PasteImage } from './extensions/paste-image';
 import { editorContentSx } from './editor-content-styles';
+import { buildMentionExtension } from './extensions/mention';
+import { useTeamMembers } from '../../hooks/useTeam';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -103,6 +105,15 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
   const [isDragOver, setIsDragOver] = useState(false);
   const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
 
+  const { data: teamMembers } = useTeamMembers();
+  const membersRef = useRef(teamMembers ?? []);
+  membersRef.current = teamMembers ?? [];
+
+  const mentionExtension = useMemo(
+    () => buildMentionExtension({ getMembers: () => membersRef.current }),
+    [],
+  );
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -118,6 +129,7 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
       TableKit,
       IssueLink,
       SlashMenu,
+      mentionExtension,
       ...(onUploadImage ? [PasteImage.configure({ onUpload: onUploadImage })] : []),
     ],
     content: initialContent,
