@@ -2,6 +2,49 @@ import type { Theme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 
 export function editorContentSx(theme: Theme, compact?: boolean) {
+  const isDark = theme.palette.mode === 'dark';
+
+  // Code surfaces are intentionally split per mode:
+  //  - dark: deeper than `paper` so the block "sinks" into the page
+  //  - light: subtle slate tint that still reads as code, not as a callout
+  const codeInlineBg = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.06)';
+  const codeBlockBg  = isDark ? '#0a0c12' : '#f3f4f8';
+  const codeBlockFg  = isDark ? '#e6e8ef' : '#0f172a';
+  const codeBorder   = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.08)';
+
+  // atom-one-dark / atom-one-light inspired token palette. Applied via
+  // `.hljs-*` classes that lowlight / highlight.js emit when a language is
+  // detected. Without lowlight wired in these rules are simply inert, so
+  // there is no runtime cost and the moment we plug it in code blocks light
+  // up correctly in both modes.
+  const tokens = isDark
+    ? {
+        comment:  '#7c8597',
+        keyword:  '#c678dd',
+        string:   '#98c379',
+        number:   '#d19a66',
+        function: '#61afef',
+        variable: '#e06c75',
+        type:     '#56b6c2',
+        attr:     '#e5c07b',
+        builtin:  '#56b6c2',
+        deletion: '#e06c75',
+        addition: '#98c379',
+      }
+    : {
+        comment:  '#a0a1a7',
+        keyword:  '#a626a4',
+        string:   '#50a14f',
+        number:   '#986801',
+        function: '#4078f2',
+        variable: '#e45649',
+        type:     '#0184bb',
+        attr:     '#c18401',
+        builtin:  '#0184bb',
+        deletion: '#e45649',
+        addition: '#50a14f',
+      };
+
   return {
     '& .tiptap': {
       outline: 'none', padding: '16px',
@@ -18,18 +61,61 @@ export function editorContentSx(theme: Theme, compact?: boolean) {
     },
     '& .tiptap code': {
       fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-      backgroundColor: theme.palette.action.hover,
+      backgroundColor: codeInlineBg,
+      color: theme.palette.text.primary,
       padding: '0 4px', borderRadius: '4px', fontSize: '12px',
     },
     '& .tiptap pre': {
-      backgroundColor: theme.palette.action.hover,
+      backgroundColor: codeBlockBg,
+      color: codeBlockFg,
       padding: '12px', borderRadius: '6px',
-      border: `1px solid ${theme.palette.divider}`,
+      border: `1px solid ${codeBorder}`,
       overflowX: 'auto', margin: '8px 0',
       fontFamily: 'JetBrains Mono, ui-monospace, monospace',
       fontSize: '12px', lineHeight: 1.55,
     },
-    '& .tiptap pre code': { backgroundColor: 'transparent', padding: 0 },
+    '& .tiptap pre code': {
+      backgroundColor: 'transparent', padding: 0, color: 'inherit',
+    },
+
+    // Syntax tokens (highlight.js / lowlight class names)
+    '& .tiptap pre code .hljs-comment, & .tiptap pre code .hljs-quote': {
+      color: tokens.comment, fontStyle: 'italic',
+    },
+    '& .tiptap pre code .hljs-keyword, & .tiptap pre code .hljs-selector-tag, & .tiptap pre code .hljs-literal, & .tiptap pre code .hljs-section, & .tiptap pre code .hljs-link': {
+      color: tokens.keyword,
+    },
+    '& .tiptap pre code .hljs-string, & .tiptap pre code .hljs-regexp, & .tiptap pre code .hljs-meta-string': {
+      color: tokens.string,
+    },
+    '& .tiptap pre code .hljs-number, & .tiptap pre code .hljs-meta': {
+      color: tokens.number,
+    },
+    '& .tiptap pre code .hljs-title, & .tiptap pre code .hljs-title.function_, & .tiptap pre code .hljs-function .hljs-title': {
+      color: tokens.function,
+    },
+    '& .tiptap pre code .hljs-variable, & .tiptap pre code .hljs-template-variable, & .tiptap pre code .hljs-name, & .tiptap pre code .hljs-selector-id, & .tiptap pre code .hljs-tag': {
+      color: tokens.variable,
+    },
+    '& .tiptap pre code .hljs-type, & .tiptap pre code .hljs-class .hljs-title, & .tiptap pre code .hljs-symbol, & .tiptap pre code .hljs-bullet': {
+      color: tokens.type,
+    },
+    '& .tiptap pre code .hljs-attr, & .tiptap pre code .hljs-attribute, & .tiptap pre code .hljs-selector-attr, & .tiptap pre code .hljs-selector-pseudo, & .tiptap pre code .hljs-params': {
+      color: tokens.attr,
+    },
+    '& .tiptap pre code .hljs-built_in, & .tiptap pre code .hljs-builtin-name': {
+      color: tokens.builtin,
+    },
+    '& .tiptap pre code .hljs-deletion': {
+      color: tokens.deletion,
+      backgroundColor: alpha(theme.palette.error.main, isDark ? 0.18 : 0.12),
+    },
+    '& .tiptap pre code .hljs-addition': {
+      color: tokens.addition,
+      backgroundColor: alpha(theme.palette.success.main, isDark ? 0.18 : 0.12),
+    },
+    '& .tiptap pre code .hljs-emphasis': { fontStyle: 'italic' },
+    '& .tiptap pre code .hljs-strong':   { fontWeight: 700 },
 
     // Callout bloky
     '& .tiptap div[data-callout]': {

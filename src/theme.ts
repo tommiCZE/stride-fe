@@ -8,23 +8,31 @@ export function buildTheme(mode: 'light' | 'dark' = 'light', primary = '#5A5BFF'
       mode,
       primary: { main: primary },
       secondary: { main: '#ec4899' },
-      success:   { main: '#10b981' },
-      warning:   { main: '#f59e0b' },
-      error:     { main: '#ef4444' },
-      info:      { main: '#0ea5e9' },
+      // Status colors slightly lifted in dark so they remain legible
+      // against the near-black surfaces while staying brand-consistent.
+      success:   { main: isDark ? '#34d399' : '#10b981' },
+      warning:   { main: isDark ? '#fbbf24' : '#f59e0b' },
+      error:     { main: isDark ? '#f87171' : '#ef4444' },
+      info:      { main: isDark ? '#38bdf8' : '#0ea5e9' },
       background: {
-        default: isDark ? '#0e1015' : '#f7f8fa',
-        paper:   isDark ? '#161922' : '#ffffff',
+        // Two-step elevation: default (canvas) sits a touch darker than
+        // paper (cards / panels) for a clear depth cue in dark mode.
+        default: isDark ? '#0b0d13' : '#f7f8fa',
+        paper:   isDark ? '#171a23' : '#ffffff',
       },
       text: {
-        primary:   isDark ? '#e6e8ef' : '#0f172a',
-        secondary: isDark ? '#9ba3b4' : '#475569',
-        disabled:  isDark ? '#5b6478' : '#94a3b8',
+        // Tuned for WCAG AA on both background.default and background.paper.
+        primary:   isDark ? '#eceff7' : '#0f172a',
+        secondary: isDark ? '#aab3c5' : '#475569',
+        disabled:  isDark ? '#6b7488' : '#94a3b8',
       },
-      divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.08)',
+      divider: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.08)',
       action: {
-        hover:    isDark ? 'rgba(255,255,255,0.05)' : 'rgba(15,23,42,0.04)',
-        selected: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.06)',
+        hover:    isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.04)',
+        selected: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.06)',
+        disabled: isDark ? 'rgba(255,255,255,0.30)' : 'rgba(15,23,42,0.26)',
+        disabledBackground: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.08)',
+        focus:    isDark ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.10)',
       },
     },
     typography: {
