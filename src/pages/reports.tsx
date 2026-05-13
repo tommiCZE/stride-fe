@@ -6,6 +6,7 @@ import { useAllProjectTasks } from '../hooks/useTasks';
 import { useTeamMembers } from '../hooks/useTeam';
 import FluxAvatar from '../components/flux-avatar';
 import { CardTitle } from '../components/ui/ui';
+import SprintVelocityChart from '../components/charts/SprintVelocityChart';
 
 export default function Reports() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -44,6 +45,11 @@ export default function Reports() {
   const maxD = Math.max(...weekData);
 
   const totalLogged = allTasks.reduce((s, t) => s + (t.logged ?? 0), 0);
+
+  // Use the active project from URL, or fall back to the first available project
+  // so the chart still shows something on the global /reports route.
+  const velocityProjectId = projectId ?? projects[0]?.id;
+  const velocityProject = velocityProjectId ? projectsById[velocityProjectId] : undefined;
 
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%' }}>
@@ -107,6 +113,16 @@ export default function Reports() {
               <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>Žádná data</Typography>
             )}
           </Box>
+        </Card>
+
+        <Card sx={{ borderRadius: 1.5, p: 2, gridColumn: '1 / -1' }}>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 1 }}>
+            <CardTitle>Sprint velocity</CardTitle>
+            <Typography sx={{ fontSize: 11.5, color: 'text.disabled' }}>
+              {velocityProject ? `${velocityProject.name} · posledních 6 sprintů` : 'posledních 6 sprintů'}
+            </Typography>
+          </Box>
+          <SprintVelocityChart projectId={velocityProjectId} lastN={6} />
         </Card>
 
         <Card sx={{ borderRadius: 1.5, p: 2, gridColumn: '1 / -1' }}>
