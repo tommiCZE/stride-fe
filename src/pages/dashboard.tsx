@@ -9,6 +9,7 @@ import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
 import { PlusIcon, DashboardIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
+import ActivityFeed from '../components/activity-feed';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -94,8 +95,8 @@ export default function Dashboard() {
           <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
             <Typography sx={{ fontSize: 13, fontWeight: 700 }}>Aktivita týmu</Typography>
           </Box>
-          <Box sx={{ p: 2, color: 'text.disabled', fontSize: 12.5, textAlign: 'center' }}>
-            Globální aktivita není dostupná
+          <Box sx={{ p: 1.5, maxHeight: 480, overflowY: 'auto' }}>
+            <ActivityFeed limit={20} />
           </Box>
         </Card>
 

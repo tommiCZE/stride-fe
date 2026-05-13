@@ -130,6 +130,32 @@ export interface ActivityItem {
   preview?: string;
 }
 
+/** User information returned by /api/activity (subset of User). */
+export interface ActivityActorDto {
+  id: string;
+  name: string;
+  initials: string;
+  color: string;
+  email?: string | null;
+}
+
+/** Backend-shaped activity event. Fields mirror BE ActivityItemDto with task/project denormalization. */
+export interface ActivityDto {
+  id: string;
+  userId: string;
+  actor: ActivityActorDto | null;
+  taskId: string;
+  taskKey: string;
+  taskTitle?: string | null;
+  projectId: string;
+  projectName?: string | null;
+  action: string;
+  target: string;
+  fromValue?: string | null;
+  toValue?: string | null;
+  createdAt: string;
+}
+
 export interface GitRepo {
   full: string;
   stars: number;
