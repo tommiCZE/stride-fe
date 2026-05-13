@@ -135,7 +135,7 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
     content: initialContent,
     autofocus: 'end',
     editorProps: {
-      handlePaste: (view, event) => {
+      handlePaste: (_view, event) => {
         // When an uploader is configured the PasteImage extension owns
         // image paste handling (it shows a placeholder + replaces on success).
         if (onUploadImage) return false;
