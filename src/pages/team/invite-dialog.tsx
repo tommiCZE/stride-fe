@@ -8,6 +8,7 @@ import {
 import { TextField } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useInviteMember } from '../../hooks/useTeam';
+import { useSubmitShortcut } from '../../hooks/use-submit-shortcut';
 
 const inviteSchema = z.object({
   name:          z.string().min(2, 'Zadejte jméno'),
@@ -42,8 +43,10 @@ export function InviteDialog({ open, onClose }: InviteDialogProps) {
     );
   };
 
+  const handleSubmitShortcut = useSubmitShortcut(handleSubmit(onSubmit));
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth onKeyDown={handleSubmitShortcut}>
       <DialogTitle sx={{ fontSize: 15, fontWeight: 700, pb: 1 }}>Pozvat člena</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '12px !important' }}>
         <Controller name="name" control={control} render={({ field }) => (

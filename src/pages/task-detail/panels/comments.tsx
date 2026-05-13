@@ -5,6 +5,7 @@ import { useComments, useCreateComment } from '../../../hooks/useComments';
 import { useAuthStore } from '../../../store/auth-store';
 import FluxAvatar from '../../../components/flux-avatar';
 import RichContent from '../../../components/rich-content';
+import { useSubmitShortcut } from '../../../hooks/use-submit-shortcut';
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -34,6 +35,8 @@ export function Comments({ taskId }: { taskId: string }) {
       },
     });
   };
+
+  const handleSubmitShortcut = useSubmitShortcut(submit, composing && !!draft.trim());
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -66,6 +69,7 @@ export function Comments({ taskId }: { taskId: string }) {
               <Box
                 contentEditable suppressContentEditableWarning
                 onInput={e => setDraft(e.currentTarget.textContent ?? '')}
+                onKeyDown={handleSubmitShortcut}
                 sx={{ p: 1.25, border: 1, borderColor: 'primary.main', borderRadius: 1.5,
                   bgcolor: 'background.paper', fontSize: 13, minHeight: 60, outline: 'none',
                   color: 'text.primary', '&:empty:before': { content: '"Napiš komentář…"', color: 'text.disabled' } }}
