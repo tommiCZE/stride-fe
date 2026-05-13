@@ -18,6 +18,7 @@ import Profile from './pages/profile';
 import CreateTaskModal from './components/create-task-modal';
 import KeyboardHelpDialog from './components/keyboard-help/keyboard-help-dialog';
 import CommandPalette from './components/command-palette/CommandPalette';
+import RealtimeBridge from './components/realtime-bridge';
 import { useKeyboardShortcuts } from './hooks/use-keyboard-shortcuts';
 
 const Calendar = lazy(() => import('./pages/calendar'));
@@ -40,6 +41,7 @@ function ProtectedLayout() {
 
   return (
     <AppLayout>
+      <RealtimeBridge />
       <Outlet />
       {hasTask && <TaskDetail />}
       {createModalOpen && <CreateTaskModal />}

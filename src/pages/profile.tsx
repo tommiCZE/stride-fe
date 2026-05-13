@@ -52,7 +52,7 @@ export default function Profile() {
             onChange={e => setName(e.target.value)}/>
           <TextField label="Iniciály" size="small" fullWidth value={initials}
             onChange={e => setInitials(e.target.value.toUpperCase().slice(0, 3))}
-            inputProps={{ maxLength: 3 }}
+            slotProps={{ htmlInput: { maxLength: 3 } }}
             helperText="Zobrazí se v avataru (2–3 znaky)"/>
         </Box>
 

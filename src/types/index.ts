@@ -1,3 +1,5 @@
+import type { JSONContent } from '@tiptap/core';
+
 export interface AttachmentFile {
   id: string;
   name: string;
