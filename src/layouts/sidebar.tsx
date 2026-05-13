@@ -1,15 +1,22 @@
-import type { ReactElement } from 'react';
+import { useMemo, type ReactElement } from 'react';
 import { useNavigate, useLocation, useMatch } from 'react-router-dom';
 import { Box, Divider, IconButton, ListItemButton, Typography, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useProjects } from '../hooks/useProjects';
+import { useAllProjectTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../store/auth-store';
 import StrideLogoIcon from '../components/icons/stride-logo-icon';
 import FluxAvatar from '../components/flux-avatar';
+import CountBadge from './count-badge';
 import {
   PlusIcon, BellIcon, DashboardIcon, ReportsIcon, SettingsIcon,
   CaretIcon, CheckIcon, TeamIcon, CalendarIcon,
 } from '../components/icons/icons';
+
+interface ProjectCounts {
+  board: number;
+  backlog: number;
+}
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const navigate = useNavigate();
@@ -18,7 +25,27 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const me = useAuthStore(s => s.user);
+  const userId = useAuthStore(s => s.userId);
   const { data: projects = [] } = useProjects();
+
+  const projectIds = useMemo(() => projects.map(p => p.id), [projects]);
+  const { data: allTasks } = useAllProjectTasks(projectIds);
+
+  const { myWorkCount, perProject } = useMemo(() => {
+    const map = new Map<string, ProjectCounts>();
+    for (const id of projectIds) map.set(id, { board: 0, backlog: 0 });
+    let my = 0;
+    for (const t of allTasks) {
+      if (t.status === 'DONE') continue;
+      const entry = map.get(t.projectId);
+      if (entry) {
+        entry.board += 1;
+        if (!t.sprintId) entry.backlog += 1;
+      }
+      if (userId && t.assigneeId === userId) my += 1;
+    }
+    return { myWorkCount: my, perProject: map };
+  }, [allTasks, projectIds, userId]);
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
@@ -31,9 +58,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         <Box sx={{ display: 'flex', alignItems: 'center', color: active ? 'primary.main' : 'text.secondary' }}>{icon}</Box>
         <Typography sx={{ flex: 1, fontSize: 13, fontWeight: active ? 600 : 500,
           color: active ? 'text.primary' : 'text.secondary' }}>{label}</Typography>
-        {badge != null && (
-          <Box sx={{ fontSize: 10.5, px: 0.75, borderRadius: 1, bgcolor: 'action.hover', color: 'text.secondary', fontWeight: 600 }}>{badge}</Box>
-        )}
+        {badge != null && <CountBadge count={badge} />}
       </ListItemButton>
     );
   };
@@ -43,7 +68,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
       <Box sx={{ px: 1.5, py: 1.25, display: 'flex', alignItems: 'center', gap: 1, minHeight: 48,
         borderBottom: 1, borderColor: 'divider' }}>
         <Box sx={{ width: 26, height: 26, borderRadius: 1.2, bgcolor: 'primary.main',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'primary.contrastText' }}>
           <StrideLogoIcon size={16}/>
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -56,7 +81,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
       <Box sx={{ p: 0.75 }}>
         {navItem('/dashboard', t('nav.dashboard'), <DashboardIcon/>)}
         {navItem('/inbox',     t('nav.inbox'),     <BellIcon/>,   3)}
-        {navItem('/my-work',   t('nav.myWork'),    <CheckIcon/>,  7)}
+        {navItem('/my-work',   t('nav.myWork'),    <CheckIcon/>,  myWorkCount)}
         {navItem('/calendar',  t('nav.calendar'),  <CalendarIcon/>)}
         {navItem('/reports',   t('nav.reports'),   <ReportsIcon/>)}
         {navItem('/team',      t('nav.team'),      <TeamIcon/>)}
@@ -77,20 +102,43 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         </Box>
         {projects.map(p => {
           const active = projectMatch?.params.projectId === p.id;
+          const counts = perProject.get(p.id) ?? { board: 0, backlog: 0 };
+          const boardPath = `/projects/${p.id}/board`;
+          const backlogPath = `/projects/${p.id}/backlog`;
+          const boardActive = location.pathname === boardPath;
+          const backlogActive = location.pathname === backlogPath;
           return (
-            <ListItemButton key={p.id} selected={active}
-              onClick={() => { navigate(`/projects/${p.id}/board`); onClose?.(); }}
-              sx={{ pl: 1, pr: 1, py: 0.5, gap: 1, minHeight: 28 }}>
-              <Box sx={{ width: 18, height: 18, borderRadius: 0.8, bgcolor: p.color,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: 11, fontWeight: 700 }}>{p.key[0]}</Box>
-              <Typography sx={{ fontSize: 12.5, fontWeight: active ? 600 : 500, flex: 1,
-                color: active ? 'text.primary' : 'text.secondary',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</Typography>
-              {p.openCount > 0 && (
-                <Typography sx={{ fontSize: 10.5, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>{p.openCount}</Typography>
+            <Box key={p.id}>
+              <ListItemButton selected={active && !backlogActive}
+                onClick={() => { navigate(boardPath); onClose?.(); }}
+                sx={{ pl: 1, pr: 1, py: 0.5, gap: 1, minHeight: 28 }}>
+                <Box sx={{ width: 18, height: 18, borderRadius: 0.8, bgcolor: p.color,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'common.white', fontSize: 11, fontWeight: 700 }}>{p.key[0]}</Box>
+                <Typography sx={{ fontSize: 12.5, fontWeight: active ? 600 : 500, flex: 1,
+                  color: active ? 'text.primary' : 'text.secondary',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</Typography>
+                <CountBadge count={counts.board} variant="muted" />
+              </ListItemButton>
+              {active && (
+                <Box>
+                  <ListItemButton selected={boardActive}
+                    onClick={() => { navigate(boardPath); onClose?.(); }}
+                    sx={{ pl: 4, pr: 1, py: 0.25, gap: 1, minHeight: 24 }}>
+                    <Typography sx={{ fontSize: 12, fontWeight: boardActive ? 600 : 500, flex: 1,
+                      color: boardActive ? 'text.primary' : 'text.secondary' }}>{t('project.board')}</Typography>
+                    <CountBadge count={counts.board} variant="muted" />
+                  </ListItemButton>
+                  <ListItemButton selected={backlogActive}
+                    onClick={() => { navigate(backlogPath); onClose?.(); }}
+                    sx={{ pl: 4, pr: 1, py: 0.25, gap: 1, minHeight: 24 }}>
+                    <Typography sx={{ fontSize: 12, fontWeight: backlogActive ? 600 : 500, flex: 1,
+                      color: backlogActive ? 'text.primary' : 'text.secondary' }}>{t('project.backlog')}</Typography>
+                    <CountBadge count={counts.backlog} variant="muted" />
+                  </ListItemButton>
+                </Box>
               )}
-            </ListItemButton>
+            </Box>
           );
         })}
       </Box>
