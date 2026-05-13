@@ -3,6 +3,7 @@ import { Box, Button, Card, CircularProgress, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useTeamMembers, useUpdateMember } from '../../hooks/useTeam';
 import { useAuthStore } from '../../store/auth-store';
+import { usePermissions } from '../../hooks/usePermissions';
 import FluxAvatar from '../../components/flux-avatar';
 import { CardTitle } from '../../components/ui/ui';
 import { PlusIcon } from '../../components/icons/icons';
@@ -16,6 +17,7 @@ export default function Team() {
   const { data: members = [], isLoading } = useTeamMembers();
   const updateMember = useUpdateMember();
   const currentUserId = useAuthStore(s => s.userId);
+  const { canManageTeam } = usePermissions();
   const [inviteOpen, setInviteOpen] = useState(false);
 
   const total   = members.length;
@@ -39,10 +41,12 @@ export default function Team() {
             {total} členů · Acme s.r.o.
           </Typography>
         </Box>
-        <Button variant="contained" size="small" startIcon={<PlusIcon/>}
-          onClick={() => setInviteOpen(true)}>
-          Pozvat člena
-        </Button>
+        {canManageTeam && (
+          <Button variant="contained" size="small" startIcon={<PlusIcon/>}
+            onClick={() => setInviteOpen(true)}>
+            Pozvat člena
+          </Button>
+        )}
       </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5, mb: 3 }}>
@@ -104,12 +108,14 @@ export default function Team() {
                 <StatusBadgeLocal status={status}/>
               </Box>
               <Box sx={{ width: 36, display: 'flex', justifyContent: 'flex-end' }}>
-                <RowMenu
-                  userId={u.id}
-                  currentRole={role}
-                  onRoleChange={r => changeRole(u.id, r)}
-                  onRemove={() => {}}
-                />
+                {canManageTeam && (
+                  <RowMenu
+                    userId={u.id}
+                    currentRole={role}
+                    onRoleChange={r => changeRole(u.id, r)}
+                    onRemove={() => {}}
+                  />
+                )}
               </Box>
             </Box>
           );

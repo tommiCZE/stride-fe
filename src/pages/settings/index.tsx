@@ -1,4 +1,4 @@
-import { Box, Button, Card, IconButton, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, IconButton, TextField, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { GIT_INTEGRATIONS } from '../../mocks/data';
 import FluxAvatar from '../../components/flux-avatar';
@@ -7,14 +7,18 @@ import { PlusIcon, MoreIcon } from '../../components/icons/icons';
 import { IntegrationCard, ProviderLogo } from './integration-card';
 import { useProjects } from '../../hooks/useProjects';
 import { useTeamMembers } from '../../hooks/useTeam';
+import { usePermissions } from '../../hooks/usePermissions';
 import { BOARD_STATUSES } from '../../constants/statuses';
 
 export default function Settings() {
   const { projectId } = useParams<{ projectId: string }>();
   const { data: projects = [] } = useProjects();
   const { data: members = [] } = useTeamMembers();
+  const { isAdmin } = usePermissions();
   const project = projects.find(p => p.id === projectId);
   if (!project) return null;
+
+  const readOnly = !isAdmin;
 
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%', maxWidth: 720 }}>
@@ -22,13 +26,19 @@ export default function Settings() {
         Nastavení projektu
       </Typography>
 
+      {readOnly && (
+        <Alert severity="info" sx={{ mb: 2, fontSize: 12.5 }}>
+          Nastavení projektu může upravovat pouze administrátor. Zobrazení je pouze ke čtení.
+        </Alert>
+      )}
+
       <Card sx={{ borderRadius: 1.5, p: 2.5, mb: 2 }}>
         <CardTitle sx={{ mb: 1.5 }}>Obecné</CardTitle>
         <Box sx={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 2, alignItems: 'center' }}>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Název</Typography>
-          <TextField size="small" defaultValue={project.name}/>
+          <TextField size="small" defaultValue={project.name} disabled={readOnly}/>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Klíč</Typography>
-          <TextField size="small" defaultValue={project.key} sx={{ width: 140, '& .MuiInputBase-root': { fontFamily: 'ui-monospace, monospace' } }}/>
+          <TextField size="small" defaultValue={project.key} disabled={readOnly} sx={{ width: 140, '& .MuiInputBase-root': { fontFamily: 'ui-monospace, monospace' } }}/>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Lead</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {project.lead && (
@@ -60,10 +70,10 @@ export default function Settings() {
               {s.wip != null && (
                 <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>WIP {s.wip}</Typography>
               )}
-              <IconButton size="small"><MoreIcon/></IconButton>
+              <IconButton size="small" disabled={readOnly}><MoreIcon/></IconButton>
             </Box>
           ))}
-          <Button size="small" startIcon={<PlusIcon/>} sx={{ alignSelf: 'flex-start', mt: 0.5 }}>
+          <Button size="small" startIcon={<PlusIcon/>} disabled={readOnly} sx={{ alignSelf: 'flex-start', mt: 0.5 }}>
             Přidat sloupec
           </Button>
         </Box>
@@ -78,8 +88,8 @@ export default function Settings() {
         </Box>
         {GIT_INTEGRATIONS.map(ig => <IntegrationCard key={ig.id} ig={ig}/>)}
         <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-          <Button size="small" variant="outlined" startIcon={<ProviderLogo provider="github" size={14}/>}>Přidat GitHub účet</Button>
-          <Button size="small" variant="outlined" startIcon={<ProviderLogo provider="gitlab" size={14}/>}>Přidat GitLab účet</Button>
+          <Button size="small" variant="outlined" disabled={readOnly} startIcon={<ProviderLogo provider="github" size={14}/>}>Přidat GitHub účet</Button>
+          <Button size="small" variant="outlined" disabled={readOnly} startIcon={<ProviderLogo provider="gitlab" size={14}/>}>Přidat GitLab účet</Button>
         </Box>
       </Card>
 

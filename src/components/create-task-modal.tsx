@@ -7,6 +7,7 @@ import { TASK_TYPES } from '../constants/taskTypes';
 import { PRIORITIES } from '../constants/priorities';
 import { useProjects } from '../hooks/useProjects';
 import { useCreateTask } from '../hooks/useTasks';
+import { usePermissions } from '../hooks/usePermissions';
 import { useUiStore } from '../store/ui-store';
 import TypeIcon from './icons/type-icon';
 import PriorityIcon from './icons/priority-icon';
@@ -19,6 +20,7 @@ export default function CreateTaskModal() {
   const { enqueueSnackbar } = useSnackbar();
   const { data: projects = [] } = useProjects();
   const createTask = useCreateTask();
+  const { canEdit } = usePermissions();
 
   const project = projects.find(p => p.id === projectId) ?? projects[0];
 
@@ -28,7 +30,7 @@ export default function CreateTaskModal() {
   const descriptionRef = useRef<EditorBodyHandle>(null);
 
   const handleCreate = () => {
-    if (!title.trim() || !project) return;
+    if (!title.trim() || !project || !canEdit) return;
     const descJson = descriptionRef.current?.getJSON();
     createTask.mutate(
       {
@@ -109,14 +111,20 @@ export default function CreateTaskModal() {
         </Box>
 
         <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
-            <kbd style={{ padding: '1px 4px', border: '1px solid', borderRadius: 3, fontSize: 10 }}>Esc</kbd> zavřít ·{' '}
-            <kbd style={{ padding: '1px 4px', border: '1px solid', borderRadius: 3, fontSize: 10 }}>⌘↵</kbd> vytvořit
-          </Typography>
+          {canEdit ? (
+            <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+              <kbd style={{ padding: '1px 4px', border: '1px solid', borderRadius: 3, fontSize: 10 }}>Esc</kbd> zavřít ·{' '}
+              <kbd style={{ padding: '1px 4px', border: '1px solid', borderRadius: 3, fontSize: 10 }}>⌘↵</kbd> vytvořit
+            </Typography>
+          ) : (
+            <Typography sx={{ fontSize: 11, color: 'warning.main' }}>
+              Pro vytvoření tasku potřebujete oprávnění Member nebo Admin.
+            </Typography>
+          )}
           <Box sx={{ flex: 1 }}/>
           <Button size="small" onClick={closeCreateModal}>Zrušit</Button>
           <Button size="small" variant="contained"
-            disabled={!title.trim() || createTask.isPending}
+            disabled={!canEdit || !title.trim() || createTask.isPending}
             onClick={handleCreate}>
             Vytvořit task
           </Button>

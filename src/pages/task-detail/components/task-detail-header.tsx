@@ -7,6 +7,7 @@ import {
   EyeIcon, EyeFilledIcon,
 } from '../../../components/icons/icons';
 import { useIsWatching, useToggleWatch } from '../../../hooks/useWatchers';
+import { usePermissions } from '../../../hooks/usePermissions';
 import type { TaskDto, ProjectDto } from '../../../api/types';
 
 interface Props {
@@ -44,6 +45,7 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
   const { enqueueSnackbar } = useSnackbar();
   const isWatching = useIsWatching(task.id);
   const toggleWatch = useToggleWatch(task.id);
+  const { canEdit } = usePermissions();
 
   const handleWatchClick = () => {
     if (toggleWatch.isPending) return;
@@ -73,9 +75,11 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
         <Typography sx={{ fontSize: 11.5, color: 'text.secondary', fontFamily: 'ui-monospace, monospace' }}>{task.key}</Typography>
       </Box>
       <Box sx={{ flex: 1 }}/>
-      <Button size="small" variant="outlined" startIcon={<ClockIcon/>} onClick={() => onStartTimer(task.key)}>
-        {timer.taskKey === task.key && timer.running ? 'Stopnout timer' : 'Spustit timer'}
-      </Button>
+      {canEdit && (
+        <Button size="small" variant="outlined" startIcon={<ClockIcon/>} onClick={() => onStartTimer(task.key)}>
+          {timer.taskKey === task.key && timer.running ? 'Stopnout timer' : 'Spustit timer'}
+        </Button>
+      )}
       <Tooltip title={isWatching ? 'Přestat sledovat' : 'Sledovat'}>
         <span>
           <IconButton
