@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   Box, Button, Divider, InputAdornment, ListItemIcon, ListItemText,
@@ -26,7 +26,29 @@ import { TaskCard } from './task-card';
 import SaveFilterDialog from './save-filter-dialog';
 import EmptyState from '../../components/empty-state/EmptyState';
 import QueryError from '../../components/query-error/QueryError';
+import FilterBuilderDialog from '../../components/filter-builder/FilterBuilderDialog';
+import {
+  countRules,
+  emptyGroup,
+  evaluate as evaluateFilter,
+  type FilterGroup,
+} from '../../components/filter-builder/filter-evaluator';
 import type { TaskSummaryDto } from '../../api/types';
+
+const advancedFilterStorageKey = (projectId: string) => `stride-board-filter-${projectId}`;
+
+function loadAdvancedFilter(projectId: string | undefined): FilterGroup {
+  if (!projectId || typeof window === 'undefined') return emptyGroup('AND');
+  try {
+    const raw = window.localStorage.getItem(advancedFilterStorageKey(projectId));
+    if (!raw) return emptyGroup('AND');
+    const parsed = JSON.parse(raw) as FilterGroup;
+    if (!parsed || !Array.isArray(parsed.rules)) return emptyGroup('AND');
+    return parsed;
+  } catch {
+    return emptyGroup('AND');
+  }
+}
 
 export default function Board() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -62,6 +84,30 @@ export default function Board() {
   const [activeFilterId, setActiveFilterId] = useState<string | null>(null);
   const [viewsAnchor, setViewsAnchor] = useState<HTMLElement | null>(null);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [advancedFilter, setAdvancedFilter] = useState<FilterGroup>(() => loadAdvancedFilter(projectId));
+  const [advancedDialogOpen, setAdvancedDialogOpen] = useState(false);
+
+  // Reload from storage when project changes.
+  useEffect(() => {
+    setAdvancedFilter(loadAdvancedFilter(projectId));
+  }, [projectId]);
+
+  // Persist advanced filter to localStorage per project.
+  useEffect(() => {
+    if (!projectId || typeof window === 'undefined') return;
+    try {
+      const key = advancedFilterStorageKey(projectId);
+      if (advancedFilter.rules.length === 0) {
+        window.localStorage.removeItem(key);
+      } else {
+        window.localStorage.setItem(key, JSON.stringify(advancedFilter));
+      }
+    } catch {
+      // ignore quota / unavailable storage
+    }
+  }, [advancedFilter, projectId]);
+
+  const advancedRuleCount = useMemo(() => countRules(advancedFilter), [advancedFilter]);
 
   const activeFilter = activeFilterId
     ? projectFilters.find(f => f.id === activeFilterId) ?? null
@@ -130,8 +176,9 @@ export default function Board() {
     if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !t.key.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterAssignee && t.assigneeId !== filterAssignee) return false;
     if (filterMine && t.assigneeId !== userId) return false;
+    if (advancedRuleCount > 0 && !evaluateFilter(t, advancedFilter)) return false;
     return true;
-  }), [tasks, search, filterAssignee, filterMine, userId]);
+  }), [tasks, search, filterAssignee, filterMine, userId, advancedFilter, advancedRuleCount]);
 
   const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
@@ -179,18 +226,9 @@ export default function Board() {
   };
 
   return (
-    <Box
-      component="main"
-      role="region"
-      aria-label="Kanban board"
-      sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-    >
-      <Box
-        role="toolbar"
-        aria-label="Filtry boardu"
-        sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap',
-        borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexShrink: 0 }}
-      >
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <Box sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap',
+        borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexShrink: 0 }}>
         {sprint && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'success.main' }}>● {sprint.name}</Typography>
@@ -221,10 +259,27 @@ export default function Board() {
             color: filterMine ? '#fff' : 'text.secondary', cursor: 'default' }}>
           Pouze moje
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.4, borderRadius: 1,
-          fontSize: 12, color: 'text.secondary', bgcolor: 'action.hover', cursor: 'default' }}>
-          <FilterIcon/> Filtry
-        </Box>
+        <Button
+          size="small"
+          variant={advancedRuleCount > 0 ? 'contained' : 'text'}
+          color={advancedRuleCount > 0 ? 'primary' : 'inherit'}
+          startIcon={<FilterIcon/>}
+          onClick={() => setAdvancedDialogOpen(true)}
+          sx={{
+            minHeight: 0,
+            px: 1,
+            py: 0.4,
+            fontSize: 12,
+            fontWeight: advancedRuleCount > 0 ? 600 : 400,
+            color: advancedRuleCount > 0 ? 'primary.contrastText' : 'text.secondary',
+            bgcolor: advancedRuleCount > 0 ? 'primary.main' : 'action.hover',
+            '&:hover': {
+              bgcolor: advancedRuleCount > 0 ? 'primary.dark' : 'action.selected',
+            },
+          }}
+        >
+          {advancedRuleCount > 0 ? `Filtry (${advancedRuleCount})` : 'Filtry'}
+        </Button>
         <Tooltip title="Uložená zobrazení filtrů">
           <Box
             onClick={(e) => setViewsAnchor(e.currentTarget)}
@@ -308,6 +363,16 @@ export default function Board() {
         onSave={handleSaveCurrent}
       />
 
+      <FilterBuilderDialog
+        open={advancedDialogOpen}
+        initialValue={advancedFilter}
+        onClose={() => setAdvancedDialogOpen(false)}
+        onApply={(group) => {
+          setAdvancedFilter(group);
+          setAdvancedDialogOpen(false);
+        }}
+      />
+
       {tasksError ? (
         <QueryError error={tasksErrorObj} onRetry={() => { void refetchTasks(); }} />
       ) : tasks.length === 0 ? (
@@ -329,12 +394,8 @@ export default function Board() {
           />
         </Box>
       ) : (
-        <Box
-          role="list"
-          aria-label="Sloupce boardu"
-          sx={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', px: 2, py: 2,
-          display: 'flex', gap: 1.5, alignItems: 'flex-start' }}
-        >
+        <Box sx={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', px: 2, py: 2,
+          display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
           <DndContext sensors={sensors} collisionDetection={closestCorners}
             measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
             onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
