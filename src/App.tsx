@@ -14,6 +14,8 @@ import TaskDetail from './pages/task-detail';
 import Login from './pages/login';
 import Profile from './pages/profile';
 import CreateTaskModal from './components/create-task-modal';
+import KeyboardHelpDialog from './components/keyboard-help/keyboard-help-dialog';
+import { useKeyboardShortcuts } from './hooks/use-keyboard-shortcuts';
 
 function ProtectedLayout() {
   const token = useAuthStore(s => s.token);
@@ -67,5 +69,11 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  const { open, setOpen } = useKeyboardShortcuts();
+  return (
+    <>
+      <RouterProvider router={router} />
+      <KeyboardHelpDialog open={open} onClose={() => setOpen(false)} />
+    </>
+  );
 }
