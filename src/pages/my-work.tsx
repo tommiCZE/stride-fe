@@ -1,4 +1,4 @@
-import { Box, Card, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useProjects } from '../hooks/useProjects';
 import { useAllProjectTasks } from '../hooks/useTasks';

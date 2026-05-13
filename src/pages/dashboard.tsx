@@ -5,7 +5,6 @@ import { useProjects } from '../hooks/useProjects';
 import { useAllProjectTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../store/auth-store';
 import { BOARD_STATUSES } from '../constants/statuses';
-import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
 import { PlusIcon, DashboardIcon } from '../components/icons/icons';
