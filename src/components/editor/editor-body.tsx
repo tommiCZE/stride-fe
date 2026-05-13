@@ -18,6 +18,7 @@ import MenuBar, { BubbleToolbar } from './menu-bar';
 import { CalloutNode } from './callout-extension';
 import { IssueLink } from './extensions/issue-link';
 import { IssueLinkLayer } from './extensions/issue-link-handlers';
+import { SlashMenu } from './extensions/slash-menu';
 import { editorContentSx } from './editor-content-styles';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -115,6 +116,7 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
       CharacterCount,
       TableKit,
       IssueLink,
+      SlashMenu,
     ],
     content: initialContent,
     autofocus: 'end',
