@@ -229,3 +229,22 @@ export interface UpdateMemberRequest {
   workspaceRole?: string;
   status?: string;
 }
+
+export interface SubtaskDto {
+  id: string;
+  taskId: string;
+  title: string;
+  done: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSubtaskRequest {
+  title: string;
+}
+
+export interface UpdateSubtaskRequest {
+  title?: string;
+  done?: boolean;
+}

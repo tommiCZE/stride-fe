@@ -86,7 +86,8 @@ export interface TaskLink {
   key: string;
 }
 
-export type { JSONContent } from '@tiptap/core';
+import type { JSONContent } from '@tiptap/core';
+export type { JSONContent };
 
 export type RichBlock =
   | { type: 'h2'; text: string }

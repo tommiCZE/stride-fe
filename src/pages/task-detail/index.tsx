@@ -17,6 +17,7 @@ import { TitleEditor } from './fields/field-editors';
 import TaskDetailHeader from './components/task-detail-header';
 import TaskDetailTabs from './components/task-detail-tabs';
 import TaskDetailSidebar from './components/task-detail-sidebar';
+import Subtasks from './panels/subtasks';
 import { PRIORITIES } from '../../constants/priorities';
 import { BOARD_STATUSES } from '../../constants/statuses';
 import type { UpdateTaskRequest } from '../../api/types';
@@ -196,6 +197,7 @@ export default function TaskDetail() {
                   onSave={(json: JSONContent) => patchTask({ description: JSON.stringify(json) })}
                   onUploadImage={(file) => attachmentsApi.uploadImage(task.id, file)}
                 />
+                <Subtasks taskId={task.id}/>
                 <TaskDetailTabs task={task} tab={tab} devCount={devCount} onChange={setTab}/>
               </Box>
 
