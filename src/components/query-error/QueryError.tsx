@@ -25,6 +25,8 @@ export default function QueryError({ error, onRetry, compact }: Props) {
     return (
       <Box
         role="alert"
+        aria-live="polite"
+        aria-atomic="true"
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -37,6 +39,7 @@ export default function QueryError({ error, onRetry, compact }: Props) {
         }}
       >
         <Box
+          aria-hidden="true"
           sx={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -70,6 +73,7 @@ export default function QueryError({ error, onRetry, compact }: Props) {
           color="inherit"
           startIcon={<RefreshIcon />}
           onClick={onRetry}
+          aria-label="Zkusit znovu načíst data"
           sx={{ ml: 'auto', flexShrink: 0 }}
         >
           Zkusit znovu
@@ -81,6 +85,9 @@ export default function QueryError({ error, onRetry, compact }: Props) {
   return (
     <Box
       role="alert"
+      aria-live="polite"
+      aria-atomic="true"
+      aria-labelledby="query-error-title"
       sx={{
         flex: 1,
         width: '100%',
@@ -103,6 +110,7 @@ export default function QueryError({ error, onRetry, compact }: Props) {
         }}
       >
         <Box
+          aria-hidden="true"
           sx={{
             width: 72,
             height: 72,
@@ -119,7 +127,7 @@ export default function QueryError({ error, onRetry, compact }: Props) {
         </Box>
 
         <Stack spacing={0.5} sx={{ alignItems: 'center' }}>
-          <Typography variant="h6" component="h2" sx={{ fontWeight: 700 }}>
+          <Typography id="query-error-title" variant="h6" component="h2" sx={{ fontWeight: 700 }}>
             Nepodařilo se načíst data
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 360 }}>
@@ -151,6 +159,7 @@ export default function QueryError({ error, onRetry, compact }: Props) {
           color="primary"
           startIcon={<RefreshIcon />}
           onClick={onRetry}
+          aria-label="Zkusit znovu načíst data"
           sx={{ mt: 0.5 }}
         >
           Zkusit znovu

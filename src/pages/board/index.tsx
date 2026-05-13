@@ -179,9 +179,18 @@ export default function Board() {
   };
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <Box sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap',
-        borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexShrink: 0 }}>
+    <Box
+      component="main"
+      role="region"
+      aria-label="Kanban board"
+      sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+    >
+      <Box
+        role="toolbar"
+        aria-label="Filtry boardu"
+        sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap',
+        borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexShrink: 0 }}
+      >
         {sprint && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'success.main' }}>● {sprint.name}</Typography>
@@ -320,8 +329,12 @@ export default function Board() {
           />
         </Box>
       ) : (
-        <Box sx={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', px: 2, py: 2,
-          display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+        <Box
+          role="list"
+          aria-label="Sloupce boardu"
+          sx={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', px: 2, py: 2,
+          display: 'flex', gap: 1.5, alignItems: 'flex-start' }}
+        >
           <DndContext sensors={sensors} collisionDetection={closestCorners}
             measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
             onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>

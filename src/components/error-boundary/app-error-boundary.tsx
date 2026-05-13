@@ -29,6 +29,9 @@ function FallbackUI({ error, resetErrorBoundary }: FallbackProps) {
   return (
     <Box
       role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+      aria-labelledby="app-error-title"
       sx={{
         minHeight: '100vh',
         display: 'flex',
@@ -51,6 +54,7 @@ function FallbackUI({ error, resetErrorBoundary }: FallbackProps) {
         }}
       >
         <Box
+          aria-hidden="true"
           sx={{
             width: 72,
             height: 72,
@@ -66,7 +70,7 @@ function FallbackUI({ error, resetErrorBoundary }: FallbackProps) {
         </Box>
 
         <Stack spacing={0.5} sx={{ alignItems: 'center' }}>
-          <Typography variant="h5" component="h1">
+          <Typography id="app-error-title" variant="h5" component="h1">
             Něco se pokazilo
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 360 }}>

@@ -274,12 +274,16 @@ export default function CommandPalette({ open, onClose }: Props) {
   // Flat index → so highlight maps correctly across grouped render.
   const flatIndex = (r: Result) => results.indexOf(r);
 
+  const activeId = results[highlight]?.id;
+  const listboxId = 'command-palette-listbox';
+
   return (
     <Dialog
       open={open}
       onClose={onClose}
       maxWidth="sm"
       fullWidth
+      aria-label="Rychlé hledání"
       slotProps={{ paper: { sx: { borderRadius: 1.5, overflow: 'hidden' } } }}
     >
       <Box
@@ -289,7 +293,7 @@ export default function CommandPalette({ open, onClose }: Props) {
           borderBottom: 1, borderColor: 'divider',
         }}
       >
-        <Box sx={{ display: 'flex', color: 'text.secondary' }}>
+        <Box aria-hidden="true" sx={{ display: 'flex', color: 'text.secondary' }}>
           <SearchIcon />
         </Box>
         <InputBase
@@ -300,6 +304,14 @@ export default function CommandPalette({ open, onClose }: Props) {
           onChange={e => setQuery(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder="Hledat úkoly, projekty, lidi…"
+          inputProps={{
+            role: 'combobox',
+            'aria-expanded': results.length > 0,
+            'aria-controls': listboxId,
+            'aria-autocomplete': 'list',
+            'aria-activedescendant': activeId,
+            'aria-label': 'Hledat úkoly, projekty, lidi',
+          }}
           sx={{ fontSize: 14, '& input': { py: 0.5 } }}
         />
         <Box
@@ -318,14 +330,32 @@ export default function CommandPalette({ open, onClose }: Props) {
 
       <Box sx={{ maxHeight: 400, overflowY: 'auto' }}>
         {results.length === 0 ? (
-          <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>
+          <Box
+            role="status"
+            aria-live="polite"
+            sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}
+          >
             <Typography sx={{ fontSize: 13 }}>Žádné výsledky</Typography>
           </Box>
         ) : (
-          <List ref={listRef} dense disablePadding>
+          <List
+            ref={listRef}
+            dense
+            disablePadding
+            id={listboxId}
+            role="listbox"
+            aria-label="Výsledky hledání"
+          >
             {grouped.map(group => (
-              <Box key={group.title} component="li" sx={{ listStyle: 'none' }}>
+              <Box
+                key={group.title}
+                component="li"
+                role="group"
+                aria-label={group.title}
+                sx={{ listStyle: 'none' }}
+              >
                 <Typography
+                  aria-hidden="true"
                   sx={{
                     px: 2, pt: 1.25, pb: 0.5,
                     fontSize: 10.5, fontWeight: 700,
@@ -341,10 +371,13 @@ export default function CommandPalette({ open, onClose }: Props) {
                   return (
                     <ListItemButton
                       key={r.id}
+                      id={r.id}
                       data-idx={idx}
                       selected={active}
                       onMouseEnter={() => setHighlight(idx)}
                       onClick={() => activate(r)}
+                      role="option"
+                      aria-selected={active}
                       sx={{
                         px: 2, py: 0.75, gap: 1.25, minHeight: 36,
                         '&.Mui-selected': {

@@ -84,9 +84,11 @@ export default function KeyboardHelpDialog({ open, onClose }: Props) {
       onClose={onClose}
       maxWidth="xs"
       fullWidth
+      aria-labelledby="keyboard-help-title"
       slotProps={{ paper: { sx: { borderRadius: 1.5 } } }}
     >
       <DialogTitle
+        id="keyboard-help-title"
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -99,14 +101,14 @@ export default function KeyboardHelpDialog({ open, onClose }: Props) {
         }}
       >
         <Box sx={{ flex: 1 }}>Klávesové zkratky</Box>
-        <IconButton size="small" onClick={onClose} aria-label="Zavřít">
+        <IconButton size="small" onClick={onClose} aria-label="Zavřít dialog">
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ px: 2.5, py: 1 }}>
+      <DialogContent sx={{ px: 2.5, py: 1 }} role="list" aria-label="Seznam klávesových zkratek">
         {SHORTCUTS.map((shortcut, idx) => (
-          <ShortcutRow key={idx}>
+          <ShortcutRow key={idx} role="listitem">
             <Box sx={{ minWidth: 140 }}>
               <KeyGroup groups={shortcut.keys} />
             </Box>

@@ -11,6 +11,9 @@ interface Props {
 export default function EmptyState({ icon, title, description, action }: Props) {
   return (
     <Box
+      role="status"
+      aria-label={title}
+      aria-live="polite"
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -23,6 +26,7 @@ export default function EmptyState({ icon, title, description, action }: Props) 
       }}
     >
       <Box
+        aria-hidden="true"
         sx={{
           width: 80,
           height: 80,

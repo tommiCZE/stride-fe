@@ -54,8 +54,10 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     return (
       <ListItemButton key={path} selected={active}
         onClick={() => { navigate(path); onClose?.(); }}
+        aria-current={active ? 'page' : undefined}
+        aria-label={badge != null ? `${label}, ${badge}` : label}
         sx={{ pl: 1.25, pr: 1, py: 0.5, gap: 1, minHeight: 30 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', color: active ? 'primary.main' : 'text.secondary' }}>{icon}</Box>
+        <Box aria-hidden="true" sx={{ display: 'flex', alignItems: 'center', color: active ? 'primary.main' : 'text.secondary' }}>{icon}</Box>
         <Typography sx={{ flex: 1, fontSize: 13, fontWeight: active ? 600 : 500,
           color: active ? 'text.primary' : 'text.secondary' }}>{label}</Typography>
         {badge != null && <CountBadge count={badge} />}
@@ -64,7 +66,12 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <Box sx={{ width: 232, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
+    <Box
+      component="nav"
+      role="navigation"
+      aria-label={t('nav.projects')}
+      sx={{ width: 232, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}
+    >
       <Box sx={{ px: 1.5, py: 1.25, display: 'flex', alignItems: 'center', gap: 1, minHeight: 48,
         borderBottom: 1, borderColor: 'divider' }}>
         <Box sx={{ width: 26, height: 26, borderRadius: 1.2, bgcolor: 'primary.main',
@@ -96,7 +103,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
           <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', flex: 1 }}>
             {t('nav.projects')}
           </Typography>
-          <IconButton size="small" sx={{ p: 0.25 }}>
+          <IconButton size="small" sx={{ p: 0.25 }} aria-label="Vytvořit projekt">
             <PlusIcon/>
           </IconButton>
         </Box>
@@ -111,8 +118,10 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
             <Box key={p.id}>
               <ListItemButton selected={active && !backlogActive}
                 onClick={() => { navigate(boardPath); onClose?.(); }}
+                aria-current={boardActive ? 'page' : undefined}
+                aria-label={`${p.name}, ${counts.board} aktivních úkolů`}
                 sx={{ pl: 1, pr: 1, py: 0.5, gap: 1, minHeight: 28 }}>
-                <Box sx={{ width: 18, height: 18, borderRadius: 0.8, bgcolor: p.color,
+                <Box aria-hidden="true" sx={{ width: 18, height: 18, borderRadius: 0.8, bgcolor: p.color,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'common.white', fontSize: 11, fontWeight: 700 }}>{p.key[0]}</Box>
                 <Typography sx={{ fontSize: 12.5, fontWeight: active ? 600 : 500, flex: 1,
@@ -124,6 +133,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                 <Box>
                   <ListItemButton selected={boardActive}
                     onClick={() => { navigate(boardPath); onClose?.(); }}
+                    aria-current={boardActive ? 'page' : undefined}
                     sx={{ pl: 4, pr: 1, py: 0.25, gap: 1, minHeight: 24 }}>
                     <Typography sx={{ fontSize: 12, fontWeight: boardActive ? 600 : 500, flex: 1,
                       color: boardActive ? 'text.primary' : 'text.secondary' }}>{t('project.board')}</Typography>
@@ -131,6 +141,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                   </ListItemButton>
                   <ListItemButton selected={backlogActive}
                     onClick={() => { navigate(backlogPath); onClose?.(); }}
+                    aria-current={backlogActive ? 'page' : undefined}
                     sx={{ pl: 4, pr: 1, py: 0.25, gap: 1, minHeight: 24 }}>
                     <Typography sx={{ fontSize: 12, fontWeight: backlogActive ? 600 : 500, flex: 1,
                       color: backlogActive ? 'text.primary' : 'text.secondary' }}>{t('project.backlog')}</Typography>
@@ -150,7 +161,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
           <Typography sx={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.1 }}>{me?.name}</Typography>
           <Typography sx={{ fontSize: 10.5, color: 'text.secondary', lineHeight: 1.1 }}>{me?.workspaceRole}</Typography>
         </Box>
-        <IconButton size="small"><SettingsIcon/></IconButton>
+        <IconButton size="small" aria-label="Nastavení"><SettingsIcon/></IconButton>
       </Box>
     </Box>
   );
