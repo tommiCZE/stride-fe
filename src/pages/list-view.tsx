@@ -1,4 +1,5 @@
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { useMemo, useState } from 'react';
+import { Box, Button, Checkbox, TextField, Typography } from '@mui/material';
 import { useParams, useSearchParams } from 'react-router-dom';
 import Papa from 'papaparse';
 import { useSnackbar } from 'notistack';
@@ -13,6 +14,9 @@ import { FilterIcon, ListIcon, PlusIcon, DownloadIcon } from '../components/icon
 import EmptyState from '../components/empty-state/EmptyState';
 import QueryError from '../components/query-error/QueryError';
 import { useUiStore } from '../store/ui-store';
+import ListViewBulkToolbar from './list-view-bulk-toolbar';
+
+const SELECT_COL_W = 32;
 
 const COLS = [
   { key: 'key',      label: 'Key',      w: 84 },
@@ -39,6 +43,28 @@ export default function ListView() {
   } = useTasks(projectId!);
   const { data: projects = [] } = useProjects();
   const openCreateModal = useUiStore(s => s.openCreateModal);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const taskIds = useMemo(() => tasks.map(t => t.id), [tasks]);
+  const allSelected = taskIds.length > 0 && taskIds.every(id => selectedIds.has(id));
+  const someSelected = !allSelected && taskIds.some(id => selectedIds.has(id));
+
+  const toggleOne = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    setSelectedIds(prev => {
+      if (taskIds.every(id => prev.has(id))) return new Set();
+      return new Set(taskIds);
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
 
   if (tasksError) {
     return (
@@ -111,10 +137,30 @@ export default function ListView() {
         <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>{tasks.length} tasků</Typography>
       </Box>
 
+      {projectId && (
+        <ListViewBulkToolbar
+          projectId={projectId}
+          selectedIds={Array.from(selectedIds)}
+          onClear={clearSelection}
+        />
+      )}
+
       <Box sx={{ minWidth: 900 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, fontSize: 10.5, fontWeight: 700,
           letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary',
-          borderBottom: 1, borderColor: 'divider', position: 'sticky', top: 43, bgcolor: 'background.paper', zIndex: 1 }}>
+          borderBottom: 1, borderColor: 'divider', position: 'sticky',
+          top: selectedIds.size > 0 ? 86 : 43,
+          bgcolor: 'background.paper', zIndex: 1 }}>
+          <Box sx={{ width: SELECT_COL_W, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Checkbox
+              size="small"
+              checked={allSelected}
+              indeterminate={someSelected}
+              onChange={toggleAll}
+              aria-label="Vybrat všechny úkoly"
+              sx={{ p: 0 }}
+            />
+          </Box>
           {COLS.map(c => (
             <Box key={c.key} sx={{ width: 'w' in c ? c.w : undefined, flex: 'flex' in c ? c.flex : undefined, px: 0.5 }}>{c.label}</Box>
           ))}
@@ -125,11 +171,25 @@ export default function ListView() {
           const assignee = t.assigneeId
             ? { color: t.assigneeColor ?? '#94a3b8', initials: t.assigneeInitials ?? '?' }
             : null;
+          const isSelected = selectedIds.has(t.id);
           return (
             <Box key={t.id} onClick={() => openTask(t.id)}
               sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, fontSize: 12.5,
                 borderBottom: 1, borderColor: 'divider', cursor: 'default',
-                '&:hover': { bgcolor: 'action.hover' } }}>
+                bgcolor: isSelected ? 'action.selected' : 'transparent',
+                '&:hover': { bgcolor: isSelected ? 'action.selected' : 'action.hover' } }}>
+              <Box
+                sx={{ width: SELECT_COL_W, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onClick={e => e.stopPropagation()}
+              >
+                <Checkbox
+                  size="small"
+                  checked={isSelected}
+                  onChange={() => toggleOne(t.id)}
+                  aria-label={`Vybrat ${t.key}`}
+                  sx={{ p: 0 }}
+                />
+              </Box>
               <Box sx={{ width: 84, px: 0.5 }}>
                 <MonoKey sx={{ fontSize: 11.5 }}>{t.key}</MonoKey>
               </Box>
