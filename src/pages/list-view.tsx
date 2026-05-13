@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
-import { Box, Button, Checkbox, TextField, Typography } from '@mui/material';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Box, Button, Checkbox, Skeleton, TextField, Typography } from '@mui/material';
 import { useParams, useSearchParams } from 'react-router-dom';
 import Papa from 'papaparse';
 import { useSnackbar } from 'notistack';
-import { useTasks } from '../hooks/useTasks';
+import { useTasksPaginated } from '../hooks/useTasksPaginated';
 import { useProjects } from '../hooks/useProjects';
 import { BOARD_STATUSES } from '../constants/statuses';
 import FluxAvatar from '../components/flux-avatar';
@@ -36,11 +36,18 @@ export default function ListView() {
   const { enqueueSnackbar } = useSnackbar();
   const openTask = (id: string) => setSearchParams({ task: id });
   const {
-    data: tasks = [],
+    data,
     isError: tasksError,
     error: tasksErrorObj,
     refetch: refetchTasks,
-  } = useTasks(projectId!);
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useTasksPaginated(projectId!);
+  const tasks = useMemo(
+    () => (data?.pages ?? []).flatMap(p => p.items),
+    [data],
+  );
   const { data: projects = [] } = useProjects();
   const openCreateModal = useUiStore(s => s.openCreateModal);
 
@@ -66,6 +73,23 @@ export default function ListView() {
 
   const clearSelection = () => setSelectedIds(new Set());
 
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return;
+    if (!hasNextPage) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries.some(e => e.isIntersecting) && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, tasks.length]);
+
   if (tasksError) {
     return (
       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.paper', height: '100%' }}>
@@ -74,7 +98,7 @@ export default function ListView() {
     );
   }
 
-  if (tasks.length === 0) {
+  if (data && tasks.length === 0) {
     return (
       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.paper', height: '100%' }}>
         <EmptyState
@@ -216,6 +240,34 @@ export default function ListView() {
             </Box>
           );
         })}
+
+        {isFetchingNextPage && (
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Box
+                key={`loading-${i}`}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  px: 1.5,
+                  py: 0.75,
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  gap: 1,
+                }}
+              >
+                <Skeleton variant="text" width={56} height={13} />
+                <Skeleton variant="circular" width={13} height={13} />
+                <Skeleton variant="circular" width={12} height={12} />
+                <Skeleton variant="text" sx={{ flex: 1 }} height={13} />
+                <Skeleton variant="text" width={110} height={13} />
+                <Skeleton variant="text" width={90} height={13} />
+              </Box>
+            ))}
+          </Box>
+        )}
+
+        <Box ref={sentinelRef} sx={{ height: 1 }} aria-hidden />
       </Box>
     </Box>
   );
