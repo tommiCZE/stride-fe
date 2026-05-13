@@ -3,9 +3,10 @@ import { Comments } from '../panels/comments';
 import { DevPanel } from '../panels/dev-panel';
 import { Worklog } from '../panels/worklog';
 import { TaskActivity } from '../panels/task-activity';
+import { Attachments } from '../panels/attachments';
 import type { TaskDto } from '../../../api/types';
 
-type TabKey = 'comments' | 'dev' | 'worklog' | 'activity';
+type TabKey = 'comments' | 'dev' | 'worklog' | 'activity' | 'attachments';
 
 interface Props {
   task: TaskDto;
@@ -16,10 +17,11 @@ interface Props {
 
 export default function TaskDetailTabs({ task, tab, devCount, onChange }: Props) {
   const tabs: [TabKey, string][] = [
-    ['comments', `Komentáře · ${task.commentCount}`],
-    ['dev',      devCount > 0 ? `Vývoj · ${devCount}` : 'Vývoj'],
-    ['worklog',  `Worklog · ${task.logged}h`],
-    ['activity', 'Historie'],
+    ['comments',    `Komentáře · ${task.commentCount}`],
+    ['attachments', 'Přílohy'],
+    ['dev',         devCount > 0 ? `Vývoj · ${devCount}` : 'Vývoj'],
+    ['worklog',     `Worklog · ${task.logged}h`],
+    ['activity',    'Historie'],
   ];
 
   return (
@@ -33,10 +35,11 @@ export default function TaskDetailTabs({ task, tab, devCount, onChange }: Props)
         ))}
       </Box>
       <Box sx={{ mt: 2 }}>
-        {tab === 'comments' && <Comments taskId={task.id}/>}
-        {tab === 'dev'      && <DevPanel  taskKey={task.key}/>}
-        {tab === 'worklog'  && <Worklog   taskId={task.id}/>}
-        {tab === 'activity' && <TaskActivity taskId={task.id}/>}
+        {tab === 'comments'    && <Comments taskId={task.id}/>}
+        {tab === 'attachments' && <Attachments taskId={task.id}/>}
+        {tab === 'dev'         && <DevPanel  taskKey={task.key}/>}
+        {tab === 'worklog'     && <Worklog   taskId={task.id}/>}
+        {tab === 'activity'    && <TaskActivity taskId={task.id}/>}
       </Box>
     </>
   );

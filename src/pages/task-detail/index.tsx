@@ -74,7 +74,7 @@ export default function TaskDetail() {
     const saved = localStorage.getItem('stride-detail-width');
     return saved ? Number(saved) : 900;
   });
-  const [tab, setTab] = useState<'comments' | 'dev' | 'worklog' | 'activity'>('comments');
+  const [tab, setTab] = useState<'comments' | 'dev' | 'worklog' | 'activity' | 'attachments'>('comments');
 
   const { data: task, isLoading } = useTask(taskId ?? '');
   const { data: projects = [] } = useProjects();
