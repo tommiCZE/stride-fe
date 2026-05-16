@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress, Tooltip, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import type { JSONContent } from '@tiptap/core';
 import { useComments, useCreateComment } from '../../../hooks/useComments';
@@ -19,6 +19,13 @@ function timeAgo(iso: string) {
   const h = Math.floor(m / 60);
   if (h < 24) return `před ${h} h`;
   return `před ${Math.floor(h / 24)} d`;
+}
+
+function exactDate(iso: string) {
+  return new Date(iso).toLocaleString('cs-CZ', {
+    day: 'numeric', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
 }
 
 const EMPTY_DOC: JSONContent = { type: 'doc', content: [] };
@@ -62,6 +69,7 @@ interface CommentItemProps {
   comment: CommentDto;
   taskId: string;
   isReply: boolean;
+  parentAuthorName?: string;
   replyingTo: string | null;
   onReplyClick: (id: string) => void;
   onReplyCancel: () => void;
@@ -69,7 +77,7 @@ interface CommentItemProps {
   showReply: boolean;
 }
 
-function CommentItem({ comment, taskId, isReply, replyingTo, onReplyClick, onReplyCancel, onReplySubmit, showReply, highlighted }: CommentItemProps & { highlighted?: boolean }) {
+function CommentItem({ comment, taskId, isReply, parentAuthorName, replyingTo, onReplyClick, onReplyCancel, onReplySubmit, showReply, highlighted }: CommentItemProps & { highlighted?: boolean }) {
   return (
     <Box
       id={`comment-${comment.sequence}`}
@@ -84,11 +92,26 @@ function CommentItem({ comment, taskId, isReply, replyingTo, onReplyClick, onRep
     >
       <FluxAvatar user={comment.user} size={isReply ? 24 : 28}/>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5 }}>
-          <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{comment.user.name}</Typography>
-          <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{timeAgo(comment.createdAt)}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
+          <Typography component="span" sx={{ fontSize: 14, fontWeight: 600 }}>{comment.user.name}</Typography>
+          {isReply && parentAuthorName && (
+            <Typography component="span" sx={{ fontSize: 11.5, color: 'text.disabled' }}>
+              odpověděl{' '}
+              <Box component="strong" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                {parentAuthorName}
+              </Box>
+            </Typography>
+          )}
+          <Tooltip title={exactDate(comment.createdAt)} placement="top">
+            <Typography
+              component="span"
+              sx={{ fontSize: 11.5, color: 'text.disabled', cursor: 'help' }}
+            >
+              {timeAgo(comment.createdAt)}
+            </Typography>
+          </Tooltip>
         </Box>
-        <Box sx={{ p: 1.25, borderRadius: 1.2, bgcolor: 'action.hover', fontSize: 13, lineHeight: 1.55 }}>
+        <Box sx={{ fontSize: 14, lineHeight: 1.55, color: 'text.primary' }}>
           <RichContent blocks={comment.text}/>
         </Box>
         {showReply && (
@@ -196,13 +219,10 @@ export function Comments({ taskId }: { taskId: string }) {
             {replies.length > 0 && (
               <Box
                 sx={{
-                  ml: 5,
-                  pl: 2,
-                  borderLeft: 2,
-                  borderColor: 'divider',
+                  ml: 3.5,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 1.25,
+                  gap: 1.5,
                 }}
               >
                 {replies.map((r, idx) => (
@@ -211,6 +231,7 @@ export function Comments({ taskId }: { taskId: string }) {
                     comment={r}
                     taskId={taskId}
                     isReply
+                    parentAuthorName={c.user.name}
                     replyingTo={replyingTo}
                     onReplyClick={id => setReplyingTo(id)}
                     onReplyCancel={() => setReplyingTo(null)}

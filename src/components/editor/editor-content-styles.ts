@@ -216,20 +216,14 @@ export function editorContentSx(theme: Theme, compact?: boolean) {
     },
     // @mentions
     '& .tiptap span[data-mention]': {
-      display: 'inline-block',
-      padding: '0 6px',
-      borderRadius: '10px',
-      fontWeight: 600,
-      fontSize: '14px',
-      lineHeight: 1.5,
       color: theme.palette.primary.main,
-      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-      border: `1px solid ${alpha(theme.palette.primary.main, 0.22)}`,
+      fontWeight: 600,
+      textDecoration: 'none',
       cursor: 'default',
       whiteSpace: 'nowrap',
     },
     '& .tiptap span[data-mention]:hover': {
-      backgroundColor: alpha(theme.palette.primary.main, 0.18),
+      textDecoration: 'underline',
     },
     // Suggestion decoration (visible while typing `@foo`)
     '& .tiptap span.suggestion': {

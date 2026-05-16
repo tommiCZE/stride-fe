@@ -15,7 +15,7 @@ function renderInline(text: string) {
     if (tok.startsWith('@')) {
       parts.push(
         <Box key={m.index} component="span"
-          sx={{ color: 'primary.main', fontWeight: 600, bgcolor: alpha('#5A5BFF', 0.1), px: 0.5, borderRadius: 0.5 }}>
+          sx={{ color: 'primary.main', fontWeight: 600, '&:hover': { textDecoration: 'underline' } }}>
           {tok}
         </Box>
       );
