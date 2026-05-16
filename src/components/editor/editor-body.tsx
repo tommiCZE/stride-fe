@@ -92,13 +92,14 @@ interface Props {
   placeholder: string;
   compact?: boolean;
   hideActions?: boolean;
+  variant?: 'doc' | 'comment';
   onSave?: (json: JSONContent) => void;
   onCancel?: () => void;
   onUploadImage?: (file: File) => Promise<string>;
 }
 
 const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
-  { initialContent, placeholder, compact, hideActions, onSave, onCancel, onUploadImage }: Readonly<Props>,
+  { initialContent, placeholder, compact, hideActions, variant = 'doc', onSave, onCancel, onUploadImage }: Readonly<Props>,
   ref,
 ) {
   const theme = useTheme();
@@ -228,9 +229,11 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
       }}>
 
       <Tiptap editor={editor}>
-        <Box sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'background.paper' }}>
-          <MenuBar onUploadImage={onUploadImage} />
-        </Box>
+        {variant === 'doc' && (
+          <Box sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'background.paper' }}>
+            <MenuBar onUploadImage={onUploadImage} />
+          </Box>
+        )}
         <IssueLinkLayer>
           <Box sx={editorContentSx(theme, compact)}>
             <Tiptap.Content />

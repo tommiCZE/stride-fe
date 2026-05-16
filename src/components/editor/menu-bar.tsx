@@ -1,178 +1,37 @@
+import { useState } from 'react';
 import { useCurrentEditor, useEditorState, posToDOMRect } from '@tiptap/react';
-import { Box, useTheme, Portal, Paper } from '@mui/material';
+import type { Editor } from '@tiptap/react';
+import { Box, useTheme, Portal, Paper, Menu, MenuItem, ListItemIcon, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { TBtn, Sep } from './t-btn';
 import type { CalloutTone } from './callout-extension';
-import * as React from "react";
+import {
+  CodeBlockIcon, InfoIcon, WarnIcon, ErrorIcon, LinkIcon, ImageIcon, TaskListIcon,
+  TableIcon, HighlightIcon, AddRowAfterIcon, AddRowBeforeIcon, DeleteRowIcon,
+  AddColumnAfterIcon, AddColumnBeforeIcon, DeleteColumnIcon, DeleteTableIcon,
+  BlockquoteIcon, BulletListIcon, OrderedListIcon, CaretDownIcon,
+} from '../icons/editor-icons';
+import * as React from 'react';
 
-function CodeBlockIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/>
-      <path d="M4.5 6.5L3 8.5l1.5 2M7.5 6.5L9 8.5l-1.5 2M11 8.5h3"/>
-    </svg>
-  );
+// ─── shared helpers ─────────────────────────────────────────────────────────
+
+const run = (e: React.MouseEvent, fn: () => unknown) => { e.preventDefault(); fn(); };
+
+function blockTexts(editor: Editor, from: number, to: number): string[] {
+  const p: string[] = [];
+  editor.state.doc.nodesBetween(from, to, n => { if (n.isTextblock) { p.push(n.textContent); return false; } });
+  return p;
 }
 
-function InfoIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="12" height="12">
-      <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-      <circle cx="8" cy="5.5" r="0.9" fill="currentColor"/>
-      <line x1="8" y1="7.5" x2="8" y2="11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-    </svg>
-  );
+function promptLink(editor: Editor) {
+  const prevUrl = editor.getAttributes('link').href as string | undefined;
+  const url = globalThis.prompt('URL odkazu:', prevUrl ?? '');
+  if (url === null) return;
+  if (url === '') editor.chain().focus().unsetLink().run();
+  else editor.chain().focus().setLink({ href: url }).run();
 }
 
-function WarnIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13">
-      <path d="M8 2L14.5 13.5H1.5L8 2Z" fill="none" stroke="currentColor"
-        strokeWidth="1.5" strokeLinejoin="round"/>
-      <line x1="8" y1="6.5" x2="8" y2="9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-      <circle cx="8" cy="11.5" r="0.9" fill="currentColor"/>
-    </svg>
-  );
-}
-
-function ErrorIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="12" height="12">
-      <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-      <line x1="5.5" y1="5.5" x2="10.5" y2="10.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-      <line x1="10.5" y1="5.5" x2="5.5" y2="10.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-    </svg>
-  );
-}
-
-function LinkIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5l-1.5 1.5"/>
-      <path d="M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5l1.5-1.5"/>
-    </svg>
-  );
-}
-
-function ImageIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/>
-      <circle cx="5.5" cy="6" r="1.3"/>
-      <path d="M1.5 11L5 7.5L7.5 10L10 8L14.5 13.5"/>
-    </svg>
-  );
-}
-
-function TaskListIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="3.5" width="4" height="4" rx="0.75"/>
-      <path d="M3.2 5.5L4.2 6.5L5.5 4.5" strokeWidth="1.3"/>
-      <path d="M8 5.5h6M8 10.5h6"/>
-      <rect x="2" y="8.5" width="4" height="4" rx="0.75"/>
-    </svg>
-  );
-}
-
-function TableIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/>
-      <path d="M1.5 6.5h13M6 2.5v11"/>
-    </svg>
-  );
-}
-
-function HighlightIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.5 2.5L13.5 5.5L6 13H3V10L10.5 2.5Z"/>
-      <path d="M8 5L11 8"/>
-    </svg>
-  );
-}
-
-function AddRowAfterIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1.5" y="1.5" width="13" height="8" rx="1"/>
-      <path d="M1.5 5.5h13"/>
-      <path d="M8 12v2.5M6.5 13.25h3"/>
-    </svg>
-  );
-}
-
-function AddRowBeforeIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1.5" y="6.5" width="13" height="8" rx="1"/>
-      <path d="M1.5 10.5h13"/>
-      <path d="M8 1v2.5M6.5 2.25h3"/>
-    </svg>
-  );
-}
-
-function DeleteRowIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1.5" y="3.5" width="13" height="9" rx="1"/>
-      <path d="M1.5 8h13"/>
-      <path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5"/>
-    </svg>
-  );
-}
-
-function AddColumnAfterIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1.5" y="1.5" width="8" height="13" rx="1"/>
-      <path d="M5.5 1.5v13"/>
-      <path d="M12 6v4M10 8h4"/>
-    </svg>
-  );
-}
-
-function AddColumnBeforeIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="6.5" y="1.5" width="8" height="13" rx="1"/>
-      <path d="M10.5 1.5v13"/>
-      <path d="M4 6v4M2 8h4"/>
-    </svg>
-  );
-}
-
-function DeleteColumnIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="1.5" width="8" height="13" rx="1"/>
-      <path d="M5.5 5L10.5 11M10.5 5L5.5 11"/>
-    </svg>
-  );
-}
-
-function DeleteTableIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 4h10M6 4V2.5h4V4M5 4v8.5a1 1 0 001 1h4a1 1 0 001-1V4"/>
-      <path d="M6.5 7v3.5M9.5 7v3.5"/>
-    </svg>
-  );
-}
+// ─── bubble toolbar ─────────────────────────────────────────────────────────
 
 export function BubbleToolbar() {
   const { editor } = useCurrentEditor();
@@ -204,15 +63,7 @@ export function BubbleToolbar() {
   const left = rect.left + rect.width / 2;
   const top = rect.top - 6;
 
-  const run = (e: React.MouseEvent, fn: () => unknown) => { e.preventDefault(); fn(); };
-
-  const handleLink = (e: React.MouseEvent) => run(e, () => {
-    const prevUrl = editor.getAttributes('link').href as string | undefined;
-    const url = globalThis.prompt('URL odkazu:', prevUrl ?? '');
-    if (url === null) return;
-    if (url === '') editor.chain().focus().unsetLink().run();
-    else editor.chain().focus().setLink({ href: url }).run();
-  });
+  const handleLink = (e: React.MouseEvent) => run(e, () => promptLink(editor));
 
   return (
     <Portal>
@@ -257,9 +108,273 @@ export function BubbleToolbar() {
   );
 }
 
+// ─── dropdown trigger button ────────────────────────────────────────────────
+
+interface DropdownTriggerProps {
+  active: boolean;
+  title: string;
+  onClick: (e: React.MouseEvent<HTMLElement>) => void;
+  children: React.ReactNode;
+}
+
+function DropdownTrigger({ active, title, onClick, children }: DropdownTriggerProps) {
+  const theme = useTheme();
+  return (
+    <Tooltip title={title} enterDelay={600} enterNextDelay={600}>
+      <Box
+        onMouseDown={e => e.preventDefault()}
+        onClick={onClick}
+        sx={{
+          display: 'inline-flex', alignItems: 'center', gap: 0.25,
+          height: 26, px: 0.75, borderRadius: 0.75,
+          cursor: 'default', userSelect: 'none',
+          fontSize: 13, fontWeight: 600,
+          color: active ? theme.palette.primary.main : theme.palette.text.secondary,
+          bgcolor: active ? alpha(theme.palette.primary.main, 0.12) : undefined,
+          '&:hover': { bgcolor: active ? alpha(theme.palette.primary.main, 0.18) : theme.palette.action.hover },
+        }}
+      >
+        {children}
+        <Box sx={{ display: 'flex', opacity: 0.7 }}><CaretDownIcon /></Box>
+      </Box>
+    </Tooltip>
+  );
+}
+
+// ─── heading dropdown ───────────────────────────────────────────────────────
+
+interface HeadingDropdownProps {
+  editor: Editor;
+  state: { h1: boolean; h2: boolean; h3: boolean };
+}
+
+function HeadingDropdown({ editor, state }: HeadingDropdownProps) {
+  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchor);
+  const close = () => setAnchor(null);
+
+  const active = state.h1 || state.h2 || state.h3;
+  const label = state.h1 ? 'H1' : state.h2 ? 'H2' : state.h3 ? 'H3' : 'Text';
+
+  const setHeading = (level: 1 | 2 | 3 | null) => {
+    close();
+    if (level === null) {
+      editor.chain().focus().setParagraph().run();
+    } else {
+      editor.chain().focus().toggleHeading({ level }).run();
+    }
+  };
+
+  return (
+    <>
+      <DropdownTrigger title="Nadpis" active={active} onClick={e => setAnchor(e.currentTarget)}>
+        {label}
+      </DropdownTrigger>
+      <Menu
+        anchorEl={anchor}
+        open={open}
+        onClose={close}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      >
+        <MenuItem selected={!active} onClick={() => setHeading(null)} sx={{ fontSize: 14 }}>
+          Normální text
+        </MenuItem>
+        <MenuItem selected={state.h1} onClick={() => setHeading(1)} sx={{ fontSize: 18, fontWeight: 700 }}>
+          Nadpis 1
+        </MenuItem>
+        <MenuItem selected={state.h2} onClick={() => setHeading(2)} sx={{ fontSize: 16, fontWeight: 700 }}>
+          Nadpis 2
+        </MenuItem>
+        <MenuItem selected={state.h3} onClick={() => setHeading(3)} sx={{ fontSize: 14, fontWeight: 700 }}>
+          Nadpis 3
+        </MenuItem>
+      </Menu>
+    </>
+  );
+}
+
+// ─── insert dropdown ────────────────────────────────────────────────────────
+
+interface InsertDropdownProps {
+  editor: Editor;
+  state: { codeBlock: boolean; blockquote: boolean; link: boolean };
+  onUploadImage?: (file: File) => Promise<string>;
+}
+
+function InsertDropdown({ editor, state, onUploadImage }: InsertDropdownProps) {
+  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchor);
+  const close = () => setAnchor(null);
+
+  const handleLink = () => { close(); promptLink(editor); };
+
+  const handleImage = () => {
+    close();
+    if (onUploadImage) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/jpeg,image/png,image/gif,image/webp';
+      input.onchange = () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        void onUploadImage(file).then(url => {
+          editor.chain().focus().setImage({ src: url }).run();
+        });
+      };
+      input.click();
+    } else {
+      const url = globalThis.prompt('URL obrázku:');
+      if (!url) return;
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
+
+  const handleTable = () => {
+    close();
+    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  };
+
+  const handleCodeBlock = () => {
+    close();
+    if (state.codeBlock) { editor.chain().focus().toggleCodeBlock().run(); return; }
+    const { state: editorState } = editor;
+    const { from, to } = editorState.selection;
+    const parts = blockTexts(editor, from, to);
+    if (parts.length <= 1) { editor.chain().focus().toggleCodeBlock().run(); return; }
+    const type = editorState.schema.nodes['codeBlock'];
+    if (!type) return;
+    const text = parts.filter(Boolean).join('\n');
+    const node = text ? type.create({}, editorState.schema.text(text)) : type.create({});
+    editor.view.dispatch(editorState.tr.replaceWith(
+      editorState.doc.resolve(from).before(1),
+      editorState.doc.resolve(to).after(1),
+      node,
+    ));
+  };
+
+  const handleQuote = () => {
+    close();
+    editor.chain().focus().toggleBlockquote().run();
+  };
+
+  return (
+    <>
+      <DropdownTrigger title="Vložit" active={false} onClick={e => setAnchor(e.currentTarget)}>
+        + Vložit
+      </DropdownTrigger>
+      <Menu
+        anchorEl={anchor}
+        open={open}
+        onClose={close}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      >
+        <MenuItem selected={state.link} onClick={handleLink} sx={{ fontSize: 14, gap: 1 }}>
+          <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><LinkIcon /></ListItemIcon>
+          Odkaz
+          <Box sx={{ ml: 'auto', pl: 2, fontSize: 11, fontFamily: 'ui-monospace, monospace', color: 'text.disabled' }}>⌘K</Box>
+        </MenuItem>
+        <MenuItem onClick={handleImage} sx={{ fontSize: 14, gap: 1 }}>
+          <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><ImageIcon /></ListItemIcon>
+          Obrázek
+        </MenuItem>
+        <MenuItem onClick={handleTable} sx={{ fontSize: 14, gap: 1 }}>
+          <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><TableIcon /></ListItemIcon>
+          Tabulka
+        </MenuItem>
+        <MenuItem selected={state.codeBlock} onClick={handleCodeBlock} sx={{ fontSize: 14, gap: 1 }}>
+          <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><CodeBlockIcon /></ListItemIcon>
+          Blok kódu
+        </MenuItem>
+        <MenuItem selected={state.blockquote} onClick={handleQuote} sx={{ fontSize: 14, gap: 1 }}>
+          <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><BlockquoteIcon /></ListItemIcon>
+          Citace
+        </MenuItem>
+      </Menu>
+    </>
+  );
+}
+
+// ─── callout dropdown ───────────────────────────────────────────────────────
+
+interface CalloutDropdownProps {
+  editor: Editor;
+  state: { calloutInfo: boolean; calloutWarn: boolean; calloutError: boolean };
+}
+
+function CalloutDropdown({ editor, state }: CalloutDropdownProps) {
+  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchor);
+  const close = () => setAnchor(null);
+  const theme = useTheme();
+
+  const active = state.calloutInfo || state.calloutWarn || state.calloutError;
+
+  const toggleCallout = (tone: CalloutTone) => {
+    close();
+    if (editor.isActive('callout', { tone })) {
+      editor.chain().focus().setNode('paragraph').run();
+      return;
+    }
+    const { state: editorState } = editor;
+    const { from, to } = editorState.selection;
+    const parts = blockTexts(editor, from, to);
+    if (parts.length <= 1) { editor.chain().focus().setNode('callout', { tone }).run(); return; }
+    const type = editorState.schema.nodes['callout'];
+    const br   = editorState.schema.nodes['hardBreak'];
+    if (!type) return;
+    const filtered = parts.filter(Boolean);
+    const inline = filtered.flatMap((p, i) => [
+      ...(i > 0 && br ? [br.create()] : []),
+      ...(p            ? [editorState.schema.text(p)] : []),
+    ]);
+    const node = inline.length ? type.create({ tone }, inline) : type.create({ tone });
+    editor.view.dispatch(editorState.tr.replaceWith(
+      editorState.doc.resolve(from).before(1),
+      editorState.doc.resolve(to).after(1),
+      node,
+    ));
+  };
+
+  const tones: Array<{ key: CalloutTone; label: string; icon: React.ReactNode; color: string; active: boolean }> = [
+    { key: 'info',  label: 'Info',        icon: <InfoIcon />,  color: theme.palette.info.main,    active: state.calloutInfo },
+    { key: 'warn',  label: 'Upozornění',  icon: <WarnIcon />,  color: theme.palette.warning.main, active: state.calloutWarn },
+    { key: 'error', label: 'Chyba',       icon: <ErrorIcon />, color: theme.palette.error.main,   active: state.calloutError },
+  ];
+
+  return (
+    <>
+      <DropdownTrigger title="Callout" active={active} onClick={e => setAnchor(e.currentTarget)}>
+        Callout
+      </DropdownTrigger>
+      <Menu
+        anchorEl={anchor}
+        open={open}
+        onClose={close}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      >
+        {tones.map(t => (
+          <MenuItem
+            key={t.key}
+            selected={t.active}
+            onClick={() => toggleCallout(t.key)}
+            sx={{ fontSize: 14, gap: 1, color: t.active ? t.color : undefined }}
+          >
+            <ListItemIcon sx={{ minWidth: 26, color: t.color }}>{t.icon}</ListItemIcon>
+            {t.label}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
+}
+
+// ─── main menu bar ──────────────────────────────────────────────────────────
+
 export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File) => Promise<string> }) {
   const { editor } = useCurrentEditor();
-  const theme = useTheme();
 
   const s = useEditorState({
     editor,
@@ -268,9 +383,7 @@ export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File
       return {
         bold:         ctx.editor.isActive('bold'),
         italic:       ctx.editor.isActive('italic'),
-        strike:       ctx.editor.isActive('strike'),
         underline:    ctx.editor.isActive('underline'),
-        highlight:    ctx.editor.isActive('highlight'),
         link:         ctx.editor.isActive('link'),
         h1:           ctx.editor.isActive('heading', { level: 1 }),
         h2:           ctx.editor.isActive('heading', { level: 2 }),
@@ -279,7 +392,6 @@ export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File
         ordered:      ctx.editor.isActive('orderedList'),
         taskList:     ctx.editor.isActive('taskList'),
         blockquote:   ctx.editor.isActive('blockquote'),
-        code:         ctx.editor.isActive('code'),
         codeBlock:    ctx.editor.isActive('codeBlock'),
         calloutInfo:  ctx.editor.isActive('callout', { tone: 'info' }),
         calloutWarn:  ctx.editor.isActive('callout', { tone: 'warn' }),
@@ -290,248 +402,105 @@ export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File
   });
 
   if (!editor || !s) return null;
-  const run = (e: React.MouseEvent, fn: () => unknown) => { e.preventDefault(); fn(); };
-
-  const blockTexts = (from: number, to: number): string[] => {
-    const p: string[] = [];
-    editor.state.doc.nodesBetween(from, to, n => { if (n.isTextblock) { p.push(n.textContent); return false; } });
-    return p;
-  };
-
-  const toggleCallout = (e: React.MouseEvent, tone: CalloutTone) => run(e, () => {
-    if (editor.isActive('callout', { tone })) { editor.chain().focus().setNode('paragraph').run(); return; }
-    const { state } = editor;
-    const { from, to } = state.selection;
-    const parts = blockTexts(from, to);
-    if (parts.length <= 1) { editor.chain().focus().setNode('callout', { tone }).run(); return; }
-    const type = state.schema.nodes['callout'];
-    const br   = state.schema.nodes['hardBreak'];
-    if (!type) return;
-    const filtered = parts.filter(Boolean);
-    const inline = filtered.flatMap((p, i) => [
-      ...(i > 0 && br ? [br.create()] : []),
-      ...(p            ? [state.schema.text(p)] : []),
-    ]);
-    const node = inline.length ? type.create({ tone }, inline) : type.create({ tone });
-    editor.view.dispatch(state.tr.replaceWith(state.doc.resolve(from).before(1), state.doc.resolve(to).after(1), node));
-  });
-
-  const handleToggleCodeBlock = (e: React.MouseEvent) => run(e, () => {
-    if (s.codeBlock) { editor.chain().focus().toggleCodeBlock().run(); return; }
-    const { state } = editor;
-    const { from, to } = state.selection;
-    const parts = blockTexts(from, to);
-    if (parts.length <= 1) { editor.chain().focus().toggleCodeBlock().run(); return; }
-    const type = state.schema.nodes['codeBlock'];
-    if (!type) return;
-    const text = parts.filter(Boolean).join('\n');
-    const node = text ? type.create({}, state.schema.text(text)) : type.create({});
-    editor.view.dispatch(state.tr.replaceWith(state.doc.resolve(from).before(1), state.doc.resolve(to).after(1), node));
-  });
-
-  const calloutColor = (active: boolean, palette: string) => ({
-    color: active ? palette : undefined,
-    bgcolor: active ? alpha(palette, 0.12) : undefined,
-    '&:hover': active ? { bgcolor: alpha(palette, 0.2) } : undefined,
-  });
-
-  const handleSetLink = (e: React.MouseEvent) => {
-    run(e, () => {
-      const prevUrl = editor.getAttributes('link').href as string | undefined;
-      const url = globalThis.prompt('URL odkazu:', prevUrl ?? '');
-      if (url === null) return;
-      if (url === '') {
-        editor.chain().focus().unsetLink().run();
-      } else {
-        editor.chain().focus().setLink({ href: url }).run();
-      }
-    });
-  };
-
-  const handleInsertImage = (e: React.MouseEvent) => {
-    run(e, () => {
-      if (onUploadImage) {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/jpeg,image/png,image/gif,image/webp';
-        input.onchange = () => {
-          const file = input.files?.[0];
-          if (!file) return;
-          onUploadImage(file).then(url => {
-            editor.chain().focus().setImage({ src: url }).run();
-          });
-        };
-        input.click();
-      } else {
-        const url = globalThis.prompt('URL obrázku:');
-        if (!url) return;
-        editor.chain().focus().setImage({ src: url }).run();
-      }
-    });
-  };
-
-  const handleInsertTable = (e: React.MouseEvent) => {
-    run(e, () => {
-      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
-    });
-  };
 
   return (
     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, px: 1, py: 0.5, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, px: 1, py: 0.5, flexWrap: 'wrap' }}>
 
-      {/* Skupna: text formátování */}
-      <TBtn title="Tučné (⌘B)" active={s.bold}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleBold().run())}>B</TBtn>
-      <TBtn title="Kurzíva (⌘I)" active={s.italic}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleItalic().run())}>
-        <Box component="span" sx={{ fontStyle: 'italic' }}>I</Box>
-      </TBtn>
-      <TBtn title="Podtržení" active={s.underline}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleUnderline().run())}>
-        <Box component="span" sx={{ textDecoration: 'underline' }}>U</Box>
-      </TBtn>
-      <TBtn title="Přeškrtnuté" active={s.strike}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleStrike().run())}>
-        <Box component="span" sx={{ textDecoration: 'line-through', fontSize: 13 }}>S</Box>
-      </TBtn>
-      <TBtn title="Zvýraznění" active={s.highlight}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleHighlight().run())}>
-        <HighlightIcon />
-      </TBtn>
+        {/* Skupina: inline formátování */}
+        <TBtn title="Tučné (⌘B)" active={s.bold}
+          onMouseDown={e => run(e, () => editor.chain().focus().toggleBold().run())}>B</TBtn>
+        <TBtn title="Kurzíva (⌘I)" active={s.italic}
+          onMouseDown={e => run(e, () => editor.chain().focus().toggleItalic().run())}>
+          <Box component="span" sx={{ fontStyle: 'italic' }}>I</Box>
+        </TBtn>
+        <TBtn title="Podtržení" active={s.underline}
+          onMouseDown={e => run(e, () => editor.chain().focus().toggleUnderline().run())}>
+          <Box component="span" sx={{ textDecoration: 'underline' }}>U</Box>
+        </TBtn>
 
-      <Sep/>
+        <Sep/>
 
-      {/* Skupina: nadpisy */}
-      <TBtn title="Heading 1" active={s.h1}
-            onMouseDown={e => run(e, () => editor.chain().focus().toggleHeading({ level: 1 }).run())}>H1</TBtn>
-      <TBtn title="Heading 2" active={s.h2}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleHeading({ level: 2 }).run())}>H2</TBtn>
-      <TBtn title="Heading 3" active={s.h3}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleHeading({ level: 3 }).run())}>H3</TBtn>
+        {/* Heading dropdown nahrazuje H1/H2/H3 buttony */}
+        <HeadingDropdown editor={editor} state={{ h1: s.h1, h2: s.h2, h3: s.h3 }}/>
 
-      <Sep/>
+        <Sep/>
 
-      {/* Skupina: seznamy */}
-      <TBtn title="Bullet list" active={s.bullet}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleBulletList().run())}>
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-          <path d="M6 4h8M6 8h8M6 12h8"/>
-          <circle cx="2.5" cy="4" r="1.2" fill="currentColor" stroke="none"/>
-          <circle cx="2.5" cy="8" r="1.2" fill="currentColor" stroke="none"/>
-          <circle cx="2.5" cy="12" r="1.2" fill="currentColor" stroke="none"/>
-        </svg>
-      </TBtn>
-      <TBtn title="Numbered list" active={s.ordered}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleOrderedList().run())}>
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
-          <path d="M6 4h8M6 8h8M6 12h8"/>
-          <path d="M2 3h1.5v3" strokeLinejoin="round"/>
-          <path d="M2 10.5c0-1 1.5-1 1.5 0s-1.5 1-1.5 1.5H4" strokeLinejoin="round"/>
-        </svg>
-      </TBtn>
-      <TBtn title="Task list (checkboxy)" active={s.taskList}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleTaskList().run())}>
-        <TaskListIcon />
-      </TBtn>
+        {/* Skupina: seznamy */}
+        <TBtn title="Bullet list" active={s.bullet}
+          onMouseDown={e => run(e, () => editor.chain().focus().toggleBulletList().run())}>
+          <BulletListIcon/>
+        </TBtn>
+        <TBtn title="Numbered list" active={s.ordered}
+          onMouseDown={e => run(e, () => editor.chain().focus().toggleOrderedList().run())}>
+          <OrderedListIcon/>
+        </TBtn>
+        <TBtn title="Task list (checkboxy)" active={s.taskList}
+          onMouseDown={e => run(e, () => editor.chain().focus().toggleTaskList().run())}>
+          <TaskListIcon />
+        </TBtn>
 
-      <Sep/>
+        <Sep/>
 
-      {/* Skupina: bloky */}
-      <TBtn title="Citace" active={s.blockquote}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleBlockquote().run())}>
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" opacity={0.75}>
-          <path d="M2 5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a2 2 0 0 1-2 2H3v1h3v1H2v-2h1a1 1 0 0 0 1-1V6H2V5zm7 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a2 2 0 0 1-2 2H9v1h3v1H8v-2h1a1 1 0 0 0 1-1V6H9V5z"/>
-        </svg>
-      </TBtn>
-      <TBtn title="Inline kód" active={s.code}
-        onMouseDown={e => run(e, () => editor.chain().focus().toggleCode().run())}>
-        <Box component="span" sx={{ fontFamily: 'monospace', fontSize: 13 }}>{`</>`}</Box>
-      </TBtn>
-      <TBtn title="Blok kódu (⌘⌥C)" active={s.codeBlock} onMouseDown={handleToggleCodeBlock}>
-        <CodeBlockIcon/>
-      </TBtn>
+        {/* Insert dropdown — link / image / table / code block / quote */}
+        <InsertDropdown
+          editor={editor}
+          state={{ codeBlock: s.codeBlock, blockquote: s.blockquote, link: s.link }}
+          onUploadImage={onUploadImage}
+        />
 
-      <Sep/>
+        {/* Callout dropdown — info / warn / error */}
+        <CalloutDropdown
+          editor={editor}
+          state={{ calloutInfo: s.calloutInfo, calloutWarn: s.calloutWarn, calloutError: s.calloutError }}
+        />
 
-      {/* Skupina: linky a média */}
-      <TBtn title="Link (vyber text → ⌘K)" active={s.link} onMouseDown={handleSetLink}>
-        <LinkIcon />
-      </TBtn>
-      <TBtn title="Vložit obrázek (URL nebo Ctrl+V)" active={false} onMouseDown={handleInsertImage}>
-        <ImageIcon />
-      </TBtn>
-      <TBtn title="Vložit tabulku (3×3)" active={false} onMouseDown={handleInsertTable}>
-        <TableIcon />
-      </TBtn>
-
-      <Sep/>
-
-      {/* Skupina: callout bloky */}
-      <Box onMouseDown={e => toggleCallout(e, 'info')} sx={{
-        width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        borderRadius: 0.75, cursor: 'default', userSelect: 'none',
-        ...calloutColor(s.calloutInfo, theme.palette.info.main),
-        ...(!s.calloutInfo && { color: 'text.secondary', '&:hover': { bgcolor: 'action.hover' } }),
-      }}>
-        <InfoIcon/>
-      </Box>
-      <Box onMouseDown={e => toggleCallout(e, 'warn')} sx={{
-        width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        borderRadius: 0.75, cursor: 'default', userSelect: 'none',
-        ...calloutColor(s.calloutWarn, theme.palette.warning.main),
-        ...(!s.calloutWarn && { color: 'text.secondary', '&:hover': { bgcolor: 'action.hover' } }),
-      }}>
-        <WarnIcon/>
-      </Box>
-      <Box onMouseDown={e => toggleCallout(e, 'error')} sx={{
-        width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        borderRadius: 0.75, cursor: 'default', userSelect: 'none',
-        ...calloutColor(s.calloutError, theme.palette.error.main),
-        ...(!s.calloutError && { color: 'text.secondary', '&:hover': { bgcolor: 'action.hover' } }),
-      }}>
-        <ErrorIcon/>
-      </Box>
-    </Box>
-
-    {s.table && (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, px: 1, py: 0.5,
-        borderTop: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
-        <Box sx={{ fontSize: 14, fontWeight: 600, color: 'text.disabled', mr: 0.5, userSelect: 'none' }}>
-          Tabulka
+        {/* Shortcut hint vpravo */}
+        <Box sx={{ ml: 'auto', pl: 1 }}>
+          <Typography sx={{ fontSize: 11, color: 'text.disabled', fontFamily: 'ui-monospace, monospace' }}>
+            ⌘B · ⌘I · / pro víc
+          </Typography>
         </Box>
-        <TBtn title="Přidat řádek níže" active={false}
-          onMouseDown={e => run(e, () => editor.chain().focus().addRowAfter().run())}>
-          <AddRowAfterIcon />
-        </TBtn>
-        <TBtn title="Přidat řádek výše" active={false}
-          onMouseDown={e => run(e, () => editor.chain().focus().addRowBefore().run())}>
-          <AddRowBeforeIcon />
-        </TBtn>
-        <TBtn title="Smazat řádek" active={false}
-          onMouseDown={e => run(e, () => editor.chain().focus().deleteRow().run())}>
-          <DeleteRowIcon />
-        </TBtn>
-        <Sep />
-        <TBtn title="Přidat sloupec vpravo" active={false}
-          onMouseDown={e => run(e, () => editor.chain().focus().addColumnAfter().run())}>
-          <AddColumnAfterIcon />
-        </TBtn>
-        <TBtn title="Přidat sloupec vlevo" active={false}
-          onMouseDown={e => run(e, () => editor.chain().focus().addColumnBefore().run())}>
-          <AddColumnBeforeIcon />
-        </TBtn>
-        <TBtn title="Smazat sloupec" active={false}
-          onMouseDown={e => run(e, () => editor.chain().focus().deleteColumn().run())}>
-          <DeleteColumnIcon />
-        </TBtn>
-        <Sep />
-        <TBtn title="Smazat tabulku" active={false}
-          onMouseDown={e => run(e, () => editor.chain().focus().deleteTable().run())}>
-          <DeleteTableIcon />
-        </TBtn>
       </Box>
-    )}
+
+      {s.table && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, px: 1, py: 0.5,
+          borderTop: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
+          <Box sx={{ fontSize: 14, fontWeight: 600, color: 'text.disabled', mr: 0.5, userSelect: 'none' }}>
+            Tabulka
+          </Box>
+          <TBtn title="Přidat řádek níže" active={false}
+            onMouseDown={e => run(e, () => editor.chain().focus().addRowAfter().run())}>
+            <AddRowAfterIcon />
+          </TBtn>
+          <TBtn title="Přidat řádek výše" active={false}
+            onMouseDown={e => run(e, () => editor.chain().focus().addRowBefore().run())}>
+            <AddRowBeforeIcon />
+          </TBtn>
+          <TBtn title="Smazat řádek" active={false}
+            onMouseDown={e => run(e, () => editor.chain().focus().deleteRow().run())}>
+            <DeleteRowIcon />
+          </TBtn>
+          <Sep />
+          <TBtn title="Přidat sloupec vpravo" active={false}
+            onMouseDown={e => run(e, () => editor.chain().focus().addColumnAfter().run())}>
+            <AddColumnAfterIcon />
+          </TBtn>
+          <TBtn title="Přidat sloupec vlevo" active={false}
+            onMouseDown={e => run(e, () => editor.chain().focus().addColumnBefore().run())}>
+            <AddColumnBeforeIcon />
+          </TBtn>
+          <TBtn title="Smazat sloupec" active={false}
+            onMouseDown={e => run(e, () => editor.chain().focus().deleteColumn().run())}>
+            <DeleteColumnIcon />
+          </TBtn>
+          <Sep />
+          <TBtn title="Smazat tabulku" active={false}
+            onMouseDown={e => run(e, () => editor.chain().focus().deleteTable().run())}>
+            <DeleteTableIcon />
+          </TBtn>
+        </Box>
+      )}
     </Box>
   );
 }

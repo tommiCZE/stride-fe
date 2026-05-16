@@ -43,6 +43,7 @@ function CommentEditor({ taskId, placeholder, onSubmit, onCancel }: CommentEdito
   return (
     <Box sx={{ mt: 1 }}>
       <EditorBody
+        variant="comment"
         initialContent={EMPTY_DOC}
         placeholder={placeholder}
         compact
