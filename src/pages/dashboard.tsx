@@ -43,7 +43,7 @@ export default function Dashboard() {
           {dateLabel}
         </Typography>
         <Typography sx={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em' }}>
-          Dobré ráno, {me?.name.split(' ')[0] ?? '…'} 👋
+          Dobré ráno, {me?.name.split(' ')[0] ?? '…'}
         </Typography>
         <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.25 }}>
           Máš {myTasks.length} přiřazených tasků.
@@ -52,14 +52,15 @@ export default function Dashboard() {
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2,1fr)', md: 'repeat(4,1fr)' }, gap: 1.5, mb: 3 }}>
         {[
-          { label: 'Přiřazeno mně',       value: myTasks.length,                                                         sub: 'celkem',              color: '#5A5BFF' },
-          { label: 'V code review',        value: myTasks.filter(t => t.status === 'IN_REVIEW').length,                   sub: 'čeká na review',      color: '#a855f7' },
-          { label: 'Logged celkem',        value: `${allTasks.reduce((s, t) => s + (t.logged ?? 0), 0)}h`,               sub: 've všech projektech', color: '#10b981' },
-          { label: 'Po termínu',           value: myTasks.filter(t => t.dueDate && new Date(t.dueDate) < today && t.status !== 'DONE').length, sub: 'přiřazeno mně', color: '#ef4444' },
+          { label: 'Přiřazeno mně', value: myTasks.length,                                                                                      sub: 'celkem',              signal: false },
+          { label: 'V code review', value: myTasks.filter(t => t.status === 'IN_REVIEW').length,                                                 sub: 'čeká na review',      signal: false },
+          { label: 'Logged celkem', value: `${allTasks.reduce((s, t) => s + (t.logged ?? 0), 0)}h`,                                              sub: 've všech projektech', signal: false },
+          { label: 'Po termínu',    value: myTasks.filter(t => t.dueDate && new Date(t.dueDate) < today && t.status !== 'DONE').length,         sub: 'přiřazeno mně',       signal: true  },
         ].map((s, i) => (
           <Card key={i} sx={{ p: 1.75, borderRadius: 1.5 }}>
             <Typography sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 500 }}>{s.label}</Typography>
-            <Typography sx={{ fontSize: 30, fontWeight: 700, letterSpacing: '-0.02em', color: s.color, mt: 0.25 }}>{s.value}</Typography>
+            <Typography sx={{ fontSize: 30, fontWeight: 700, letterSpacing: '-0.02em',
+              color: s.signal ? 'error.main' : 'text.primary', mt: 0.25 }}>{s.value}</Typography>
             <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{s.sub}</Typography>
           </Card>
         ))}

@@ -14,6 +14,15 @@ export interface TaskCardProps {
   isDragging?: boolean;
 }
 
+function priorityBarColor(priority: string): string {
+  switch (priority) {
+    case 'HIGHEST':
+    case 'HIGH':    return 'error.main';
+    case 'MEDIUM':  return 'warning.main';
+    default:        return 'text.disabled';
+  }
+}
+
 export function TaskCard({ task: t, onClick, isDragging }: TaskCardProps) {
   const assignee = t.assigneeId
     ? { color: t.assigneeColor ?? '#94a3b8', initials: t.assigneeInitials ?? '?' }
@@ -21,8 +30,18 @@ export function TaskCard({ task: t, onClick, isDragging }: TaskCardProps) {
 
   return (
     <Card onClick={onClick} elevation={isDragging ? 4 : 0}
-      sx={{ cursor: 'default', borderRadius: 1.2, p: 1.25,
+      sx={{ cursor: 'default', borderRadius: 1.2, position: 'relative',
+        pl: 1.625, pr: 1.25, py: 1.25,
         transition: 'all 0.12s', opacity: isDragging ? 0.5 : 1,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          left: 0, top: 0, bottom: 0,
+          width: 3,
+          bgcolor: priorityBarColor(t.priority),
+          borderTopLeftRadius: 'inherit',
+          borderBottomLeftRadius: 'inherit',
+        },
         '&:hover': { borderColor: 'primary.main' } }}>
       <Typography sx={{ fontSize: 15, lineHeight: 1.35, fontWeight: 600, mb: 0.75 }}>{t.title}</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'text.secondary' }}>
