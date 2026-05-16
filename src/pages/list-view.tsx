@@ -10,6 +10,7 @@ import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
 import { MonoKey, StatusBadge, ColorDot } from '../components/ui/ui';
+import FilterChip from '../components/ui/filter-chip';
 import { FilterIcon, ListIcon, PlusIcon, DownloadIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
 import QueryError from '../components/query-error/QueryError';
@@ -156,7 +157,7 @@ export default function ListView() {
         position: 'sticky', top: 0, bgcolor: 'background.paper', zIndex: 1 }}>
         <TextField placeholder="Filtr…" size="small"
           sx={{ width: 200, '& .MuiOutlinedInput-root': { height: 26, fontSize: 14 } }}/>
-        <Button size="small" variant="outlined" startIcon={<FilterIcon/>}>Filtry</Button>
+        <FilterChip label="Filtry" icon={<FilterIcon/>} onClick={() => {}}/>
         <Button size="small" variant="outlined" startIcon={<DownloadIcon/>}
           onClick={handleExportCsv} disabled={tasks.length === 0}>Export</Button>
         <Box sx={{ flex: 1 }}/>

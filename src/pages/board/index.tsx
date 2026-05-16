@@ -19,7 +19,7 @@ import { useUiStore } from '../../store/ui-store';
 import { BOARD_STATUSES } from '../../constants/statuses';
 import FluxAvatar from '../../components/flux-avatar';
 import {
-  SearchIcon, FilterIcon, BoardIcon, CaretIcon, StarIcon, PlusIcon, CloseIcon, CheckIcon,
+  SearchIcon, FilterIcon, BoardIcon, StarIcon, PlusIcon, CloseIcon, CheckIcon,
 } from '../../components/icons/icons';
 import { useSavedFiltersStore } from '../../store/saved-filters-store';
 import Column from './column';
@@ -28,6 +28,7 @@ import SaveFilterDialog from './save-filter-dialog';
 import EmptyState from '../../components/empty-state/EmptyState';
 import QueryError from '../../components/query-error/QueryError';
 import FilterBuilderDialog from '../../components/filter-builder/FilterBuilderDialog';
+import FilterChip from '../../components/ui/filter-chip';
 import {
   countRules,
   emptyGroup,
@@ -256,51 +257,30 @@ export default function Board() {
             </Tooltip>
           ))}
         </Box>
-        <Box onClick={() => setFilterMine(f => !f)}
-          sx={{ px: 1, py: 0.4, borderRadius: 1, fontSize: 14, fontWeight: filterMine ? 600 : 400,
-            bgcolor: filterMine ? 'primary.main' : 'action.hover',
-            color: filterMine ? '#fff' : 'text.secondary', cursor: 'default' }}>
-          Pouze moje
-        </Box>
-        <Button
-          size="small"
-          variant={advancedRuleCount > 0 ? 'contained' : 'text'}
-          color={advancedRuleCount > 0 ? 'primary' : 'inherit'}
-          startIcon={<FilterIcon/>}
+        <FilterChip
+          label="Moje úkoly"
+          active={filterMine}
+          onClick={() => setFilterMine(f => !f)}
+          onClear={() => setFilterMine(false)}
+        />
+        <FilterChip
+          label="Filtry"
+          icon={<FilterIcon/>}
+          active={advancedRuleCount > 0}
+          count={advancedRuleCount}
           onClick={() => setAdvancedDialogOpen(true)}
-          sx={{
-            minHeight: 0,
-            px: 1,
-            py: 0.4,
-            fontSize: 14,
-            fontWeight: advancedRuleCount > 0 ? 600 : 400,
-            color: advancedRuleCount > 0 ? 'primary.contrastText' : 'text.secondary',
-            bgcolor: advancedRuleCount > 0 ? 'primary.main' : 'action.hover',
-            '&:hover': {
-              bgcolor: advancedRuleCount > 0 ? 'primary.dark' : 'action.selected',
-            },
-          }}
-        >
-          {advancedRuleCount > 0 ? `Filtry (${advancedRuleCount})` : 'Filtry'}
-        </Button>
+        />
         <Tooltip title="Uložená zobrazení filtrů">
           <Box
             onClick={(e) => setViewsAnchor(e.currentTarget)}
-            sx={{
-              display: 'flex', alignItems: 'center', gap: 0.5,
-              px: 1, py: 0.4, borderRadius: 1,
-              fontSize: 14, fontWeight: activeFilter ? 600 : 400,
-              bgcolor: activeFilter ? 'primary.main' : 'action.hover',
-              color: activeFilter ? 'primary.contrastText' : 'text.secondary',
-              cursor: 'default', maxWidth: 180, overflow: 'hidden',
-              textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}
+            sx={{ display: 'inline-flex' }}
           >
-            <StarIcon/>
-            <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {activeFilter ? activeFilter.name : 'Uložená zobrazení'}
-            </Box>
-            <CaretIcon/>
+            <FilterChip
+              label={activeFilter ? activeFilter.name : 'Uložená zobrazení'}
+              icon={<StarIcon/>}
+              active={!!activeFilter}
+              maxWidth={200}
+            />
           </Box>
         </Tooltip>
 
