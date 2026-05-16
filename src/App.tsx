@@ -10,6 +10,7 @@ import Backlog from './pages/backlog';
 import ListView from './pages/list-view';
 import Reports from './pages/reports';
 import Settings from './pages/settings';
+import WorkspaceSettings from './pages/workspace-settings';
 import MyWork from './pages/my-work';
 import Inbox from './pages/inbox';
 import TaskDetail from './pages/task-detail';
@@ -74,6 +75,8 @@ const router = createBrowserRouter([
       { path: 'profile',   element: <Profile /> },
       { path: 'search',    element: <SearchPage /> },
       { path: 'task/:taskKey', element: <TaskPage /> },
+      { path: 'settings',           element: <WorkspaceSettings /> },
+      { path: 'settings/:section',  element: <WorkspaceSettings /> },
       {
         path: 'projects/:projectKey',
         children: [

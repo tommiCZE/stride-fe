@@ -66,9 +66,9 @@ const NAV_ACTIONS: NavAction[] = [
   { id: 'nav-mywork',    key: 'my-work',   label: 'My Work',   path: '/my-work',   icon: <CheckIcon /> },
   { id: 'nav-calendar',  key: 'calendar',  label: 'Kalendář',  path: '/calendar',  icon: <CalendarIcon /> },
   { id: 'nav-reports',   key: 'reports',   label: 'Reporty',   path: '/reports',   icon: <ReportsIcon /> },
-  { id: 'nav-team',      key: 'team',      label: 'Tým',       path: '/team',      icon: <TeamIcon /> },
-  { id: 'nav-profile',   key: 'profile',   label: 'Můj profil', path: '/profile',  icon: <TeamIcon /> },
-  { id: 'nav-settings',  key: 'settings',  label: 'Nastavení',  path: '/profile',  icon: <SettingsIcon /> },
+  { id: 'nav-team',      key: 'team',      label: 'Tým',       path: '/settings/members', icon: <TeamIcon /> },
+  { id: 'nav-profile',   key: 'profile',   label: 'Můj profil', path: '/profile',         icon: <TeamIcon /> },
+  { id: 'nav-settings',  key: 'settings',  label: 'Nastavení',  path: '/settings',        icon: <SettingsIcon /> },
 ];
 
 const MAX_RESULTS = 8;
