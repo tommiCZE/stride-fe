@@ -18,7 +18,7 @@ export default function CountBadge({ count, variant = 'pill' }: CountBadgeProps)
       <Box
         component="span"
         sx={{
-          fontSize: 10.5,
+          fontSize: 14,
           color: 'text.disabled',
           fontVariantNumeric: 'tabular-nums',
         }}
@@ -32,7 +32,7 @@ export default function CountBadge({ count, variant = 'pill' }: CountBadgeProps)
     <Box
       component="span"
       sx={{
-        fontSize: 10.5,
+        fontSize: 14,
         px: 0.75,
         borderRadius: 1,
         bgcolor: 'action.hover',

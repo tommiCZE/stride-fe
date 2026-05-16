@@ -58,7 +58,7 @@ const MentionList = forwardRef<MentionListHandle, Props>(function MentionList(
           borderColor: 'divider',
         }}
       >
-        <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>
+        <Typography sx={{ fontSize: 14, color: 'text.disabled' }}>
           Žádný člen týmu nenalezen
         </Typography>
       </Paper>
@@ -103,7 +103,7 @@ const MentionList = forwardRef<MentionListHandle, Props>(function MentionList(
               {item.name}
             </Typography>
             {item.email && (
-              <Typography sx={{ fontSize: 11, color: 'text.secondary', lineHeight: 1.2 }} noWrap>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary', lineHeight: 1.2 }} noWrap>
                 {item.email}
               </Typography>
             )}

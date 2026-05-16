@@ -32,7 +32,7 @@ export default function ProjectTopbar() {
           borderRadius: 1.2, cursor: 'default', userSelect: 'none', flexShrink: 0,
           color: active ? 'text.primary' : 'text.secondary',
           bgcolor: active ? 'action.selected' : 'transparent',
-          fontWeight: active ? 600 : 500, fontSize: 12.5,
+          fontWeight: active ? 600 : 500, fontSize: 14,
           '&:hover': { bgcolor: 'action.hover' } }}>
         {!isMobile && icon}{label}
       </Box>
@@ -45,18 +45,18 @@ export default function ProjectTopbar() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: { xs: 0.5, md: 0 } }}>
         <Box sx={{ width: 22, height: 22, borderRadius: 0.8, bgcolor: project.color,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#fff', fontSize: 12, fontWeight: 700 }}>{project.key[0]}</Box>
+          color: '#fff', fontSize: 14, fontWeight: 700 }}>{project.key[0]}</Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography sx={{ fontSize: 14, fontWeight: 600, lineHeight: 1,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{project.name}</Typography>
-          {!isMobile && <Typography sx={{ fontSize: 11, color: 'text.secondary', lineHeight: 1.4 }}>{project.key} · {project.taskCount} {t('project.tasks')}</Typography>}
+          {!isMobile && <Typography sx={{ fontSize: 13, color: 'text.secondary', lineHeight: 1.4 }}>{project.key} · {project.taskCount} {t('project.tasks')}</Typography>}
         </Box>
         <Box
           component="button"
           onClick={openCreateModal}
           sx={{
             display: 'inline-flex', alignItems: 'center', gap: 0.5,
-            px: 1.25, py: 0.5, borderRadius: 1, fontSize: 12.5, fontWeight: 500,
+            px: 1.25, py: 0.5, borderRadius: 1, fontSize: 14, fontWeight: 500,
             bgcolor: 'primary.main', color: '#fff', border: 0, cursor: 'pointer', flexShrink: 0,
             '&:hover': { bgcolor: 'primary.dark' },
           }}>

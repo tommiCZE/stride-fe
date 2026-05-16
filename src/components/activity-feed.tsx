@@ -24,8 +24,8 @@ export default function ActivityFeed({ limit = 20 }: Props) {
           <Box key={i} sx={{ display: 'flex', gap: 1 }}>
             <Skeleton variant="circular" width={22} height={22} />
             <Box sx={{ flex: 1 }}>
-              <Skeleton variant="text" sx={{ fontSize: 12.5 }} width="80%" />
-              <Skeleton variant="text" sx={{ fontSize: 10.5 }} width="40%" />
+              <Skeleton variant="text" sx={{ fontSize: 14 }} width="80%" />
+              <Skeleton variant="text" sx={{ fontSize: 14 }} width="40%" />
             </Box>
           </Box>
         ))}
@@ -35,7 +35,7 @@ export default function ActivityFeed({ limit = 20 }: Props) {
 
   if (data.length === 0) {
     return (
-      <Typography sx={{ fontSize: 12, color: 'text.disabled', textAlign: 'center', py: 2 }}>
+      <Typography sx={{ fontSize: 14, color: 'text.disabled', textAlign: 'center', py: 2 }}>
         Žádná aktivita.
       </Typography>
     );

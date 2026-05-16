@@ -70,7 +70,7 @@ export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
     <Box
       role="listitem"
       aria-labelledby={columnLabelId}
-      sx={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column',
+      sx={{ width: 296, flexShrink: 0, display: 'flex', flexDirection: 'column',
       bgcolor: 'action.hover', borderRadius: 1.5, border: 1,
       borderColor: isOver ? 'primary.main' : 'transparent',
       maxHeight: '100%', minHeight: 0 }}
@@ -80,16 +80,16 @@ export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
         <Typography
           id={columnLabelId}
           aria-label={ariaLabel}
-          sx={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
+          sx={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
           color: 'text.secondary' }}
         >
           {status.name}
         </Typography>
-        <Typography aria-hidden="true" sx={{ fontSize: 11, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>{count}</Typography>
+        <Typography aria-hidden="true" sx={{ fontSize: 13, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>{count}</Typography>
         {status.wip && (
           <Box
             aria-hidden="true"
-            sx={{ ml: 0.25, fontSize: 9.5, fontWeight: 700, px: 0.5, borderRadius: 0.5,
+            sx={{ ml: 0.25, fontSize: 13, fontWeight: 700, px: 0.5, borderRadius: 0.5,
             bgcolor: isWipBreached ? 'error.main' : 'action.selected',
             color: isWipBreached ? 'common.white' : 'text.secondary' }}
           >
@@ -125,7 +125,7 @@ export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
         {tasks.length === 0 && !adding && (
           <Box
             role="status"
-            sx={{ p: 2, textAlign: 'center', color: 'text.disabled', fontSize: 11.5,
+            sx={{ p: 2, textAlign: 'center', color: 'text.disabled', fontSize: 13,
             border: 1, borderColor: 'divider', borderStyle: 'dashed', borderRadius: 1 }}
           >
             Žádné tasky
@@ -148,7 +148,7 @@ export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
                 resetAdding();
               }
             }}
-            sx={{ '& .MuiOutlinedInput-root': { fontSize: 12.5, bgcolor: 'background.paper' },
+            sx={{ '& .MuiOutlinedInput-root': { fontSize: 14, bgcolor: 'background.paper' },
               '& .MuiOutlinedInput-input': { px: 1, py: 0.75 } }}
           />
         ) : (
@@ -164,7 +164,7 @@ export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
               }
             }}
             sx={{ display: 'flex', alignItems: 'center', gap: 0.5, p: 0.5, borderRadius: 1,
-              color: 'text.disabled', fontSize: 11.5, cursor: 'pointer', userSelect: 'none',
+              color: 'text.disabled', fontSize: 13, cursor: 'pointer', userSelect: 'none',
               '&:hover': { bgcolor: 'action.hover', color: 'text.secondary' },
               '&:focus-visible': { outline: 1, outlineColor: 'primary.main', outlineOffset: 1 } }}>
             <PlusIcon aria-hidden="true"/> Přidat úkol

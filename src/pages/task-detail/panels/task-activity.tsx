@@ -20,19 +20,19 @@ export function TaskActivity({ taskId }: { taskId: string }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       {items.map(it => (
-        <Box key={it.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12, color: 'text.secondary' }}>
+        <Box key={it.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14, color: 'text.secondary' }}>
           <FluxAvatar user={it.user} size={18}/>
-          <Typography sx={{ fontSize: 12 }}>
+          <Typography sx={{ fontSize: 14 }}>
             <b>{it.user.name}</b>{' '}
             {it.action}
             {it.toValue && <> → <b>{it.toValue}</b></>}
           </Typography>
           <Box sx={{ flex: 1 }}/>
-          <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{timeAgo(it.createdAt)}</Typography>
+          <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{timeAgo(it.createdAt)}</Typography>
         </Box>
       ))}
       {items.length === 0 && (
-        <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>Žádná aktivita</Typography>
+        <Typography sx={{ fontSize: 14, color: 'text.disabled' }}>Žádná aktivita</Typography>
       )}
     </Box>
   );

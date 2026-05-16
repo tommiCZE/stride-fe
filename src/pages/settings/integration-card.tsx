@@ -40,14 +40,14 @@ export function IntegrationCard({ ig }: { ig: typeof GIT_INTEGRATIONS[number] })
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography sx={{ fontSize: 14, fontWeight: 700 }}>{ig.name}</Typography>
             <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5,
-              px: 0.75, py: 0.15, borderRadius: 1, fontSize: 10.5, fontWeight: 600,
+              px: 0.75, py: 0.15, borderRadius: 1, fontSize: 14, fontWeight: 600,
               color: ig.connected ? '#10b981' : '#94a3b8',
               bgcolor: (ig.connected ? '#10b981' : '#94a3b8') + '22' }}>
               <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: ig.connected ? '#10b981' : '#94a3b8' }}/>
               {ig.connected ? 'Připojeno' : 'Nepřipojeno'}
             </Box>
           </Box>
-          <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             {ig.connected
               ? `${ig.org} · ${ig.repos.filter(r => r.linked).length} repo · sync ${timeAgo(ig.lastSync)}`
               : 'Připoj svou organizaci a propoj repository.'}
@@ -66,10 +66,10 @@ export function IntegrationCard({ ig }: { ig: typeof GIT_INTEGRATIONS[number] })
               <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1,
                 border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' }}>
                 <ProviderLogo provider={ig.provider} size={13}/>
-                <Typography sx={{ fontSize: 12.5, fontFamily: 'JetBrains Mono, ui-monospace, monospace', flex: 1 }}>{r.full}</Typography>
-                <Typography sx={{ fontSize: 10.5, px: 0.5, py: 0.1, borderRadius: 0.5, bgcolor: 'action.hover', color: 'text.secondary' }}>{r.lang}</Typography>
+                <Typography sx={{ fontSize: 14, fontFamily: 'JetBrains Mono, ui-monospace, monospace', flex: 1 }}>{r.full}</Typography>
+                <Typography sx={{ fontSize: 14, px: 0.5, py: 0.1, borderRadius: 0.5, bgcolor: 'action.hover', color: 'text.secondary' }}>{r.lang}</Typography>
                 <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4,
-                  px: 0.6, py: 0.2, borderRadius: 0.6, fontSize: 10.5, fontWeight: 600,
+                  px: 0.6, py: 0.2, borderRadius: 0.6, fontSize: 14, fontWeight: 600,
                   color: r.linked ? '#10b981' : 'text.disabled',
                   bgcolor: r.linked ? '#10b98122' : 'transparent',
                   border: r.linked ? 0 : 1, borderColor: 'divider' }}>
@@ -82,7 +82,7 @@ export function IntegrationCard({ ig }: { ig: typeof GIT_INTEGRATIONS[number] })
           <SectionLabel sx={{ mb: 0.75 }}>Webhooky</SectionLabel>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1.5 }}>
             {ig.webhooks.map(w => (
-              <Box key={w} sx={{ fontSize: 11, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+              <Box key={w} sx={{ fontSize: 13, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
                 px: 0.75, py: 0.25, borderRadius: 0.6, bgcolor: 'action.hover' }}>{w}</Box>
             ))}
           </Box>
@@ -96,8 +96,8 @@ export function IntegrationCard({ ig }: { ig: typeof GIT_INTEGRATIONS[number] })
               <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1,
                 border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' }}>
                 <Box sx={{ flex: 1 }}>
-                  <Typography sx={{ fontSize: 12.5, fontWeight: 600 }}>{item.label}</Typography>
-                  <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>{item.desc}</Typography>
+                  <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{item.label}</Typography>
+                  <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{item.desc}</Typography>
                 </Box>
                 <Box sx={{ width: 32, height: 18, borderRadius: 9, position: 'relative',
                   bgcolor: item.on ? 'primary.main' : 'action.hover' }}>

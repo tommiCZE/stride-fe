@@ -59,7 +59,7 @@ export function MembersSection({ project, readOnly }: { project: ProjectDto; rea
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 2 }}>
           {members.data.length === 0 && (
-            <Typography sx={{ fontSize: 12, color: 'text.secondary', py: 1.5, textAlign: 'center' }}>
+            <Typography sx={{ fontSize: 14, color: 'text.secondary', py: 1.5, textAlign: 'center' }}>
               Zatím nikdo. Přidej členy z dropdownu níže.
             </Typography>
           )}
@@ -74,7 +74,7 @@ export function MembersSection({ project, readOnly }: { project: ProjectDto; rea
                 <FluxAvatar user={user} size={26}/>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography sx={{ fontSize: 13, fontWeight: 500 }}>{user.name}</Typography>
-                  <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>{user.email}</Typography>
+                  <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{user.email}</Typography>
                 </Box>
                 <TextField
                   size="small" select value={m.role}

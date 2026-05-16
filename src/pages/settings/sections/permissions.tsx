@@ -52,7 +52,7 @@ export function PermissionsSection({ readOnly, project }: { project: ProjectDto;
           <Box/>
           {ROLE_COLUMNS.map(r => (
             <Typography key={r.id} sx={{
-              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+              fontSize: 13, fontWeight: 700, textTransform: 'uppercase',
               letterSpacing: '0.06em', textAlign: 'center', color: 'text.secondary',
             }}>{r.label}</Typography>
           ))}
@@ -61,7 +61,7 @@ export function PermissionsSection({ readOnly, project }: { project: ProjectDto;
             <Box key={group} sx={{ display: 'contents' }}>
               <Box sx={{
                 gridColumn: `1 / -1`, mt: 1.25, mb: 0.25, pl: 0.5,
-                fontSize: 10.5, fontWeight: 700, letterSpacing: '0.08em',
+                fontSize: 14, fontWeight: 700, letterSpacing: '0.08em',
                 textTransform: 'uppercase', color: 'text.disabled',
               }}>{group}</Box>
               {PERMISSION_ROWS.filter(r => r.group === group).map(row => (
@@ -69,8 +69,8 @@ export function PermissionsSection({ readOnly, project }: { project: ProjectDto;
                   <Box sx={{
                     py: 0.75, pr: 1, borderTop: 1, borderColor: 'divider',
                   }}>
-                    <Typography sx={{ fontSize: 12.5, fontWeight: 500 }}>{row.label}</Typography>
-                    <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>{row.hint}</Typography>
+                    <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{row.label}</Typography>
+                    <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{row.hint}</Typography>
                   </Box>
                   {ROLE_COLUMNS.map(role => {
                     const locked = role.id === 'project_admin';
@@ -99,20 +99,20 @@ export function PermissionsSection({ readOnly, project }: { project: ProjectDto;
       <SettingsCard title="Co která role znamená">
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box>
-            <Typography sx={{ fontSize: 12.5, fontWeight: 700 }}>Project admin</Typography>
-            <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 700 }}>Project admin</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
               Plný přístup. Vidí danger zónu, fakturaci a audit log.
             </Typography>
           </Box>
           <Box>
-            <Typography sx={{ fontSize: 12.5, fontWeight: 700 }}>Contributor</Typography>
-            <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 700 }}>Contributor</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
               Pracuje s tasky a sprinty. Nemůže měnit settings nebo členy.
             </Typography>
           </Box>
           <Box>
-            <Typography sx={{ fontSize: 12.5, fontWeight: 700 }}>Viewer</Typography>
-            <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 700 }}>Viewer</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
               Pouze čtení. Vhodné pro stakeholdery a klienty.
             </Typography>
           </Box>

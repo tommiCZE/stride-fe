@@ -56,7 +56,7 @@ export default function Team() {
           { label: 'Čekající',      value: pending, color: '#f59e0b' },
         ].map((s, i) => (
           <Card key={i} sx={{ p: 1.75, borderRadius: 1.5 }}>
-            <Typography sx={{ fontSize: 11.5, color: 'text.secondary', fontWeight: 500 }}>{s.label}</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 500 }}>{s.label}</Typography>
             <Typography sx={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', color: s.color, mt: 0.25 }}>{s.value}</Typography>
           </Card>
         ))}
@@ -68,7 +68,7 @@ export default function Team() {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 0.75,
-          fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+          fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
           color: 'text.secondary', borderBottom: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
           <Box sx={{ flex: 1 }}>Člen</Box>
           <Box sx={{ width: 90 }}>Oprávnění</Box>
@@ -95,10 +95,10 @@ export default function Team() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2 }}>{u.name}</Typography>
                     {u.id === currentUserId && (
-                      <Typography sx={{ fontSize: 10.5, color: 'text.disabled' }}>(Vy)</Typography>
+                      <Typography sx={{ fontSize: 14, color: 'text.disabled' }}>(Vy)</Typography>
                     )}
                   </Box>
-                  <Typography sx={{ fontSize: 11.5, color: 'text.secondary', lineHeight: 1.2 }}>{u.email}</Typography>
+                  <Typography sx={{ fontSize: 13, color: 'text.secondary', lineHeight: 1.2 }}>{u.email}</Typography>
                 </Box>
               </Box>
               <Box sx={{ width: 90 }}>

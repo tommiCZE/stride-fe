@@ -64,7 +64,7 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
                 {CATEGORIES.map(c => <MenuItem key={c.id} value={c.id}>{c.label}</MenuItem>)}
               </TextField>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>WIP</Typography>
+                <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>WIP</Typography>
                 <TextField
                   size="small" type="number" value={s.wipLimit ?? ''} disabled={readOnly}
                   placeholder="—"
@@ -110,7 +110,7 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
               >
                 {statuses.data.map(s => <MenuItem key={s.id} value={s.key}>{s.name}</MenuItem>)}
               </TextField>
-              <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>→</Typography>
+              <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>→</Typography>
               <TextField
                 size="small" select value={t.toStatusKey} disabled={readOnly}
                 onChange={e => transitions.replace(transitions.data.map((x, j) => j === i ? { ...x, toStatusKey: e.target.value } : x))}

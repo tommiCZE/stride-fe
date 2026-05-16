@@ -40,8 +40,8 @@ export default function Profile() {
           <FluxAvatar user={{ color, initials }} size={52}/>
           <Box>
             <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{me?.name}</Typography>
-            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{me?.email}</Typography>
-            <Typography sx={{ fontSize: 11, color: 'text.disabled', textTransform: 'capitalize', mt: 0.25 }}>
+            <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{me?.email}</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.disabled', textTransform: 'capitalize', mt: 0.25 }}>
               {me?.workspaceRole?.toLowerCase()}
             </Typography>
           </Box>
@@ -57,7 +57,7 @@ export default function Profile() {
         </Box>
 
         <Box sx={{ mb: 2.5 }}>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>Barva avataru</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary', mb: 1 }}>Barva avataru</Typography>
           <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
             {COLORS.map(c => (
               <Box key={c} onClick={() => setColor(c)}
@@ -82,11 +82,11 @@ export default function Profile() {
         <CardTitle sx={{ mb: 1.5 }}>Účet</CardTitle>
         <Box sx={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: 1.5, alignItems: 'center',
           fontSize: 13 }}>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Email</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Email</Typography>
           <Typography sx={{ fontSize: 13 }}>{me?.email}</Typography>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Role</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Role</Typography>
           <Typography sx={{ fontSize: 13, textTransform: 'capitalize' }}>{me?.workspaceRole?.toLowerCase()}</Typography>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Status</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Status</Typography>
           <Typography sx={{ fontSize: 13, textTransform: 'capitalize' }}>{me?.status?.toLowerCase()}</Typography>
         </Box>
       </Card>

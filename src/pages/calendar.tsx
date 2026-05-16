@@ -46,7 +46,7 @@ function TaskPill({ task, onOpen }: TaskPillProps) {
           px: 0.5,
           py: 0.25,
           borderRadius: 0.75,
-          fontSize: 11,
+          fontSize: 13,
           lineHeight: 1.3,
           cursor: 'pointer',
           color: 'text.primary',
@@ -119,7 +119,7 @@ function DayCell({ day, isCurrentMonth, isToday, tasks, onOpen }: DayCellProps) 
             height: 22,
             px: 0.75,
             borderRadius: '50%',
-            fontSize: 11.5,
+            fontSize: 13,
             fontWeight: isToday ? 700 : 500,
             color: isToday ? 'primary.contrastText' : isCurrentMonth ? 'text.primary' : 'text.disabled',
             bgcolor: isToday ? 'primary.main' : 'transparent',
@@ -129,7 +129,7 @@ function DayCell({ day, isCurrentMonth, isToday, tasks, onOpen }: DayCellProps) 
           {day.date()}
         </Box>
         {tasks.length > 0 && (
-          <Typography sx={{ fontSize: 10, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
+          <Typography sx={{ fontSize: 14, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
             {tasks.length}
           </Typography>
         )}
@@ -139,7 +139,7 @@ function DayCell({ day, isCurrentMonth, isToday, tasks, onOpen }: DayCellProps) 
           <TaskPill key={t.id} task={t} onOpen={onOpen} />
         ))}
         {extra > 0 && (
-          <Typography sx={{ fontSize: 10.5, color: 'text.secondary', px: 0.5 }}>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary', px: 0.5 }}>
             +{extra} dalších
           </Typography>
         )}
@@ -198,7 +198,7 @@ export default function Calendar() {
           <Typography sx={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em', textTransform: 'capitalize' }}>
             {monthLabel}
           </Typography>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
             {project ? project.name : t('nav.calendar')}
           </Typography>
         </Box>
@@ -237,7 +237,7 @@ export default function Calendar() {
       }}>
         {WEEKDAYS_CS.map(d => (
           <Box key={d} sx={{
-            px: 1.5, py: 1, fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
+            px: 1.5, py: 1, fontSize: 13, fontWeight: 700, letterSpacing: '0.06em',
             textTransform: 'uppercase', color: 'text.secondary', borderRight: 1, borderColor: 'divider',
             '&:last-of-type': { borderRight: 0 },
           }}>

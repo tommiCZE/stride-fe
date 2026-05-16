@@ -80,7 +80,7 @@ export default function ActivityFeedItem({ item, onOpen }: Props) {
     >
       <FluxAvatar user={actor} size={22} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 12.5, lineHeight: 1.4 }}>
+        <Typography sx={{ fontSize: 14, lineHeight: 1.4 }}>
           <b>{actor?.name ?? 'Někdo'}</b>{' '}
           <Box component="span" sx={{ color: 'text.secondary' }}>{sentence}</Box>
           {' '}
@@ -91,7 +91,7 @@ export default function ActivityFeedItem({ item, onOpen }: Props) {
         {item.taskTitle && (
           <Typography
             sx={{
-              fontSize: 11.5,
+              fontSize: 13,
               color: 'text.secondary',
               mt: 0.25,
               overflow: 'hidden',
@@ -102,7 +102,7 @@ export default function ActivityFeedItem({ item, onOpen }: Props) {
             {item.taskTitle}
           </Typography>
         )}
-        <Typography sx={{ fontSize: 10.5, color: 'text.disabled', mt: 0.1 }}>
+        <Typography sx={{ fontSize: 14, color: 'text.disabled', mt: 0.1 }}>
           {timeAgo(item.createdAt)}
           {item.projectName ? ` · ${item.projectName}` : ''}
         </Typography>

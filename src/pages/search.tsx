@@ -72,7 +72,7 @@ function MultiSelectChip({ label, options, selected, onChange }: {
             key={o.id}
             onClick={() => toggle(o.id)}
             selected={selected.includes(o.id)}
-            sx={{ fontSize: 12.5, gap: 1 }}
+            sx={{ fontSize: 14, gap: 1 }}
           >
             {o.color && (
               <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: o.color }}/>
@@ -116,7 +116,7 @@ function TaskRow({ task, projects, members, query }: {
     >
       <TypeIcon type={task.type} size={14}/>
       <Typography sx={{
-        fontFamily: 'ui-monospace, monospace', fontSize: 11.5, fontWeight: 600,
+        fontFamily: 'ui-monospace, monospace', fontSize: 13, fontWeight: 600,
         color: 'text.disabled', width: 80, flexShrink: 0,
       }}>
         {task.key}
@@ -129,7 +129,7 @@ function TaskRow({ task, projects, members, query }: {
       {status && (
         <Box sx={{
           px: 0.75, py: 0.1, borderRadius: 0.75,
-          fontSize: 10.5, fontWeight: 700,
+          fontSize: 14, fontWeight: 700,
           color: status.color, bgcolor: alpha(status.color, 0.13),
           border: 1, borderColor: alpha(status.color, 0.4),
           flexShrink: 0,
@@ -139,7 +139,7 @@ function TaskRow({ task, projects, members, query }: {
       )}
       {project && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0,
-          color: 'text.disabled', fontSize: 11 }}>
+          color: 'text.disabled', fontSize: 13 }}>
           <Box sx={{ width: 12, height: 12, borderRadius: 0.4, bgcolor: project.color }}/>
           {project.key}
         </Box>
@@ -268,7 +268,7 @@ export default function Search() {
             />
           )}
           <Box sx={{ flex: 1 }}/>
-          <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             {isLoading ? 'Hledám…' : `${total} ${total === 1 ? 'výsledek' : total < 5 ? 'výsledky' : 'výsledků'}`}
           </Typography>
         </Box>
@@ -309,17 +309,17 @@ export default function Search() {
               >
                 <Box sx={{ width: 22, height: 22, borderRadius: 0.7, bgcolor: p.color,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'common.white', fontSize: 11, fontWeight: 700 }}>
+                  color: 'common.white', fontSize: 13, fontWeight: 700 }}>
                   {p.key[0]}
                 </Box>
                 <Typography sx={{ fontSize: 13, flex: 1 }}>
                   <Highlight text={p.name} query={initialQ}/>
                 </Typography>
-                <Typography sx={{ fontSize: 11, color: 'text.disabled',
+                <Typography sx={{ fontSize: 13, color: 'text.disabled',
                   fontFamily: 'ui-monospace, monospace' }}>
                   {p.key}
                 </Typography>
-                <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+                <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
                   {p.taskCount} tasků · {p.openCount} otevřených
                 </Typography>
               </Box>
@@ -342,11 +342,11 @@ export default function Search() {
                   <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
                     <Highlight text={u.name} query={initialQ}/>
                   </Typography>
-                  <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
+                  <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
                     {u.email}
                   </Typography>
                 </Box>
-                <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+                <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
                   {u.workspaceRole}
                 </Typography>
               </Box>
@@ -362,7 +362,7 @@ function ResultGroup({ label, count, children }: { label: string; count: number;
   return (
     <Box sx={{ mb: 2.5 }}>
       <Typography sx={{
-        fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em',
+        fontSize: 14, fontWeight: 700, letterSpacing: '0.06em',
         textTransform: 'uppercase', color: 'text.disabled',
         px: 1.5, mb: 0.5,
       }}>
@@ -386,7 +386,7 @@ function EmptyState({ title, hint }: { title: string; hint: string }) {
       <Typography sx={{ fontSize: 14, fontWeight: 600, mb: 0.5, color: 'text.primary' }}>
         {title}
       </Typography>
-      <Typography sx={{ fontSize: 12 }}>{hint}</Typography>
+      <Typography sx={{ fontSize: 14 }}>{hint}</Typography>
     </Box>
   );
 }

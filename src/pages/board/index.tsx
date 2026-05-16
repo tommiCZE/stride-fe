@@ -234,9 +234,9 @@ export default function Board() {
         borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexShrink: 0 }}>
         {sprint && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'success.main' }}>● {sprint.name}</Typography>
+            <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'success.main' }}>● {sprint.name}</Typography>
             {sprint.endDate && (
-              <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+              <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
                 · {new Date(sprint.endDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
               </Typography>
             )}
@@ -244,7 +244,7 @@ export default function Board() {
         )}
         <Box sx={{ flex: 1 }}/>
         <TextField placeholder="Hledat…" value={search} onChange={e => setSearch(e.target.value)}
-          sx={{ width: 160, '& .MuiOutlinedInput-root': { height: 26, fontSize: 12 } }}
+          sx={{ width: 160, '& .MuiOutlinedInput-root': { height: 26, fontSize: 14 } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start" sx={{ mr: 0.5 }}><SearchIcon/></InputAdornment> } }}/>
         <Box sx={{ display: 'flex', gap: 0.5 }}>
           {teamMembers.map(u => (
@@ -257,7 +257,7 @@ export default function Board() {
           ))}
         </Box>
         <Box onClick={() => setFilterMine(f => !f)}
-          sx={{ px: 1, py: 0.4, borderRadius: 1, fontSize: 12, fontWeight: filterMine ? 600 : 400,
+          sx={{ px: 1, py: 0.4, borderRadius: 1, fontSize: 14, fontWeight: filterMine ? 600 : 400,
             bgcolor: filterMine ? 'primary.main' : 'action.hover',
             color: filterMine ? '#fff' : 'text.secondary', cursor: 'default' }}>
           Pouze moje
@@ -272,7 +272,7 @@ export default function Board() {
             minHeight: 0,
             px: 1,
             py: 0.4,
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: advancedRuleCount > 0 ? 600 : 400,
             color: advancedRuleCount > 0 ? 'primary.contrastText' : 'text.secondary',
             bgcolor: advancedRuleCount > 0 ? 'primary.main' : 'action.hover',
@@ -289,7 +289,7 @@ export default function Board() {
             sx={{
               display: 'flex', alignItems: 'center', gap: 0.5,
               px: 1, py: 0.4, borderRadius: 1,
-              fontSize: 12, fontWeight: activeFilter ? 600 : 400,
+              fontSize: 14, fontWeight: activeFilter ? 600 : 400,
               bgcolor: activeFilter ? 'primary.main' : 'action.hover',
               color: activeFilter ? 'primary.contrastText' : 'text.secondary',
               cursor: 'default', maxWidth: 180, overflow: 'hidden',

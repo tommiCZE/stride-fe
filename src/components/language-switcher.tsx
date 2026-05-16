@@ -21,9 +21,9 @@ export default function LanguageSwitcher() {
         '&:hover': { bgcolor: 'action.hover' },
       }}
     >
-      <Typography sx={{ fontSize: 11, fontWeight: 700, color: current === 'cs' ? 'primary.main' : 'text.disabled' }}>CS</Typography>
-      <Typography sx={{ fontSize: 10, color: 'text.disabled' }}>/</Typography>
-      <Typography sx={{ fontSize: 11, fontWeight: 700, color: current === 'en' ? 'primary.main' : 'text.disabled' }}>EN</Typography>
+      <Typography sx={{ fontSize: 13, fontWeight: 700, color: current === 'cs' ? 'primary.main' : 'text.disabled' }}>CS</Typography>
+      <Typography sx={{ fontSize: 14, color: 'text.disabled' }}>/</Typography>
+      <Typography sx={{ fontSize: 13, fontWeight: 700, color: current === 'en' ? 'primary.main' : 'text.disabled' }}>EN</Typography>
     </Box>
   );
 }

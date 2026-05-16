@@ -49,13 +49,13 @@ export default function QueryError({ error, onRetry, compact }: Props) {
         >
           <AlertIcon />
         </Box>
-        <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: 'text.primary' }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary' }}>
           Nepodařilo se načíst data
         </Typography>
         {message && (
           <Typography
             sx={{
-              fontSize: 12,
+              fontSize: 14,
               color: 'text.secondary',
               minWidth: 0,
               flex: 1,
@@ -144,7 +144,7 @@ export default function QueryError({ error, onRetry, compact }: Props) {
               bgcolor: theme => alpha(theme.palette.error.main, 0.08),
               color: 'error.main',
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-              fontSize: 12,
+              fontSize: 14,
               textAlign: 'left',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',

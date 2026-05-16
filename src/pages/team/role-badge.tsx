@@ -32,7 +32,7 @@ export function RoleBadge({ role }: { role: WorkspaceRole }) {
   const c = roleColor[role];
   return (
     <Box sx={{ display: 'inline-flex', alignItems: 'center', px: 0.75, py: 0.2, borderRadius: 0.75,
-      fontSize: 11, fontWeight: 600, color: c.color, bgcolor: c.bg,
+      fontSize: 13, fontWeight: 600, color: c.color, bgcolor: c.bg,
       border: role === 'viewer' ? '1px solid' : 'none', borderColor: 'divider' }}>
       {roleLabel[role]}
     </Box>
@@ -43,7 +43,7 @@ export function StatusBadgeLocal({ status }: { status: Status }) {
   const c = statusColor[status];
   return (
     <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.2, borderRadius: 0.75,
-      fontSize: 11, fontWeight: 600, color: c.color, bgcolor: c.bg }}>
+      fontSize: 13, fontWeight: 600, color: c.color, bgcolor: c.bg }}>
       <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: c.color }}/>
       {status === 'active' ? 'Aktivní' : 'Čekající'}
     </Box>

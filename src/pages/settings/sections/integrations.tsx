@@ -58,12 +58,12 @@ export function IntegrationsSection({ project, readOnly }: { project: ProjectDto
               border: 1, borderColor: 'divider', borderRadius: 1,
             }}>
               <Box sx={{ flex: 1 }}>
-                <Typography sx={{ fontSize: 12.5, fontWeight: 600 }}>{t.name}</Typography>
-                <Typography sx={{ fontSize: 11, color: 'text.disabled', fontFamily: 'ui-monospace, monospace' }}>
+                <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{t.name}</Typography>
+                <Typography sx={{ fontSize: 13, color: 'text.disabled', fontFamily: 'ui-monospace, monospace' }}>
                   {t.prefix}…  ·  {t.scopes.join(', ')}
                 </Typography>
               </Box>
-              <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
                 {t.lastUsedAt
                   ? `použito ${Math.round((Date.now() - new Date(t.lastUsedAt).getTime()) / 3600_000)}h zpět`
                   : 'nepoužito'}
@@ -118,8 +118,8 @@ export function IntegrationsSection({ project, readOnly }: { project: ProjectDto
                   automations.data.map((x, j) => j === i ? { ...x, enabled: v } : x),
                 )}/>
               <Box sx={{ flex: 1 }}>
-                <Typography sx={{ fontSize: 12.5, fontWeight: 600 }}>{a.name}</Typography>
-                <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
+                <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{a.name}</Typography>
+                <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
                   pokud {a.trigger} → {a.action}
                 </Typography>
               </Box>
@@ -149,10 +149,10 @@ export function IntegrationsSection({ project, readOnly }: { project: ProjectDto
             }}>
               <Box sx={{ flex: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ fontSize: 12.5, fontWeight: 700 }}>{t.name}</Typography>
+                  <Typography sx={{ fontSize: 14, fontWeight: 700 }}>{t.name}</Typography>
                   <Chip size="small" label={t.typeKey} variant="outlined"/>
                 </Box>
-                <Typography sx={{ fontSize: 11, color: 'text.secondary', mt: 0.25, whiteSpace: 'pre-line' }}>
+                <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.25, whiteSpace: 'pre-line' }}>
                   {t.description.split('\n').slice(0, 2).join(' · ')}
                 </Typography>
               </Box>
@@ -268,7 +268,7 @@ function SlackCard({ projectKey, readOnly }: { projectKey: string; readOnly: boo
         <SlackLogo/>
         <Box sx={{ flex: 1 }}>
           <Typography sx={{ fontSize: 13, fontWeight: 700 }}>Slack workspace</Typography>
-          <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             {slack.isLoading ? 'Načítám…'
               : slack.isConnected ? `Připojeno k ${slack.integration?.teamName}`
               : 'Nepřipojeno'}
@@ -290,7 +290,7 @@ function SlackCard({ projectKey, readOnly }: { projectKey: string; readOnly: boo
 
       {slack.isConnected && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5 }}>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', minWidth: 130 }}>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary', minWidth: 130 }}>
             Výchozí kanál
           </Typography>
           <TextField
@@ -362,7 +362,7 @@ function GithubRow({ projectKey, readOnly }: { projectKey: string; readOnly: boo
         <ProviderLogo provider="github" size={28}/>
         <Box sx={{ flex: 1 }}>
           <Typography sx={{ fontSize: 13, fontWeight: 700 }}>GitHub</Typography>
-          <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             {gh.isLoading ? 'Načítám…'
               : gh.isConnected
                 ? <>Přihlášen jako <strong>@{gh.integration?.accountLogin}</strong></>
@@ -388,7 +388,7 @@ function GithubRow({ projectKey, readOnly }: { projectKey: string; readOnly: boo
 
       {gh.isConnected && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, ml: 4.5 }}>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', minWidth: 120 }}>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary', minWidth: 120 }}>
             Výchozí repo
           </Typography>
           <TextField
@@ -440,7 +440,7 @@ function GitlabRow({ projectKey, readOnly }: { projectKey: string; readOnly: boo
         <ProviderLogo provider="gitlab" size={28}/>
         <Box sx={{ flex: 1 }}>
           <Typography sx={{ fontSize: 13, fontWeight: 700 }}>GitLab</Typography>
-          <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             {gl.isLoading ? 'Načítám…'
               : gl.isConnected
                 ? <>Přihlášen jako <strong>@{gl.integration?.accountUsername}</strong></>
@@ -466,7 +466,7 @@ function GitlabRow({ projectKey, readOnly }: { projectKey: string; readOnly: boo
 
       {gl.isConnected && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, ml: 4.5 }}>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', minWidth: 120 }}>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary', minWidth: 120 }}>
             Výchozí projekt
           </Typography>
           <TextField
@@ -519,7 +519,7 @@ function BranchNamingCard({ projectKey, readOnly }: { projectKey: string; readOn
         />
       </FieldRow>
       <FieldRow label="Náhled">
-        <Typography sx={{ fontFamily: 'ui-monospace, monospace', fontSize: 12.5, color: 'text.secondary',
+        <Typography sx={{ fontFamily: 'ui-monospace, monospace', fontSize: 14, color: 'text.secondary',
           bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 0.75 }}>
           {sample}
         </Typography>

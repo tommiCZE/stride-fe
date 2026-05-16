@@ -181,7 +181,7 @@ function SortableRow({ subtask, onToggle, onRename, onDelete }: SortableRowProps
 
       {confirming ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pr: 0.5 }}>
-          <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>Smazat?</Typography>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Smazat?</Typography>
           <Button
             size="small"
             color="error"
@@ -189,14 +189,14 @@ function SortableRow({ subtask, onToggle, onRename, onDelete }: SortableRowProps
               onDelete(subtask.id);
               setConfirming(false);
             }}
-            sx={{ minWidth: 0, px: 1, py: 0.25, fontSize: 11 }}
+            sx={{ minWidth: 0, px: 1, py: 0.25, fontSize: 13 }}
           >
             Ano
           </Button>
           <Button
             size="small"
             onClick={() => setConfirming(false)}
-            sx={{ minWidth: 0, px: 1, py: 0.25, fontSize: 11 }}
+            sx={{ minWidth: 0, px: 1, py: 0.25, fontSize: 13 }}
           >
             Ne
           </Button>
@@ -372,7 +372,7 @@ export default function Subtasks({ taskId }: { taskId: string }) {
                 setAdding(false);
                 setDraft('');
               }}
-              sx={{ fontSize: 11.5 }}
+              sx={{ fontSize: 13 }}
             >
               Hotovo
             </Button>
@@ -382,7 +382,7 @@ export default function Subtasks({ taskId }: { taskId: string }) {
             size="small"
             onClick={() => setAdding(true)}
             sx={{
-              fontSize: 12,
+              fontSize: 14,
               color: 'text.secondary',
               justifyContent: 'flex-start',
               pl: 4,

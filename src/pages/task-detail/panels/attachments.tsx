@@ -186,7 +186,7 @@ export function Attachments({ taskId }: Props) {
             <Typography sx={{ fontSize: 13, fontWeight: 500 }}>
               {dragOver ? 'Pusť soubory sem' : 'Přetáhni soubory sem nebo klikni pro výběr'}
             </Typography>
-            <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+            <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
               Max. 25 MB na soubor
             </Typography>
           </Box>
@@ -210,7 +210,7 @@ export function Attachments({ taskId }: Props) {
       )}
 
       {!isPending && !isError && attachments.length === 0 && (
-        <Typography sx={{ fontSize: 12.5, color: 'text.disabled', textAlign: 'center', py: 1 }}>
+        <Typography sx={{ fontSize: 14, color: 'text.disabled', textAlign: 'center', py: 1 }}>
           Žádné přílohy
         </Typography>
       )}
@@ -229,7 +229,7 @@ export function Attachments({ taskId }: Props) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: 700,
                   color: 'text.secondary',
                   flexShrink: 0,
@@ -263,7 +263,7 @@ export function Attachments({ taskId }: Props) {
                 >
                   {a.fileName}
                 </Typography>
-                <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+                <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
                   {formatBytes(a.sizeBytes)} · {formatDate(a.createdAt)}
                 </Typography>
               </Box>

@@ -94,10 +94,10 @@ function RenderBlock({ block: b }: { block: RichBlock }) {
         bgcolor: 'background.default', fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           px: 1.25, py: 0.5, borderBottom: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
-          <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: 'text.secondary' }}>{b.lang || 'text'}</Typography>
-          <Typography sx={{ fontSize: 10.5, color: 'text.disabled', cursor: 'default' }}>Copy</Typography>
+          <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.secondary' }}>{b.lang || 'text'}</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.disabled', cursor: 'default' }}>Copy</Typography>
         </Box>
-        <Box sx={{ p: 1.25, fontSize: 12, lineHeight: 1.55, overflowX: 'auto', whiteSpace: 'pre' }}>
+        <Box sx={{ p: 1.25, fontSize: 14, lineHeight: 1.55, overflowX: 'auto', whiteSpace: 'pre' }}>
           {lines.map((l, i) => (
             <Box key={i} sx={{ display: 'flex' }}>
               <Box sx={{ width: 22, color: 'text.disabled', userSelect: 'none', pr: 1, textAlign: 'right' }}>{i + 1}</Box>

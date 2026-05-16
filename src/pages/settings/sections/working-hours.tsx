@@ -67,7 +67,7 @@ export function WorkingHoursSection({ project, readOnly }: { project: ProjectDto
                   onClick={() => toggleDay(d.id)}
                   sx={{
                     px: 1.25, py: 0.5, borderRadius: 0.8,
-                    fontSize: 12, fontWeight: active ? 700 : 500,
+                    fontSize: 14, fontWeight: active ? 700 : 500,
                     cursor: readOnly ? 'default' : 'pointer', userSelect: 'none',
                     border: 1,
                     borderColor: active ? 'primary.main' : 'divider',
@@ -126,7 +126,7 @@ export function WorkingHoursSection({ project, readOnly }: { project: ProjectDto
             </Box>
           ))}
           {wh.holidays.length === 0 && (
-            <Typography sx={{ fontSize: 12, color: 'text.disabled', py: 1, textAlign: 'center' }}>
+            <Typography sx={{ fontSize: 14, color: 'text.disabled', py: 1, textAlign: 'center' }}>
               Žádné svátky.
             </Typography>
           )}

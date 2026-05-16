@@ -32,8 +32,8 @@ export function AdvancedSection({ project, readOnly }: { project: ProjectDto; re
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: 12.5, fontWeight: 600 }}>Export projektu</Typography>
-              <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Export projektu</Typography>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
                 Stáhne JSON se všemi tasky, sprinty, komentáři a nastavením.
               </Typography>
             </Box>
@@ -46,8 +46,8 @@ export function AdvancedSection({ project, readOnly }: { project: ProjectDto; re
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: 12.5, fontWeight: 600 }}>Import z Jiry</Typography>
-              <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Import z Jiry</Typography>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
                 Načte tasky z exportovaného CSV. Mapování polí v dalším kroku.
               </Typography>
             </Box>
@@ -59,7 +59,7 @@ export function AdvancedSection({ project, readOnly }: { project: ProjectDto; re
       <SettingsCard title="Audit log" description="Posledních 30 dní změn v nastavení projektu.">
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
           {audit.data.length === 0 && (
-            <Typography sx={{ fontSize: 12, color: 'text.secondary', py: 1.5, textAlign: 'center' }}>
+            <Typography sx={{ fontSize: 14, color: 'text.secondary', py: 1.5, textAlign: 'center' }}>
               Zatím žádné záznamy.
             </Typography>
           )}
@@ -72,14 +72,14 @@ export function AdvancedSection({ project, readOnly }: { project: ProjectDto; re
                 '&:last-child': { borderBottom: 0 },
               }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: 'primary.main' }}/>
-                <Typography sx={{ fontSize: 12.5, flex: 1 }}>
+                <Typography sx={{ fontSize: 14, flex: 1 }}>
                   <Box component="span" sx={{ fontWeight: 600 }}>{actor?.name ?? 'System'}</Box>
                   {' · '}
                   <Box component="span" sx={{ color: 'text.secondary' }}>{e.section}</Box>
                   {' — '}
                   {e.summary}
                 </Typography>
-                <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{formatTimeAgo(e.occurredAt)}</Typography>
+                <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{formatTimeAgo(e.occurredAt)}</Typography>
               </Box>
             );
           })}
@@ -89,8 +89,8 @@ export function AdvancedSection({ project, readOnly }: { project: ProjectDto; re
       <SettingsCard title="Týdenní insights" description="Souhrnný e-mail se statistikami.">
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ flex: 1 }}>
-            <Typography sx={{ fontSize: 12.5, fontWeight: 600 }}>Weekly insights pro project leady</Typography>
-            <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Weekly insights pro project leady</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
               Velocity, blockery, top contributors, plánovaný vs. dodaný scope.
             </Typography>
           </Box>

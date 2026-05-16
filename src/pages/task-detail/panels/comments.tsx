@@ -84,14 +84,14 @@ function CommentItem({ comment, taskId, isReply, replyingTo, onReplyClick, onRep
       <FluxAvatar user={comment.user} size={isReply ? 24 : 28}/>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5 }}>
-          <Typography sx={{ fontSize: 12.5, fontWeight: 600 }}>{comment.user.name}</Typography>
-          <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{timeAgo(comment.createdAt)}</Typography>
+          <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{comment.user.name}</Typography>
+          <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{timeAgo(comment.createdAt)}</Typography>
         </Box>
         <Box sx={{ p: 1.25, borderRadius: 1.2, bgcolor: 'action.hover', fontSize: 13, lineHeight: 1.55 }}>
           <RichContent blocks={comment.text}/>
         </Box>
         {showReply && (
-          <Box sx={{ display: 'flex', gap: 1.5, mt: 0.5, color: 'text.disabled', fontSize: 11.5 }}>
+          <Box sx={{ display: 'flex', gap: 1.5, mt: 0.5, color: 'text.disabled', fontSize: 13 }}>
             <Box
               onClick={() => onReplyClick(comment.id)}
               sx={{ cursor: 'pointer', '&:hover': { color: 'text.secondary' } }}
@@ -171,7 +171,7 @@ export function Comments({ taskId }: { taskId: string }) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Typography sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' }}>
+      <Typography sx={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' }}>
         Komentáře · {comments.length}
       </Typography>
 

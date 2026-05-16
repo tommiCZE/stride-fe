@@ -24,19 +24,19 @@ export function TaskCard({ task: t, onClick, isDragging }: TaskCardProps) {
       sx={{ cursor: 'default', borderRadius: 1.2, p: 1.25,
         transition: 'all 0.12s', opacity: isDragging ? 0.5 : 1,
         '&:hover': { borderColor: 'primary.main' } }}>
-      <Typography sx={{ fontSize: 12.5, lineHeight: 1.35, fontWeight: 500, mb: 0.75 }}>{t.title}</Typography>
+      <Typography sx={{ fontSize: 15, lineHeight: 1.35, fontWeight: 600, mb: 0.75 }}>{t.title}</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'text.secondary' }}>
         <TypeIcon type={t.type} size={13}/>
-        <MonoKey sx={{ fontSize: 10.5 }}>{t.key}</MonoKey>
+        <MonoKey sx={{ fontSize: 14 }}>{t.key}</MonoKey>
         <PriorityIcon priority={t.priority}/>
         <Box sx={{ flex: 1 }}/>
         {t.commentCount > 0 && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, fontSize: 11 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, fontSize: 13 }}>
             <CommentIcon/> {t.commentCount}
           </Box>
         )}
         {t.estimate != null && (
-          <Box sx={{ fontSize: 10.5, fontWeight: 600, px: 0.5, borderRadius: 0.6, bgcolor: 'action.hover' }}>{t.estimate}</Box>
+          <Box sx={{ fontSize: 14, fontWeight: 600, px: 0.5, borderRadius: 0.6, bgcolor: 'action.hover' }}>{t.estimate}</Box>
         )}
         <FluxAvatar user={assignee} size={18}/>
       </Box>

@@ -109,7 +109,7 @@ function IssueLinkTooltipContent({ task }: { task: TaskSummaryDto }) {
         borderColor: 'divider',
       }}
     >
-      <Typography sx={{ fontSize: 11, fontWeight: 600, color: 'text.disabled', letterSpacing: 0.3 }}>
+      <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.disabled', letterSpacing: 0.3 }}>
         {task.key}
       </Typography>
       <Typography sx={{ fontSize: 13, fontWeight: 500, lineHeight: 1.4, color: 'text.primary' }}>
@@ -126,7 +126,7 @@ function IssueLinkTooltipContent({ task }: { task: TaskSummaryDto }) {
             px: 0.75,
             py: 0.125,
             borderRadius: 0.75,
-            fontSize: 10.5,
+            fontSize: 14,
             fontWeight: 600,
             textTransform: 'uppercase',
             letterSpacing: 0.4,

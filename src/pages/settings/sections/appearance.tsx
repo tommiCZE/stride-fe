@@ -96,7 +96,7 @@ export function AppearanceSection({ project, readOnly }: { project: ProjectDto; 
             : appearance.cardColorBy === 'type' ? 'info.main'
             : appearance.cardColorBy === 'label' ? 'primary.main' : 'divider',
         }}>
-          <Typography sx={{ fontSize: 11, color: 'text.disabled', fontFamily: 'ui-monospace, monospace' }}>
+          <Typography sx={{ fontSize: 13, color: 'text.disabled', fontFamily: 'ui-monospace, monospace' }}>
             {project.key}-142
           </Typography>
           <Typography sx={{ fontSize: 13, fontWeight: 600, mb: 1 }}>
@@ -104,24 +104,24 @@ export function AppearanceSection({ project, readOnly }: { project: ProjectDto; 
           </Typography>
           {appearance.cardShowLabels && (
             <Box sx={{ display: 'flex', gap: 0.5, mb: 1 }}>
-              <Box sx={{ px: 0.75, py: 0.15, borderRadius: 0.6, fontSize: 10.5, fontWeight: 600,
+              <Box sx={{ px: 0.75, py: 0.15, borderRadius: 0.6, fontSize: 14, fontWeight: 600,
                 bgcolor: '#3b82f622', color: '#3b82f6' }}>frontend</Box>
-              <Box sx={{ px: 0.75, py: 0.15, borderRadius: 0.6, fontSize: 10.5, fontWeight: 600,
+              <Box sx={{ px: 0.75, py: 0.15, borderRadius: 0.6, fontSize: 14, fontWeight: 600,
                 bgcolor: '#10b98122', color: '#10b981' }}>tech-debt</Box>
             </Box>
           )}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
             {appearance.cardShowEstimate && (
-              <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>5 pt</Typography>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>5 pt</Typography>
             )}
             {appearance.cardShowDue && (
-              <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>· za 3 dny</Typography>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>· za 3 dny</Typography>
             )}
             <Box sx={{ flex: 1 }}/>
             {appearance.cardShowAssignee && (
               <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: 'primary.main',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: 10, fontWeight: 700 }}>TK</Box>
+                color: '#fff', fontSize: 14, fontWeight: 700 }}>TK</Box>
             )}
           </Box>
         </Box>

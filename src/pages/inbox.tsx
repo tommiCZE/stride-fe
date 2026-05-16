@@ -62,7 +62,7 @@ function InboxRow({ item, onSelect }: { item: NotificationItem; onSelect: (it: N
           {item.message}
         </Typography>
       </Box>
-      <Typography sx={{ fontSize: 11.5, color: 'text.disabled', minWidth: 60, textAlign: 'right' }}>
+      <Typography sx={{ fontSize: 13, color: 'text.disabled', minWidth: 60, textAlign: 'right' }}>
         {relativeTime(item.createdAt)}
       </Typography>
       {!item.read && (
@@ -113,10 +113,10 @@ export default function Inbox() {
             exclusive
             onChange={(_, v: Filter | null) => v && setFilter(v)}
           >
-            <ToggleButton value="all" sx={{ fontSize: 11.5, px: 1.5, py: 0.5 }}>
+            <ToggleButton value="all" sx={{ fontSize: 13, px: 1.5, py: 0.5 }}>
               {t('inbox.showAll')}
             </ToggleButton>
-            <ToggleButton value="unread" sx={{ fontSize: 11.5, px: 1.5, py: 0.5 }}>
+            <ToggleButton value="unread" sx={{ fontSize: 13, px: 1.5, py: 0.5 }}>
               {t('inbox.showUnread')}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -124,7 +124,7 @@ export default function Inbox() {
             size="small"
             onClick={markAllRead}
             disabled={unreadCount === 0}
-            sx={{ fontSize: 11.5 }}
+            sx={{ fontSize: 13 }}
           >
             {t('notifications.markAllRead')}
           </Button>
@@ -133,7 +133,7 @@ export default function Inbox() {
             color="error"
             onClick={clearAll}
             disabled={items.length === 0}
-            sx={{ fontSize: 11.5 }}
+            sx={{ fontSize: 13 }}
           >
             {t('inbox.clearAll')}
           </Button>

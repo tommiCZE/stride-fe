@@ -87,7 +87,7 @@ function FallbackUI({ error, resetErrorBoundary }: FallbackProps) {
               bgcolor: theme => alpha(theme.palette.error.main, 0.08),
               color: 'error.main',
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-              fontSize: 12,
+              fontSize: 14,
               textAlign: 'left',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',

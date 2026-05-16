@@ -155,12 +155,12 @@ export default function ListView() {
       <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, gap: 1, borderBottom: 1, borderColor: 'divider',
         position: 'sticky', top: 0, bgcolor: 'background.paper', zIndex: 1 }}>
         <TextField placeholder="Filtr…" size="small"
-          sx={{ width: 200, '& .MuiOutlinedInput-root': { height: 26, fontSize: 12.5 } }}/>
+          sx={{ width: 200, '& .MuiOutlinedInput-root': { height: 26, fontSize: 14 } }}/>
         <Button size="small" variant="outlined" startIcon={<FilterIcon/>}>Filtry</Button>
         <Button size="small" variant="outlined" startIcon={<DownloadIcon/>}
           onClick={handleExportCsv} disabled={tasks.length === 0}>Export</Button>
         <Box sx={{ flex: 1 }}/>
-        <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>{tasks.length} tasků</Typography>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{tasks.length} tasků</Typography>
       </Box>
 
       {projectId && (
@@ -172,7 +172,7 @@ export default function ListView() {
       )}
 
       <Box sx={{ minWidth: 900 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, fontSize: 10.5, fontWeight: 700,
+        <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, fontSize: 14, fontWeight: 700,
           letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary',
           borderBottom: 1, borderColor: 'divider', position: 'sticky',
           top: selectedIds.size > 0 ? 86 : 43,
@@ -200,7 +200,7 @@ export default function ListView() {
           const isSelected = selectedIds.has(t.id);
           return (
             <Box key={t.id} onClick={() => openTask(t.key)}
-              sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, fontSize: 12.5,
+              sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, fontSize: 14,
                 borderBottom: 1, borderColor: 'divider', cursor: 'default',
                 bgcolor: isSelected ? 'action.selected' : 'transparent',
                 '&:hover': { bgcolor: isSelected ? 'action.selected' : 'action.hover' } }}>
@@ -217,14 +217,14 @@ export default function ListView() {
                 />
               </Box>
               <Box sx={{ width: 84, px: 0.5 }}>
-                <MonoKey sx={{ fontSize: 11.5 }}>{t.key}</MonoKey>
+                <MonoKey sx={{ fontSize: 13 }}>{t.key}</MonoKey>
               </Box>
               <Box sx={{ width: 28, px: 0.5 }}><TypeIcon type={t.type} size={13}/></Box>
               <Box sx={{ width: 28, px: 0.5 }}><PriorityIcon priority={t.priority}/></Box>
               <Box sx={{ flex: 1, px: 0.5, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</Box>
               <Box sx={{ width: 130, px: 0.5, display: 'flex', alignItems: 'center', gap: 0.75 }}>
                 <FluxAvatar user={assignee} size={18}/>
-                {t.assigneeName && <Box sx={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.assigneeName.split(' ')[0]}</Box>}
+                {t.assigneeName && <Box sx={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.assigneeName.split(' ')[0]}</Box>}
               </Box>
               <Box sx={{ width: 110, px: 0.5 }}>
                 {status && (
@@ -234,9 +234,9 @@ export default function ListView() {
                   </StatusBadge>
                 )}
               </Box>
-              <Box sx={{ width: 50, px: 0.5, fontVariantNumeric: 'tabular-nums', fontSize: 11.5, color: 'text.secondary' }}>{t.estimate ?? '—'}</Box>
-              <Box sx={{ width: 70, px: 0.5, fontVariantNumeric: 'tabular-nums', fontSize: 11.5, color: 'text.secondary' }}>{t.logged}h</Box>
-              <Box sx={{ width: 80, px: 0.5, fontSize: 11.5, color: 'text.secondary' }}>
+              <Box sx={{ width: 50, px: 0.5, fontVariantNumeric: 'tabular-nums', fontSize: 13, color: 'text.secondary' }}>{t.estimate ?? '—'}</Box>
+              <Box sx={{ width: 70, px: 0.5, fontVariantNumeric: 'tabular-nums', fontSize: 13, color: 'text.secondary' }}>{t.logged}h</Box>
+              <Box sx={{ width: 80, px: 0.5, fontSize: 13, color: 'text.secondary' }}>
                 {t.dueDate ? new Date(t.dueDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' }) : '—'}
               </Box>
             </Box>

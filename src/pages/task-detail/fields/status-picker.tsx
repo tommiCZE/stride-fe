@@ -11,7 +11,7 @@ export function StatusPicker({ statusId, onChange }: { statusId: string; onChang
     <>
       <Box onClick={e => setAnchor(e.currentTarget)}
         sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.5,
-          borderRadius: 1, fontSize: 12.5, fontWeight: 600, cursor: 'default',
+          borderRadius: 1, fontSize: 14, fontWeight: 600, cursor: 'default',
           bgcolor: alpha(status.color, 0.14), color: status.color,
           border: 1, borderColor: alpha(status.color, 0.25),
           '&:hover': { bgcolor: alpha(status.color, 0.22) } }}>

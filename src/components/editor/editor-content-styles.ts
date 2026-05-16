@@ -63,7 +63,7 @@ export function editorContentSx(theme: Theme, compact?: boolean) {
       fontFamily: 'JetBrains Mono, ui-monospace, monospace',
       backgroundColor: codeInlineBg,
       color: theme.palette.text.primary,
-      padding: '0 4px', borderRadius: '4px', fontSize: '12px',
+      padding: '0 4px', borderRadius: '4px', fontSize: '14px',
     },
     '& .tiptap pre': {
       backgroundColor: codeBlockBg,
@@ -72,7 +72,7 @@ export function editorContentSx(theme: Theme, compact?: boolean) {
       border: `1px solid ${codeBorder}`,
       overflowX: 'auto', margin: '8px 0',
       fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-      fontSize: '12px', lineHeight: 1.55,
+      fontSize: '14px', lineHeight: 1.55,
     },
     '& .tiptap pre code': {
       backgroundColor: 'transparent', padding: 0, color: 'inherit',
@@ -220,7 +220,7 @@ export function editorContentSx(theme: Theme, compact?: boolean) {
       padding: '0 6px',
       borderRadius: '10px',
       fontWeight: 600,
-      fontSize: '12.5px',
+      fontSize: '14px',
       lineHeight: 1.5,
       color: theme.palette.primary.main,
       backgroundColor: alpha(theme.palette.primary.main, 0.1),

@@ -238,7 +238,7 @@ export function BubbleToolbar() {
         </TBtn>
         <TBtn title="Přeškrtnuté" active={sel.strike}
           onMouseDown={e => run(e, () => editor.chain().focus().toggleStrike().run())}>
-          <Box component="span" sx={{ textDecoration: 'line-through', fontSize: 11 }}>S</Box>
+          <Box component="span" sx={{ textDecoration: 'line-through', fontSize: 13 }}>S</Box>
         </TBtn>
         <TBtn title="Zvýraznění" active={sel.highlight}
           onMouseDown={e => run(e, () => editor.chain().focus().toggleHighlight().run())}>
@@ -247,7 +247,7 @@ export function BubbleToolbar() {
         <Sep />
         <TBtn title="Inline kód" active={sel.code}
           onMouseDown={e => run(e, () => editor.chain().focus().toggleCode().run())}>
-          <Box component="span" sx={{ fontFamily: 'monospace', fontSize: 11 }}>{`</>`}</Box>
+          <Box component="span" sx={{ fontFamily: 'monospace', fontSize: 13 }}>{`</>`}</Box>
         </TBtn>
         <TBtn title="Link (⌘K)" active={sel.link} onMouseDown={handleLink}>
           <LinkIcon />
@@ -393,7 +393,7 @@ export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File
       </TBtn>
       <TBtn title="Přeškrtnuté" active={s.strike}
         onMouseDown={e => run(e, () => editor.chain().focus().toggleStrike().run())}>
-        <Box component="span" sx={{ textDecoration: 'line-through', fontSize: 11 }}>S</Box>
+        <Box component="span" sx={{ textDecoration: 'line-through', fontSize: 13 }}>S</Box>
       </TBtn>
       <TBtn title="Zvýraznění" active={s.highlight}
         onMouseDown={e => run(e, () => editor.chain().focus().toggleHighlight().run())}>
@@ -446,7 +446,7 @@ export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File
       </TBtn>
       <TBtn title="Inline kód" active={s.code}
         onMouseDown={e => run(e, () => editor.chain().focus().toggleCode().run())}>
-        <Box component="span" sx={{ fontFamily: 'monospace', fontSize: 11 }}>{`</>`}</Box>
+        <Box component="span" sx={{ fontFamily: 'monospace', fontSize: 13 }}>{`</>`}</Box>
       </TBtn>
       <TBtn title="Blok kódu (⌘⌥C)" active={s.codeBlock} onMouseDown={handleToggleCodeBlock}>
         <CodeBlockIcon/>
@@ -497,7 +497,7 @@ export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File
     {s.table && (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, px: 1, py: 0.5,
         borderTop: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
-        <Box sx={{ fontSize: 10, fontWeight: 600, color: 'text.disabled', mr: 0.5, userSelect: 'none' }}>
+        <Box sx={{ fontSize: 14, fontWeight: 600, color: 'text.disabled', mr: 0.5, userSelect: 'none' }}>
           Tabulka
         </Box>
         <TBtn title="Přidat řádek níže" active={false}

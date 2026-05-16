@@ -57,7 +57,7 @@ function NotificationRow({ item, onSelect }: { item: NotificationItem; onSelect:
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography sx={{
-          fontSize: 12.5,
+          fontSize: 14,
           fontWeight: item.read ? 400 : 600,
           color: 'text.primary',
           lineHeight: 1.35,
@@ -67,7 +67,7 @@ function NotificationRow({ item, onSelect }: { item: NotificationItem; onSelect:
         }}>
           {item.message}
         </Typography>
-        <Typography sx={{ fontSize: 11, color: 'text.secondary', mt: 0.25 }}>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.25 }}>
           {relativeTime(item.createdAt)}
         </Typography>
       </Box>
@@ -118,13 +118,13 @@ export default function NotificationsPopover({ anchorEl, onClose }: Props) {
         <Typography sx={{ fontSize: 13, fontWeight: 600, flex: 1 }}>
           {t('notifications.title')}
           {unreadCount > 0 && (
-            <Typography component="span" sx={{ fontSize: 11.5, color: 'text.secondary', ml: 0.75, fontWeight: 500 }}>
+            <Typography component="span" sx={{ fontSize: 13, color: 'text.secondary', ml: 0.75, fontWeight: 500 }}>
               · {unreadCount}
             </Typography>
           )}
         </Typography>
         {unreadCount > 0 && (
-          <Button size="small" onClick={markAllRead} sx={{ fontSize: 11.5, minWidth: 0, px: 1 }}>
+          <Button size="small" onClick={markAllRead} sx={{ fontSize: 13, minWidth: 0, px: 1 }}>
             {t('notifications.markAllRead')}
           </Button>
         )}
@@ -133,7 +133,7 @@ export default function NotificationsPopover({ anchorEl, onClose }: Props) {
       {visible.length === 0 ? (
         <Stack alignItems="center" spacing={1} sx={{ py: 4, px: 2, color: 'text.secondary' }}>
           <BellIcon />
-          <Typography sx={{ fontSize: 12.5 }}>{t('notifications.empty')}</Typography>
+          <Typography sx={{ fontSize: 14 }}>{t('notifications.empty')}</Typography>
         </Stack>
       ) : (
         <Box sx={{ overflowY: 'auto', maxHeight: 360 }}>
@@ -147,7 +147,7 @@ export default function NotificationsPopover({ anchorEl, onClose }: Props) {
       )}
 
       <Box sx={{ borderTop: 1, borderColor: 'divider', display: 'flex', justifyContent: 'center', py: 0.5 }}>
-        <Button size="small" onClick={handleViewAll} sx={{ fontSize: 12, fontWeight: 500 }}>
+        <Button size="small" onClick={handleViewAll} sx={{ fontSize: 14, fontWeight: 500 }}>
           {t('notifications.viewAll')}
         </Button>
       </Box>

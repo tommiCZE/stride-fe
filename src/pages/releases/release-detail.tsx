@@ -24,7 +24,7 @@ function StatusChip({ status }: { status: ReleaseStatus }) {
   return (
     <Box sx={{
       px: 0.75, py: 0.15, borderRadius: 0.75,
-      fontSize: 10.5, fontWeight: 700,
+      fontSize: 14, fontWeight: 700,
       color: m.color,
       border: 1, borderColor: m.color,
       display: 'inline-flex', alignItems: 'center', gap: 0.5,
@@ -129,7 +129,7 @@ export default function ReleaseDetailPage() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
           <Typography
             onClick={() => navigate(`/projects/${project.key}/releases`)}
-            sx={{ fontSize: 11.5, color: 'text.secondary', cursor: 'default',
+            sx={{ fontSize: 13, color: 'text.secondary', cursor: 'default',
               '&:hover': { color: 'text.primary', textDecoration: 'underline' } }}
           >
             ← Releases
@@ -163,7 +163,7 @@ export default function ReleaseDetailPage() {
             </Typography>
           </Box>
 
-          <Typography sx={{ fontSize: 10.5, fontWeight: 700,
+          <Typography sx={{ fontSize: 14, fontWeight: 700,
             letterSpacing: '0.06em', textTransform: 'uppercase',
             color: 'text.disabled', mb: 0.75 }}>
             Tasky v této verzi
@@ -174,7 +174,7 @@ export default function ReleaseDetailPage() {
               p: 3, textAlign: 'center', border: 1, borderStyle: 'dashed',
               borderColor: 'divider', borderRadius: 1.25, color: 'text.secondary',
             }}>
-              <Typography sx={{ fontSize: 12 }}>
+              <Typography sx={{ fontSize: 14 }}>
                 Žádné tasky. V detailu tasku nastavte „Fix version” na tuto verzi.
               </Typography>
             </Box>
@@ -201,7 +201,7 @@ export default function ReleaseDetailPage() {
                   >
                     <TypeIcon type={t.type} size={14}/>
                     <Typography sx={{
-                      fontFamily: 'ui-monospace, monospace', fontSize: 11.5,
+                      fontFamily: 'ui-monospace, monospace', fontSize: 13,
                       fontWeight: 600, color: 'text.disabled', width: 80,
                     }}>{t.key}</Typography>
                     <Typography sx={{ fontSize: 13, flex: 1, minWidth: 0,
@@ -212,7 +212,7 @@ export default function ReleaseDetailPage() {
                     {status && (
                       <Box sx={{
                         px: 0.75, py: 0.1, borderRadius: 0.75,
-                        fontSize: 10, fontWeight: 700,
+                        fontSize: 14, fontWeight: 700,
                         color: status.color, bgcolor: alpha(status.color, 0.13),
                         border: 1, borderColor: alpha(status.color, 0.4),
                       }}>
@@ -229,7 +229,7 @@ export default function ReleaseDetailPage() {
 
           <Box sx={{ mt: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
-              <Typography sx={{ fontSize: 10.5, fontWeight: 700,
+              <Typography sx={{ fontSize: 14, fontWeight: 700,
                 letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.disabled' }}>
                 Release notes
               </Typography>
@@ -240,7 +240,7 @@ export default function ReleaseDetailPage() {
             <Box sx={{
               p: 2, border: 1, borderColor: 'divider', borderRadius: 1.25,
               bgcolor: 'background.paper',
-              fontFamily: 'ui-monospace, monospace', fontSize: 12,
+              fontFamily: 'ui-monospace, monospace', fontSize: 14,
               whiteSpace: 'pre-wrap', maxHeight: 400, overflowY: 'auto',
             }}>
               {notesMarkdown}

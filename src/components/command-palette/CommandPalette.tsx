@@ -316,7 +316,7 @@ export default function CommandPalette({ open, onClose }: Props) {
         />
         <Box
           sx={{
-            fontSize: 10.5, fontWeight: 600,
+            fontSize: 14, fontWeight: 600,
             px: 0.75, py: 0.25,
             borderRadius: 0.75,
             border: 1, borderColor: 'divider',
@@ -358,7 +358,7 @@ export default function CommandPalette({ open, onClose }: Props) {
                   aria-hidden="true"
                   sx={{
                     px: 2, pt: 1.25, pb: 0.5,
-                    fontSize: 10.5, fontWeight: 700,
+                    fontSize: 14, fontWeight: 700,
                     letterSpacing: '0.06em', textTransform: 'uppercase',
                     color: 'text.disabled',
                   }}
@@ -398,7 +398,7 @@ export default function CommandPalette({ open, onClose }: Props) {
                         {r.sublabel && (
                           <Typography
                             sx={{
-                              fontSize: 11, color: 'text.secondary',
+                              fontSize: 13, color: 'text.secondary',
                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                             }}
                           >
@@ -434,7 +434,7 @@ function ResultIcon({ result }: { result: Result }) {
           width: 22, height: 22, borderRadius: 0.75,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           bgcolor: 'action.hover', color: 'text.secondary',
-          fontSize: 10, fontWeight: 700,
+          fontSize: 14, fontWeight: 700,
         }}
       >
         T
@@ -449,7 +449,7 @@ function ResultIcon({ result }: { result: Result }) {
           width: 22, height: 22, borderRadius: 0.75,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           bgcolor: p.color, color: '#fff',
-          fontSize: 11, fontWeight: 700,
+          fontSize: 13, fontWeight: 700,
         }}
       >
         {p.key[0]}
@@ -474,7 +474,7 @@ function ResultRightLabel({ result }: { result: Result }) {
     : result.kind === 'user' ? 'Osoba'
     : 'Navigace';
   return (
-    <Typography sx={{ fontSize: 10.5, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
+    <Typography sx={{ fontSize: 14, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
       {text}
     </Typography>
   );

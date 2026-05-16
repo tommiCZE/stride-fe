@@ -53,7 +53,7 @@ function StateBadge({ state }: { state: RemoteLinkState }) {
   return (
     <Box sx={{
       display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.15,
-      borderRadius: 1, fontSize: 11, fontWeight: 600,
+      borderRadius: 1, fontSize: 13, fontWeight: 600,
       color: m.color, bgcolor: m.color + '22', border: 1, borderColor: m.color + '55',
     }}>
       <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: m.color }}/>
@@ -73,12 +73,12 @@ function LinkRow({ link }: { link: TaskRemoteLinkDto }) {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
         <ProviderIcon provider={link.provider} size={14}/>
         <Typography sx={{
-          fontSize: 11.5, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          fontSize: 13, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
           color: 'info.main', fontWeight: 700,
         }}>{numeric}</Typography>
         <StateBadge state={link.state}/>
         <Box sx={{ flex: 1 }}/>
-        <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{timeAgo(link.updatedAt)}</Typography>
+        <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{timeAgo(link.updatedAt)}</Typography>
       </Box>
       <Link
         href={link.remoteUrl} target="_blank" rel="noopener noreferrer"
@@ -87,7 +87,7 @@ function LinkRow({ link }: { link: TaskRemoteLinkDto }) {
       >
         {link.title}
       </Link>
-      <Typography sx={{ fontSize: 11.5, color: 'text.secondary', mt: 0.5 }}>
+      <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.5 }}>
         {link.provider === 'github'
           ? link.repoRef
           : `project #${link.repoRef}`}
@@ -133,9 +133,9 @@ function BranchNameCopy({ taskKey, taskTitle, projectId }: Omit<DevPanelProps, '
       display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'background.paper',
     }}>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em',
+        <Typography sx={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.06em',
           textTransform: 'uppercase', color: 'text.disabled', mb: 0.25 }}>Branch name</Typography>
-        <Typography sx={{ fontFamily: 'ui-monospace, monospace', fontSize: 12.5,
+        <Typography sx={{ fontFamily: 'ui-monospace, monospace', fontSize: 14,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {branch}
         </Typography>
@@ -169,7 +169,7 @@ export function DevPanel({ taskId, taskKey, taskTitle, projectId }: DevPanelProp
             <ProviderIcon provider="gitlab" size={22}/>
           </Box>
           <Typography sx={{ fontSize: 13.5, fontWeight: 600, mb: 0.5 }}>Žádná dev aktivita</Typography>
-          <Typography sx={{ fontSize: 12, mb: 2 }}>
+          <Typography sx={{ fontSize: 14, mb: 2 }}>
             Otevři PR nebo MR s <code>{taskKey}</code> v titulu nebo názvu větve a Stride ho automaticky propojí.
           </Typography>
         </Box>
@@ -185,7 +185,7 @@ export function DevPanel({ taskId, taskKey, taskTitle, projectId }: DevPanelProp
         <Box sx={{
           minWidth: 18, height: 18, borderRadius: 9, px: 0.6, bgcolor: 'action.hover',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 10.5, fontWeight: 700, color: 'text.secondary',
+          fontSize: 14, fontWeight: 700, color: 'text.secondary',
         }}>{links.length}</Box>
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>

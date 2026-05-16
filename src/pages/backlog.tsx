@@ -71,12 +71,12 @@ function SortableRow({ task: t, onOpen, showEstimate, isLast }: RowProps) {
         <PriorityIcon priority={t.priority} />
         <TypeIcon type={t.type} size={13} />
         <MonoKey sx={{ minWidth: 60 }}>{t.key}</MonoKey>
-        <Typography sx={{ fontSize: 12.5, flex: 1, minWidth: 0,
+        <Typography sx={{ fontSize: 14, flex: 1, minWidth: 0,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {t.title}
         </Typography>
         {showEstimate && (
-          <Box sx={{ fontSize: 10.5, fontWeight: 600, px: 0.5, borderRadius: 0.6, bgcolor: 'action.hover', flexShrink: 0 }}>
+          <Box sx={{ fontSize: 14, fontWeight: 600, px: 0.5, borderRadius: 0.6, bgcolor: 'action.hover', flexShrink: 0 }}>
             {t.estimate ?? '—'}
           </Box>
         )}
@@ -252,7 +252,7 @@ export default function Backlog() {
                 <CaretIcon/>
                 <Box>
                   <Typography sx={{ fontSize: 13.5, fontWeight: 700 }}>{sp.name}</Typography>
-                  <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
+                  <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
                     {sp.startDate && new Date(sp.startDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
                     {sp.startDate && sp.endDate && ' – '}
                     {sp.endDate && new Date(sp.endDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
@@ -260,7 +260,7 @@ export default function Backlog() {
                   </Typography>
                 </Box>
                 <Box sx={{ flex: 1 }}/>
-                <StatusBadge badgeColor={sprintColor(sp.state)} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: 10.5 }}>
+                <StatusBadge badgeColor={sprintColor(sp.state)} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: 14 }}>
                   {sprintLabel(sp.state)}
                 </StatusBadge>
                 {sp.state === 'PLANNED' && (
@@ -305,7 +305,7 @@ export default function Backlog() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
             <CaretIcon/>
             <Typography sx={{ fontSize: 13.5, fontWeight: 700 }}>Backlog</Typography>
-            <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>· {getContainerTasks(null).length} tasků</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>· {getContainerTasks(null).length} tasků</Typography>
           </Box>
           <DroppableList id="backlog">
             <SortableContext items={getContainerTasks(null).map(t => t.id)} strategy={verticalListSortingStrategy}>
@@ -326,7 +326,7 @@ export default function Backlog() {
                     { onSuccess: () => setNewSprintName('') });
                 }
               }}
-              sx={{ flex: 1, '& .MuiInputBase-root': { height: 30, fontSize: 12.5 } }}
+              sx={{ flex: 1, '& .MuiInputBase-root': { height: 30, fontSize: 14 } }}
             />
             <Button size="small" variant="outlined"
               disabled={!newSprintName.trim() || createSprint.isPending}
@@ -349,7 +349,7 @@ export default function Backlog() {
             <PriorityIcon priority={activeTask.priority}/>
             <TypeIcon type={activeTask.type} size={13}/>
             <MonoKey sx={{ minWidth: 60 }}>{activeTask.key}</MonoKey>
-            <Typography sx={{ fontSize: 12.5, minWidth: 0,
+            <Typography sx={{ fontSize: 14, minWidth: 0,
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 320 }}>
               {activeTask.title}
             </Typography>

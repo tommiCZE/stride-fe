@@ -40,10 +40,10 @@ function makeId(): string {
 
 function FileTypeLabel({ mimeType }: { mimeType: string }) {
   if (mimeType === 'application/pdf') {
-    return <Box component="span" sx={{ fontSize: 9, fontWeight: 700, color: 'error.main', lineHeight: 1 }}>PDF</Box>;
+    return <Box component="span" sx={{ fontSize: 13, fontWeight: 700, color: 'error.main', lineHeight: 1 }}>PDF</Box>;
   }
   if (mimeType.includes('zip') || mimeType.includes('archive') || mimeType.includes('compressed') || mimeType.includes('x-rar')) {
-    return <Box component="span" sx={{ fontSize: 9, fontWeight: 700, color: 'warning.main', lineHeight: 1 }}>ZIP</Box>;
+    return <Box component="span" sx={{ fontSize: 13, fontWeight: 700, color: 'warning.main', lineHeight: 1 }}>ZIP</Box>;
   }
   return (
     <Box component="span" sx={{ color: 'text.secondary', display: 'flex' }}>
@@ -63,10 +63,10 @@ function AttachmentChip({ file, onRemove }: { file: AttachmentFile; onRemove: ()
       px: 1, py: 0.5, bgcolor: 'action.hover', maxWidth: 260,
     }}>
       <FileTypeLabel mimeType={file.mimeType} />
-      <Box sx={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+      <Box sx={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
         {file.name}
       </Box>
-      <Box component="span" sx={{ fontSize: 11, color: 'text.disabled', flexShrink: 0 }}>
+      <Box component="span" sx={{ fontSize: 13, color: 'text.disabled', flexShrink: 0 }}>
         {formatBytes(file.size)}
       </Box>
       <Box
@@ -259,7 +259,7 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
       {!hideActions && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1,
           borderTop: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
-          <Box sx={{ fontSize: 11, color: 'text.disabled' }}>⌘B · ⌘I · ⌘K · Ctrl+V nebo drag obrázek/soubor</Box>
+          <Box sx={{ fontSize: 13, color: 'text.disabled' }}>⌘B · ⌘I · ⌘K · Ctrl+V nebo drag obrázek/soubor</Box>
           <Box sx={{ flex: 1 }} />
           {charCount > 0 && (
             <Typography variant="caption" sx={{ color: 'text.disabled' }}>{charCount} znaků</Typography>

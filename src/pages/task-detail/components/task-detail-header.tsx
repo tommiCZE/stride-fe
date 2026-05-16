@@ -69,11 +69,11 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <Box sx={{ width: 16, height: 16, borderRadius: 0.5, bgcolor: proj?.color ?? '#64748b',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#fff', fontSize: 9.5, fontWeight: 700 }}>{proj?.key[0]}</Box>
+          color: '#fff', fontSize: 13, fontWeight: 700 }}>{proj?.key[0]}</Box>
         <Typography
           component={RouterLink}
           to={`/projects/${proj?.key ?? task.key.split('-')[0]}/board`}
-          sx={{ fontSize: 11.5, color: 'text.secondary', textDecoration: 'none',
+          sx={{ fontSize: 13, color: 'text.secondary', textDecoration: 'none',
             '&:hover': { color: 'text.primary', textDecoration: 'underline' } }}
         >
           {proj?.name}
@@ -83,7 +83,7 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
         <Typography
           component={RouterLink}
           to={`/task/${task.key}`}
-          sx={{ fontSize: 11.5, color: 'text.secondary', fontFamily: 'ui-monospace, monospace',
+          sx={{ fontSize: 13, color: 'text.secondary', fontFamily: 'ui-monospace, monospace',
             textDecoration: 'none',
             '&:hover': { color: 'text.primary', textDecoration: 'underline' } }}
         >

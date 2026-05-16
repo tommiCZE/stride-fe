@@ -37,17 +37,20 @@ export function buildTheme(mode: 'light' | 'dark' = 'light', primary = '#5A5BFF'
     },
     typography: {
       fontFamily: '"Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      fontSize: 13,
-      h1: { fontWeight: 700, letterSpacing: '-0.02em' },
-      h2: { fontWeight: 700, letterSpacing: '-0.02em' },
-      h3: { fontWeight: 700, letterSpacing: '-0.015em' },
-      h4: { fontWeight: 700, letterSpacing: '-0.015em' },
-      h5: { fontWeight: 600, letterSpacing: '-0.01em' },
-      h6: { fontWeight: 600, letterSpacing: '-0.01em' },
-      button: { textTransform: 'none', fontWeight: 500, letterSpacing: 0 },
-      body2: { fontSize: 12.5 },
-      caption: { fontSize: 11.5, letterSpacing: '0.01em' },
-      overline: { fontSize: 10.5, letterSpacing: '0.08em', fontWeight: 600 },
+      fontSize: 15,
+      h1: { fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.15 },
+      h2: { fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 },
+      h3: { fontSize: 22, fontWeight: 700, letterSpacing: '-0.015em', lineHeight: 1.25 },
+      h4: { fontSize: 19, fontWeight: 700, letterSpacing: '-0.015em', lineHeight: 1.3 },
+      h5: { fontSize: 17, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.35 },
+      h6: { fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1.4 },
+      subtitle1: { fontSize: 15, fontWeight: 500, lineHeight: 1.5 },
+      subtitle2: { fontSize: 14, fontWeight: 500, lineHeight: 1.5 },
+      body1: { fontSize: 15, lineHeight: 1.55 },
+      body2: { fontSize: 14, lineHeight: 1.5 },
+      button: { fontSize: 15, textTransform: 'none', fontWeight: 500, letterSpacing: 0 },
+      caption: { fontSize: 13, letterSpacing: '0.01em', lineHeight: 1.4 },
+      overline: { fontSize: 12, letterSpacing: '0.08em', fontWeight: 600, lineHeight: 1.4 },
     },
     shape: { borderRadius: 8 },
     shadows: (['none',
@@ -78,8 +81,8 @@ export function buildTheme(mode: 'light' | 'dark' = 'light', primary = '#5A5BFF'
         defaultProps: { disableElevation: true },
         styleOverrides: {
           root: { borderRadius: 7, fontWeight: 500, textTransform: 'none' },
-          sizeSmall: { padding: '3px 10px', fontSize: 12.5, minHeight: 26 },
-          sizeMedium: { padding: '5px 12px', fontSize: 13, minHeight: 30 },
+          sizeSmall: { padding: '4px 12px', fontSize: 14, minHeight: 30 },
+          sizeMedium: { padding: '6px 14px', fontSize: 15, minHeight: 34 },
         },
       },
       MuiIconButton: {
@@ -90,8 +93,8 @@ export function buildTheme(mode: 'light' | 'dark' = 'light', primary = '#5A5BFF'
       },
       MuiChip: {
         styleOverrides: {
-          root: { fontWeight: 500, height: 20, fontSize: 11.5 },
-          sizeSmall: { height: 18, fontSize: 11 },
+          root: { fontWeight: 500, height: 22, fontSize: 13 },
+          sizeSmall: { height: 20, fontSize: 12 },
           label: { padding: '0 8px' },
         },
       },
@@ -110,9 +113,9 @@ export function buildTheme(mode: 'light' | 'dark' = 'light', primary = '#5A5BFF'
       MuiTooltip: {
         styleOverrides: {
           tooltip: {
-            fontSize: 11.5,
+            fontSize: 13,
             background: isDark ? '#0a0c11' : '#0f172a',
-            padding: '4px 8px',
+            padding: '5px 9px',
             borderRadius: 5,
           },
           arrow: { color: isDark ? '#0a0c11' : '#0f172a' },
@@ -122,11 +125,11 @@ export function buildTheme(mode: 'light' | 'dark' = 'light', primary = '#5A5BFF'
         defaultProps: { size: 'small' },
       },
       MuiInputBase: {
-        styleOverrides: { root: { fontSize: 13 } },
+        styleOverrides: { root: { fontSize: 15 } },
       },
       MuiMenuItem: {
         styleOverrides: {
-          root: { fontSize: 13, minHeight: 30, paddingTop: 5, paddingBottom: 5, borderRadius: 6 },
+          root: { fontSize: 15, minHeight: 34, paddingTop: 6, paddingBottom: 6, borderRadius: 6 },
         },
       },
       MuiMenu: {
@@ -165,13 +168,13 @@ export function buildTheme(mode: 'light' | 'dark' = 'light', primary = '#5A5BFF'
       },
       MuiTabs: {
         styleOverrides: {
-          root: { minHeight: 36 },
+          root: { minHeight: 40 },
           indicator: { height: 2 },
         },
       },
       MuiTab: {
         styleOverrides: {
-          root: { minHeight: 36, fontSize: 13, padding: '6px 14px', textTransform: 'none' },
+          root: { minHeight: 40, fontSize: 15, padding: '8px 16px', textTransform: 'none' },
         },
       },
       MuiDivider: {
@@ -183,7 +186,7 @@ export function buildTheme(mode: 'light' | 'dark' = 'light', primary = '#5A5BFF'
       },
       MuiAvatar: {
         styleOverrides: {
-          root: { fontSize: 11, fontWeight: 600 },
+          root: { fontSize: 13, fontWeight: 600 },
         },
       },
     },

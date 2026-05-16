@@ -37,7 +37,7 @@ export function SettingsCard({ title, description, action, children, sx }: {
           <Box sx={{ flex: 1 }}>
             {title && <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{title}</Typography>}
             {description && (
-              <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.4, lineHeight: 1.5 }}>
+              <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: 0.4, lineHeight: 1.5 }}>
                 {description}
               </Typography>
             )}
@@ -67,7 +67,7 @@ export function FieldRow({ label, hint, children, columns = '220px 1fr' }: {
           {label}
         </Typography>
         {hint && (
-          <Typography sx={{ fontSize: 11.5, color: 'text.secondary', mt: 0.4, lineHeight: 1.5 }}>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.4, lineHeight: 1.5 }}>
             {hint}
           </Typography>
         )}
@@ -92,9 +92,9 @@ export function ToggleRow({ label, hint, checked, onChange, disabled }: {
       '&:not(:last-child)': { borderBottom: 1, borderColor: 'divider' },
     }}>
       <Box sx={{ flex: 1 }}>
-        <Typography sx={{ fontSize: 12.5, fontWeight: 500 }}>{label}</Typography>
+        <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{label}</Typography>
         {hint && (
-          <Typography sx={{ fontSize: 11.5, color: 'text.secondary', mt: 0.25 }}>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.25 }}>
             {hint}
           </Typography>
         )}
@@ -151,7 +151,7 @@ export function DangerCard({ title, description, children }: {
       <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'error.main' }}>
         {title}
       </Typography>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.25, mb: 1.5 }}>
+      <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: 0.25, mb: 1.5 }}>
         {description}
       </Typography>
       {children}

@@ -39,7 +39,7 @@ export default function Dashboard() {
   return (
     <Box sx={{ p: 3, overflowY: 'auto', bgcolor: 'background.default', height: '100%' }}>
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'text.secondary' }}>
           {dateLabel}
         </Typography>
         <Typography sx={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em' }}>
@@ -58,9 +58,9 @@ export default function Dashboard() {
           { label: 'Po termínu',           value: myTasks.filter(t => t.dueDate && new Date(t.dueDate) < today && t.status !== 'DONE').length, sub: 'přiřazeno mně', color: '#ef4444' },
         ].map((s, i) => (
           <Card key={i} sx={{ p: 1.75, borderRadius: 1.5 }}>
-            <Typography sx={{ fontSize: 11.5, color: 'text.secondary', fontWeight: 500 }}>{s.label}</Typography>
-            <Typography sx={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', color: s.color, mt: 0.25 }}>{s.value}</Typography>
-            <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{s.sub}</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 500 }}>{s.label}</Typography>
+            <Typography sx={{ fontSize: 30, fontWeight: 700, letterSpacing: '-0.02em', color: s.color, mt: 0.25 }}>{s.value}</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{s.sub}</Typography>
           </Card>
         ))}
       </Box>
@@ -70,7 +70,7 @@ export default function Dashboard() {
           <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
             <Typography sx={{ fontSize: 13, fontWeight: 700 }}>Moje práce</Typography>
             <Box sx={{ flex: 1 }}/>
-            <Typography sx={{ fontSize: 11.5, color: 'primary.main', cursor: 'default' }}>Vše →</Typography>
+            <Typography sx={{ fontSize: 13, color: 'primary.main', cursor: 'default' }}>Vše →</Typography>
           </Box>
           {tasksError && (
             <Box sx={{ p: 1.5 }}>
@@ -91,13 +91,13 @@ export default function Dashboard() {
                   '&:last-child': { borderBottom: 0 } }}>
                 <PriorityIcon priority={t.priority}/>
                 <TypeIcon type={t.type} size={13}/>
-                <Typography sx={{ fontSize: 11, color: 'text.disabled', fontFamily: 'ui-monospace, monospace', minWidth: 60 }}>{t.key}</Typography>
-                <Typography sx={{ fontSize: 12.5, flex: 1, minWidth: 0,
+                <Typography sx={{ fontSize: 13, color: 'text.disabled', fontFamily: 'ui-monospace, monospace', minWidth: 60 }}>{t.key}</Typography>
+                <Typography sx={{ fontSize: 14, flex: 1, minWidth: 0,
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</Typography>
                 {status && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, px: 0.6, py: 0.2,
                     borderRadius: 0.6, bgcolor: alpha(status.color, 0.15),
-                    color: status.color, fontSize: 10.5, fontWeight: 600 }}>
+                    color: status.color, fontSize: 14, fontWeight: 600 }}>
                     {status.name}
                   </Box>
                 )}
@@ -105,7 +105,7 @@ export default function Dashboard() {
             );
           })}
           {!tasksError && myTasks.length === 0 && (
-            <Box sx={{ px: 1.5, py: 2, color: 'text.disabled', fontSize: 12.5, textAlign: 'center' }}>
+            <Box sx={{ px: 1.5, py: 2, color: 'text.disabled', fontSize: 14, textAlign: 'center' }}>
               Žádné přiřazené tasky
             </Box>
           )}
@@ -127,7 +127,7 @@ export default function Dashboard() {
             <Box
               component="button"
               sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5,
-                px: 1, py: 0.4, borderRadius: 1, fontSize: 12.5, fontWeight: 500,
+                px: 1, py: 0.4, borderRadius: 1, fontSize: 14, fontWeight: 500,
                 bgcolor: 'transparent', border: '1px solid', borderColor: 'divider',
                 color: 'text.secondary', cursor: 'pointer',
                 '&:hover': { bgcolor: 'action.hover' } }}>
@@ -167,7 +167,7 @@ export default function Dashboard() {
                       color: '#fff', fontSize: 13, fontWeight: 700 }}>{p.key[0]}</Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.1 }}>{p.name}</Typography>
-                      <Typography sx={{ fontSize: 10.5, color: 'text.secondary' }}>
+                      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
                         {p.key}{p.lead ? ` · ${p.lead.name}` : ''}
                       </Typography>
                     </Box>
@@ -176,7 +176,7 @@ export default function Dashboard() {
                     <Box sx={{ flex: 1, height: 4, borderRadius: 2, bgcolor: 'action.hover', overflow: 'hidden' }}>
                       <Box sx={{ height: '100%', width: `${pct * 100}%`, bgcolor: p.color }}/>
                     </Box>
-                    <Typography sx={{ fontSize: 10.5, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
+                    <Typography sx={{ fontSize: 14, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
                       {done}/{p.taskCount}
                     </Typography>
                   </Box>

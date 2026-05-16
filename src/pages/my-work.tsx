@@ -51,7 +51,7 @@ export default function MyWork() {
                 </StatusBadge>
               )}
               {t.dueDate && (
-                <Typography sx={{ fontSize: 11, color: 'text.disabled', minWidth: 60, textAlign: 'right' }}>
+                <Typography sx={{ fontSize: 13, color: 'text.disabled', minWidth: 60, textAlign: 'right' }}>
                   {new Date(t.dueDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
                 </Typography>
               )}
@@ -59,7 +59,7 @@ export default function MyWork() {
           );
         })}
         {myTasks.length === 0 && (
-          <Box sx={{ p: 3, color: 'text.disabled', fontSize: 12.5, textAlign: 'center' }}>
+          <Box sx={{ p: 3, color: 'text.disabled', fontSize: 14, textAlign: 'center' }}>
             Žádné přiřazené tasky
           </Box>
         )}

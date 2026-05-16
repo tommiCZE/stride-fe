@@ -18,7 +18,7 @@ function StatusChip({ status }: { status: ReleaseStatus }) {
   return (
     <Box sx={{
       px: 0.75, py: 0.15, borderRadius: 0.75,
-      fontSize: 10.5, fontWeight: 700,
+      fontSize: 14, fontWeight: 700,
       color: m.color, bgcolor: theme => alpha(theme.palette.primary.main, 0),
       border: 1, borderColor: m.color,
       display: 'inline-flex', alignItems: 'center', gap: 0.5,
@@ -70,7 +70,7 @@ export function ReleasesSection({ project, readOnly }: { project: ProjectDto; re
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {releases.length === 0 && !isLoading && (
-            <Typography sx={{ fontSize: 12, color: 'text.disabled', textAlign: 'center', py: 2 }}>
+            <Typography sx={{ fontSize: 14, color: 'text.disabled', textAlign: 'center', py: 2 }}>
               Žádné verze. Začni klikem na „Přidat verzi”.
             </Typography>
           )}
@@ -122,7 +122,7 @@ function ReleaseRow({ release, readOnly, onUpdate, onDelete }: {
         </TextField>
         <StatusChip status={release.status}/>
         <Box sx={{ flex: 1 }}/>
-        <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+        <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
           {release.doneCount} / {release.taskCount} done · {progress}%
         </Typography>
         <Button

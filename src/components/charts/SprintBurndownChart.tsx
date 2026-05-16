@@ -63,13 +63,13 @@ export default function SprintBurndownChart({ sprintId, sprintName, height = 220
             <CartesianGrid stroke={gridColor} strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="label"
-              tick={{ fill: axisColor, fontSize: 11 }}
+              tick={{ fill: axisColor, fontSize: 13 }}
               tickLine={false}
               axisLine={{ stroke: gridColor }}
               minTickGap={12}
             />
             <YAxis
-              tick={{ fill: axisColor, fontSize: 11 }}
+              tick={{ fill: axisColor, fontSize: 13 }}
               tickLine={false}
               axisLine={{ stroke: gridColor }}
               width={36}
@@ -80,10 +80,10 @@ export default function SprintBurndownChart({ sprintId, sprintName, height = 220
                 background: theme.palette.background.paper,
                 border: `1px solid ${theme.palette.divider}`,
                 borderRadius: 8,
-                fontSize: 12,
+                fontSize: 14,
                 color: theme.palette.text.primary,
               }}
-              labelStyle={{ color: theme.palette.text.secondary, fontSize: 11 }}
+              labelStyle={{ color: theme.palette.text.secondary, fontSize: 13 }}
               formatter={(value, name) => {
                 const label = name === 'actual' ? 'Aktuální' : 'Ideální';
                 return [`${value} h`, label] as [string, string];
@@ -91,7 +91,7 @@ export default function SprintBurndownChart({ sprintId, sprintName, height = 220
             />
             <Legend
               iconType="plainline"
-              wrapperStyle={{ fontSize: 11, color: axisColor }}
+              wrapperStyle={{ fontSize: 13, color: axisColor }}
               formatter={(value: string) => (value === 'actual' ? 'Aktuální' : 'Ideální')}
             />
             <Line

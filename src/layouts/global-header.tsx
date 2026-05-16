@@ -80,7 +80,7 @@ export default function GlobalHeader() {
           value={searchValue}
           onChange={e => setSearchValue(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') submitSearch(); }}
-          sx={{ width: 360, '& .MuiOutlinedInput-root': { height: 28, fontSize: 12.5,
+          sx={{ width: 360, '& .MuiOutlinedInput-root': { height: 28, fontSize: 14,
             bgcolor: 'action.hover', '& fieldset': { borderColor: 'transparent' } } }}
           slotProps={{
             input: { startAdornment: <InputAdornment position="start" sx={{ mr: 0.5 }}><SearchIcon/></InputAdornment> },
@@ -96,12 +96,12 @@ export default function GlobalHeader() {
           <Box sx={{ width: 6, height: 6, borderRadius: '50%',
             bgcolor: timer.running ? 'success.main' : 'text.disabled' }}/>
           {!isMobile && (
-            <Typography sx={{ fontSize: 11.5, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
               {timer.taskKey} · {fmtTimer(timer.elapsed)}
             </Typography>
           )}
           {isMobile && (
-            <Typography sx={{ fontSize: 11.5, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
               {fmtTimer(timer.elapsed)}
             </Typography>
           )}
@@ -127,7 +127,7 @@ export default function GlobalHeader() {
             badgeContent={unreadCount}
             color="error"
             invisible={unreadCount === 0}
-            sx={{ '& .MuiBadge-badge': { fontSize: 9, height: 14, minWidth: 14 } }}
+            sx={{ '& .MuiBadge-badge': { fontSize: 13, height: 14, minWidth: 14 } }}
           >
             <BellIcon/>
           </Badge>
@@ -146,7 +146,7 @@ export default function GlobalHeader() {
         slotProps={{ paper: { sx: { minWidth: 200, mt: 0.5 } } }}>
         <Box sx={{ px: 2, py: 1.25, borderBottom: 1, borderColor: 'divider' }}>
           <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2 }}>{me?.name}</Typography>
-          <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>{me?.email}</Typography>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{me?.email}</Typography>
         </Box>
         <MenuItem sx={{ fontSize: 13, mt: 0.5 }}
           onClick={() => { setAnchor(null); navigate('/profile'); }}>

@@ -27,10 +27,10 @@ export function Worklog({ taskId }: { taskId: string }) {
         <Box key={e.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, borderRadius: 1, bgcolor: 'action.hover' }}>
           <FluxAvatar user={e.user} size={20}/>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: 12.5, fontWeight: 500 }}>{e.comment ?? '—'}</Typography>
-            <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{e.user.name} · {e.loggedAt}</Typography>
+            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{e.comment ?? '—'}</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{e.user.name} · {e.loggedAt}</Typography>
           </Box>
-          <Typography sx={{ fontSize: 12, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: 'primary.main' }}>
+          <Typography sx={{ fontSize: 14, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: 'primary.main' }}>
             {(e.minutes / 60).toFixed(1)}h
           </Typography>
         </Box>
@@ -43,7 +43,7 @@ export function Worklog({ taskId }: { taskId: string }) {
               placeholder="Hodiny (např. 1.5)"
               value={minutes}
               onChange={e => setMinutes(e.target.value)}
-              sx={{ border: 1, borderColor: 'divider', borderRadius: 0.5, px: 1, fontSize: 12.5, width: 140 }}
+              sx={{ border: 1, borderColor: 'divider', borderRadius: 0.5, px: 1, fontSize: 14, width: 140 }}
             />
           </Box>
           <InputBase
@@ -51,7 +51,7 @@ export function Worklog({ taskId }: { taskId: string }) {
             value={comment}
             onChange={e => setComment(e.target.value)}
             fullWidth
-            sx={{ border: 1, borderColor: 'divider', borderRadius: 0.5, px: 1, fontSize: 12.5 }}
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 0.5, px: 1, fontSize: 14 }}
           />
           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
             <Button size="small" onClick={() => setAdding(false)}>Zrušit</Button>

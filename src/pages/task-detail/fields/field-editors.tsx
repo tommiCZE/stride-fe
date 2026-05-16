@@ -65,7 +65,7 @@ export function AssigneeEditor({ task, onPatch }: { task: TaskDto; onPatch: Patc
     <>
       <Box
         onClick={e => setAnchor(e.currentTarget)}
-        sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 12.5, cursor: 'default',
+        sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 14, cursor: 'default',
           '&:hover': { bgcolor: 'action.hover' }, p: 0.5, mx: -0.5, borderRadius: 0.8 }}
       >
         {assignee ? (
@@ -76,14 +76,14 @@ export function AssigneeEditor({ task, onPatch }: { task: TaskDto; onPatch: Patc
       </Box>
       <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
         <MenuItem onClick={() => { onPatch({ assigneeId: null }); setAnchor(null); }}>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Nepřiřazeno</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Nepřiřazeno</Typography>
         </MenuItem>
         {members.map(u => (
           <MenuItem key={u.id} onClick={() => { onPatch({ assigneeId: u.id }); setAnchor(null); }}
             selected={task.assigneeId === u.id}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <FluxAvatar user={u} size={20}/>
-              <Typography sx={{ fontSize: 12.5 }}>{u.name}</Typography>
+              <Typography sx={{ fontSize: 14 }}>{u.name}</Typography>
             </Box>
           </MenuItem>
         ))}
@@ -109,7 +109,7 @@ export function PriorityEditor({ task, onPatch }: { task: TaskDto; onPatch: Patc
             selected={task.priority === p.id}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <PriorityIcon priority={p.id}/>
-              <Typography sx={{ fontSize: 12.5 }}>{p.name}</Typography>
+              <Typography sx={{ fontSize: 14 }}>{p.name}</Typography>
             </Box>
           </MenuItem>
         ))}
@@ -133,7 +133,7 @@ export function TypeEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn 
             selected={task.type === tt.id}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TypeIcon type={tt.id} size={14}/>
-              <Typography sx={{ fontSize: 12.5 }}>{tt.name}</Typography>
+              <Typography sx={{ fontSize: 14 }}>{tt.name}</Typography>
             </Box>
           </MenuItem>
         ))}
@@ -160,14 +160,14 @@ export function EpicEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn 
       </Box>
       <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
         <MenuItem onClick={() => { onPatch({ epicId: null }); setAnchor(null); }}>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Žádný epic</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Žádný epic</Typography>
         </MenuItem>
         {epics.map(e => (
           <MenuItem key={e.id} onClick={() => { onPatch({ epicId: e.id }); setAnchor(null); }}
             selected={task.epicId === e.id}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: e.color, flexShrink: 0 }}/>
-              <Typography sx={{ fontSize: 12.5 }}>{e.title}</Typography>
+              <Typography sx={{ fontSize: 14 }}>{e.title}</Typography>
             </Box>
           </MenuItem>
         ))}
@@ -185,18 +185,18 @@ export function SprintEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchF
     <>
       <Box onClick={e => setAnchor(e.currentTarget)}
         sx={{ cursor: 'default', '&:hover': { bgcolor: 'action.hover' }, px: 0.5, borderRadius: 0.8, display: 'inline-flex' }}>
-        <Typography sx={{ fontSize: 12.5 }}>
+        <Typography sx={{ fontSize: 14 }}>
           {sprint ? sprint.name : <Box component="span" sx={{ color: 'text.disabled' }}>Nastavit sprint</Box>}
         </Typography>
       </Box>
       <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
         <MenuItem onClick={() => { onPatch({ sprintId: null }); setAnchor(null); }}>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Backlog</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Backlog</Typography>
         </MenuItem>
         {sprints.map(s => (
           <MenuItem key={s.id} onClick={() => { onPatch({ sprintId: s.id }); setAnchor(null); }}
             selected={task.sprintId === s.id}>
-            <Typography sx={{ fontSize: 12.5 }}>{s.name}</Typography>
+            <Typography sx={{ fontSize: 14 }}>{s.name}</Typography>
           </MenuItem>
         ))}
       </Menu>
@@ -225,7 +225,7 @@ export function FixVersionEditor({ task, onPatch }: { task: TaskDto; onPatch: Pa
       </Box>
       <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
         <MenuItem onClick={() => { onPatch({ fixVersionId: null }); setAnchor(null); }}>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Žádná verze</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Žádná verze</Typography>
         </MenuItem>
         {selectable.map(r => (
           <MenuItem key={r.id} onClick={() => { onPatch({ fixVersionId: r.id }); setAnchor(null); }}
@@ -233,13 +233,13 @@ export function FixVersionEditor({ task, onPatch }: { task: TaskDto; onPatch: Pa
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box sx={{ width: 6, height: 6, borderRadius: '50%',
                 bgcolor: r.status === 'released' ? 'success.main' : 'warning.main' }}/>
-              <Typography sx={{ fontSize: 12.5 }}>{r.name}</Typography>
+              <Typography sx={{ fontSize: 14 }}>{r.name}</Typography>
             </Box>
           </MenuItem>
         ))}
         {selectable.length === 0 && (
           <MenuItem disabled>
-            <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>Žádné verze nejsou nastaveny</Typography>
+            <Typography sx={{ fontSize: 14, color: 'text.disabled' }}>Žádné verze nejsou nastaveny</Typography>
           </MenuItem>
         )}
       </Menu>
@@ -276,7 +276,7 @@ export function LabelsEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchF
             return (
               <Box key={l.id} onClick={() => toggle(l.id)}
                 sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5,
-                  px: 0.75, py: 0.35, borderRadius: 0.8, fontSize: 12, cursor: 'default',
+                  px: 0.75, py: 0.35, borderRadius: 0.8, fontSize: 14, cursor: 'default',
                   transition: 'all 0.12s',
                   bgcolor: active ? alpha(l.color, 0.13) : 'action.hover',
                   color: active ? l.color : 'text.secondary',
@@ -289,7 +289,7 @@ export function LabelsEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchF
             );
           })}
           {labels.length === 0 && (
-            <Typography sx={{ fontSize: 12, color: 'text.disabled', p: 0.5 }}>Žádné štítky</Typography>
+            <Typography sx={{ fontSize: 14, color: 'text.disabled', p: 0.5 }}>Žádné štítky</Typography>
           )}
         </Box>
       </Popover>
@@ -322,7 +322,7 @@ export function EstimateEditor({ task, onPatch }: { task: TaskDto; onPatch: Patc
         onBlur={commit}
         onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setDraft(String(task.estimate ?? '')); setEditing(false); } }}
         slotProps={{ input: { sx: { width: 60, p: '2px 4px' } } }}
-        sx={{ border: 1, borderColor: 'primary.main', borderRadius: 0.5, px: 0.5, fontSize: 12.5, fontWeight: 600 }}
+        sx={{ border: 1, borderColor: 'primary.main', borderRadius: 0.5, px: 0.5, fontSize: 14, fontWeight: 600 }}
         placeholder="h"
       />
     );
@@ -331,7 +331,7 @@ export function EstimateEditor({ task, onPatch }: { task: TaskDto; onPatch: Patc
   return (
     <Typography
       onClick={() => setEditing(true)}
-      sx={{ fontSize: 12.5, fontWeight: 600, cursor: 'text', px: 0.5, borderRadius: 0.5,
+      sx={{ fontSize: 14, fontWeight: 600, cursor: 'text', px: 0.5, borderRadius: 0.5,
         '&:hover': { bgcolor: 'action.hover' } }}
     >
       {task.estimate != null ? `${task.estimate} h` : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
@@ -363,7 +363,7 @@ export function DueDateEditor({ task, onPatch }: { task: TaskDto; onPatch: Patch
         onBlur={e => commit(e.target.value)}
         onChange={e => { if (e.target.value) commit(e.target.value); }}
         autoFocus
-        sx={{ border: 1, borderColor: 'primary.main', borderRadius: 0.5, px: 0.5, fontSize: 12.5 }}
+        sx={{ border: 1, borderColor: 'primary.main', borderRadius: 0.5, px: 0.5, fontSize: 14 }}
       />
     );
   }
@@ -371,7 +371,7 @@ export function DueDateEditor({ task, onPatch }: { task: TaskDto; onPatch: Patch
   return (
     <Typography
       onClick={() => setEditing(true)}
-      sx={{ fontSize: 12.5, cursor: 'text', px: 0.5, borderRadius: 0.5,
+      sx={{ fontSize: 14, cursor: 'text', px: 0.5, borderRadius: 0.5,
         '&:hover': { bgcolor: 'action.hover' },
         color: task.dueDate ? 'text.primary' : 'text.disabled' }}
     >
@@ -382,7 +382,7 @@ export function DueDateEditor({ task, onPatch }: { task: TaskDto; onPatch: Patch
 
 export function LoggedBar({ logged, estimate }: { logged: number; estimate?: number | null }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 12.5, fontWeight: 600 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14, fontWeight: 600 }}>
       {logged}h{estimate != null && ` / ${estimate}h`}
       {estimate != null && (
         <Box sx={{ flex: 1, height: 4, borderRadius: 2, bgcolor: 'action.hover', overflow: 'hidden' }}>

@@ -87,7 +87,7 @@ export default function Settings() {
           <Box key={group} sx={{ mb: gi === groups.length - 1 ? 0 : 0.5 }}>
             <Typography sx={{
               px: 2, pt: gi === 0 ? 0.25 : 1.5, pb: 0.5,
-              fontSize: 10.5, fontWeight: 700,
+              fontSize: 14, fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.08em',
               color: 'text.disabled',
             }}>{group}</Typography>
@@ -122,7 +122,7 @@ export default function Settings() {
         }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 2 }}>
             <Box>
-              <Typography sx={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'text.secondary', mb: 0.5 }}>
+              <Typography sx={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'text.secondary', mb: 0.5 }}>
                 {current.group} · {project.name}
               </Typography>
               <Typography sx={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>
@@ -132,7 +132,7 @@ export default function Settings() {
             {isSaving && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pb: 0.5, color: 'text.secondary' }}>
                 <CircularProgress size={12} thickness={5}/>
-                <Typography sx={{ fontSize: 11.5 }}>Ukládám…</Typography>
+                <Typography sx={{ fontSize: 13 }}>Ukládám…</Typography>
               </Box>
             )}
           </Box>
@@ -140,7 +140,7 @@ export default function Settings() {
 
         <Box sx={{ px: 4, py: 3, maxWidth: 960 }}>
           {readOnly && (
-            <Alert severity="info" sx={{ mb: 2, fontSize: 12.5 }}>
+            <Alert severity="info" sx={{ mb: 2, fontSize: 14 }}>
               Nastavení projektu může upravovat pouze administrátor. Změny se neuloží.
             </Alert>
           )}

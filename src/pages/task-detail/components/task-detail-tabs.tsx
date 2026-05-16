@@ -30,7 +30,7 @@ export default function TaskDetailTabs({ task, tab, devCount, onChange }: Props)
       <Box sx={{ mt: 3, borderBottom: 1, borderColor: 'divider', display: 'flex', gap: 2 }}>
         {tabs.map(([k, l]) => (
           <Box key={k} onClick={() => onChange(k)}
-            sx={{ py: 1, fontSize: 12.5, fontWeight: 600, cursor: 'default',
+            sx={{ py: 1, fontSize: 14, fontWeight: 600, cursor: 'default',
               color: tab === k ? 'primary.main' : 'text.secondary',
               borderBottom: 2, borderColor: tab === k ? 'primary.main' : 'transparent', mb: '-1px' }}>{l}</Box>
         ))}

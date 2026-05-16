@@ -200,7 +200,7 @@ export function GeneralSection({ project, readOnly }: { project: ProjectDto; rea
               <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
                 {settings.archived ? 'Obnovit projekt' : 'Archivovat projekt'}
               </Typography>
-              <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
                 Archivovaný projekt zmizí z navigace, ale data zůstávají.
               </Typography>
             </Box>
@@ -214,7 +214,7 @@ export function GeneralSection({ project, readOnly }: { project: ProjectDto; rea
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ flex: 1 }}>
               <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Smazat projekt</Typography>
-              <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
                 Smaže všechny tasky, sprinty a komentáře. Pro potvrzení napiš klíč „{project.key}”.
               </Typography>
             </Box>

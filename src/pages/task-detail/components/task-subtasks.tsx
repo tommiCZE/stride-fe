@@ -16,13 +16,13 @@ export default function TaskSubtasks({ subtasks, onToggle }: Props) {
   return (
     <Box sx={{ mt: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-        <Typography sx={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' }}>
           Subtasky · {done}/{total}
         </Typography>
         <Box sx={{ flex: 1, height: 4, borderRadius: 2, bgcolor: 'action.hover', overflow: 'hidden' }}>
           <Box sx={{ height: '100%', width: `${(done / total) * 100}%`, bgcolor: 'success.main', transition: '0.3s' }}/>
         </Box>
-        <Typography sx={{ fontSize: 11, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
+        <Typography sx={{ fontSize: 13, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
           {Math.round((done / total) * 100)}%
         </Typography>
       </Box>

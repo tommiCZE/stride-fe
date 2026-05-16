@@ -48,7 +48,7 @@ export function TaskConfigSection({project, readOnly}: { project: ProjectDto; re
                                     />
                                     <Box sx={{flex: 1, display: 'flex', gap: 0.25, flexWrap: 'wrap'}}>
                                         {t.requiredFields.length === 0
-                                                ? <Typography sx={{fontSize: 11, color: 'text.disabled'}}>žádné povinné fieldy</Typography>
+                                                ? <Typography sx={{fontSize: 13, color: 'text.disabled'}}>žádné povinné fieldy</Typography>
                                                 : t.requiredFields.map(rf => (
                                                         <Chip key={rf} size="small" label={rf} variant="outlined"
                                                                 onDelete={readOnly ? undefined : () => taskTypes.replace(taskTypes.data.map((x, j) =>
@@ -218,7 +218,7 @@ function CustomFieldsEditor({fields, taskTypeKeys, readOnly, onChange}: {
                                         <MenuItem value="user">Uživatel</MenuItem>
                                     </TextField>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5}}>
-                                        <Typography sx={{fontSize: 11.5, color: 'text.secondary'}}>Povinné</Typography>
+                                        <Typography sx={{fontSize: 13, color: 'text.secondary'}}>Povinné</Typography>
                                         <Switch size="small" checked={f.required} disabled={readOnly}
                                                 onChange={(_, v) => onChange(fields.map((x, j) => j === i ? {...x, required: v} : x))}/>
                                     </Box>
@@ -237,7 +237,7 @@ function CustomFieldsEditor({fields, taskTypeKeys, readOnly, onChange}: {
                                         />
                                 )}
                                 <Box sx={{display: 'flex', gap: 0.5, alignItems: 'center', flexWrap: 'wrap'}}>
-                                    <Typography sx={{fontSize: 11.5, color: 'text.secondary', mr: 0.5}}>Platí pro typy:</Typography>
+                                    <Typography sx={{fontSize: 13, color: 'text.secondary', mr: 0.5}}>Platí pro typy:</Typography>
                                     {taskTypeKeys.map(tt => {
                                         const on = f.appliesTo.includes(tt);
                                         return (
@@ -294,7 +294,7 @@ function IssueLinkTypesEditor({linkTypes, readOnly, onChange}: {
                                         onChange={e => onChange(linkTypes.map((x, j) => j === i ? {...x, outwardLabel: e.target.value} : x))}
                                         sx={{flex: 1}}
                                 />
-                                <Typography sx={{fontSize: 11, color: 'text.disabled', userSelect: 'none'}}>↔</Typography>
+                                <Typography sx={{fontSize: 13, color: 'text.disabled', userSelect: 'none'}}>↔</Typography>
                                 <TextField
                                         size="small" value={l.inwardLabel} disabled={readOnly}
                                         placeholder="is blocked by"
@@ -304,7 +304,7 @@ function IssueLinkTypesEditor({linkTypes, readOnly, onChange}: {
                                 <TextField
                                         size="small" value={l.key} disabled={readOnly}
                                         onChange={e => onChange(linkTypes.map((x, j) => j === i ? {...x, key: e.target.value.toUpperCase()} : x))}
-                                        sx={{width: 100, '& .MuiInputBase-root': {fontFamily: 'ui-monospace, monospace', fontSize: 11.5}}}
+                                        sx={{width: 100, '& .MuiInputBase-root': {fontFamily: 'ui-monospace, monospace', fontSize: 13}}}
                                 />
                                 <Box sx={{display: 'flex', gap: 0.5}}>
                                     {COLOR_PALETTE.slice(0, 7).map(c => (
@@ -323,7 +323,7 @@ function IssueLinkTypesEditor({linkTypes, readOnly, onChange}: {
                             </Box>
                     ))}
                     {linkTypes.length === 0 && (
-                            <Typography sx={{fontSize: 12, color: 'text.disabled', py: 1, textAlign: 'center'}}>
+                            <Typography sx={{fontSize: 14, color: 'text.disabled', py: 1, textAlign: 'center'}}>
                                 Žádné vlastní typy linků — výchozí ("relates to") se použije pro všechny vazby.
                             </Typography>
                     )}

@@ -83,7 +83,7 @@ export default function ListViewBulkToolbar({ projectId, selectedIds, onClear }:
           borderColor: 'divider',
         }}
       >
-        <Typography sx={{ fontSize: 12.5, fontWeight: 600 }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
           {count} vybráno
         </Typography>
 

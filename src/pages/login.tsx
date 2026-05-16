@@ -96,12 +96,12 @@ export default function Login() {
           </Typography>
 
           {serverError && (
-            <Alert severity="error" sx={{ mb: 2, fontSize: 12.5 }}>{serverError}</Alert>
+            <Alert severity="error" sx={{ mb: 2, fontSize: 14 }}>{serverError}</Alert>
           )}
 
           <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box>
-              <Typography sx={{ fontSize: 12.5, fontWeight: 600, mb: 0.75, color: 'text.primary' }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 600, mb: 0.75, color: 'text.primary' }}>
                 {t('login.email')}
               </Typography>
               <TextField
@@ -116,10 +116,10 @@ export default function Login() {
 
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
-                <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: 'text.primary' }}>
+                <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary' }}>
                   {t('login.password')}
                 </Typography>
-                <Typography sx={{ fontSize: 12, color: 'primary.main', cursor: 'default' }}>
+                <Typography sx={{ fontSize: 14, color: 'primary.main', cursor: 'default' }}>
                   {t('login.forgotPassword')}
                 </Typography>
               </Box>
@@ -157,7 +157,7 @@ export default function Login() {
           </Box>
 
           <Box sx={{ mt: 2.5, pt: 2.5, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
-            <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
               {t('login.noAccount')}{' '}
               <Box component="span" sx={{ color: 'primary.main', cursor: 'default', fontWeight: 600 }}>
                 {t('login.register')}
@@ -166,7 +166,7 @@ export default function Login() {
           </Box>
         </Box>
 
-        <Typography sx={{ mt: 3, textAlign: 'center', fontSize: 11.5, color: 'text.disabled' }}>
+        <Typography sx={{ mt: 3, textAlign: 'center', fontSize: 13, color: 'text.disabled' }}>
           {t('login.footer')}
         </Typography>
       </Box>

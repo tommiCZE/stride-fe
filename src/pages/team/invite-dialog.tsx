@@ -58,7 +58,7 @@ export function InviteDialog({ open, onClose }: InviteDialogProps) {
             error={!!errors.email} helperText={errors.email?.message}/>
         )}/>
         <Box>
-          <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>Oprávnění</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary', mb: 0.5 }}>Oprávnění</Typography>
           <Controller name="workspaceRole" control={control} render={({ field }) => (
             <Select {...field} size="small" fullWidth sx={{ fontSize: 13 }}>
               <MenuItem value="ADMIN" sx={{ fontSize: 13 }}>Admin — plný přístup</MenuItem>

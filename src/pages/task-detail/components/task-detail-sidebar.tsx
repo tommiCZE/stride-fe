@@ -27,7 +27,7 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
         <AssigneeEditor task={task} onPatch={onPatch}/>
       </FieldRow>
       <FieldRow label="Reporter">
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 12.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 14 }}>
           <FluxAvatar user={task.reporter} size={20}/> {task.reporter?.name}
         </Box>
       </FieldRow>
@@ -61,7 +61,7 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
       {task.createdAt && (
         <>
           <Divider sx={{ my: 0.5 }}/>
-          <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+          <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
             Vytvořeno {new Date(task.createdAt).toLocaleDateString('cs-CZ')}
           </Typography>
         </>
@@ -77,7 +77,7 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
           ))}
         </Box>
       ) : (
-        <Typography sx={{ fontSize: 11.5, color: 'text.disabled' }}>
+        <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
           Nikdo zatím nesleduje
         </Typography>
       )}

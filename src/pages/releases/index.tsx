@@ -18,7 +18,7 @@ function StatusChip({ status }: { status: ReleaseStatus }) {
   return (
     <Box sx={{
       px: 0.75, py: 0.15, borderRadius: 0.75,
-      fontSize: 10.5, fontWeight: 700,
+      fontSize: 14, fontWeight: 700,
       color: m.color,
       border: 1, borderColor: m.color,
       display: 'inline-flex', alignItems: 'center', gap: 0.5,
@@ -59,14 +59,14 @@ function ReleaseCard({ release, onClick }: { release: ReleaseDto; onClick: () =>
         <StatusChip status={release.status}/>
         <Box sx={{ flex: 1 }}/>
         {dateRange && (
-          <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>
+          <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
             {dateRange}
           </Typography>
         )}
       </Box>
 
       {truncatedGoal && (
-        <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
           {truncatedGoal}
         </Typography>
       )}
@@ -78,7 +78,7 @@ function ReleaseCard({ release, onClick }: { release: ReleaseDto; onClick: () =>
             bgcolor: release.status === 'released' ? 'success.main' : 'primary.main',
             transition: '0.3s' }}/>
         </Box>
-        <Typography sx={{ fontSize: 11.5, color: 'text.secondary',
+        <Typography sx={{ fontSize: 13, color: 'text.secondary',
           fontVariantNumeric: 'tabular-nums', minWidth: 96, textAlign: 'right' }}>
           {release.doneCount} / {release.taskCount} ({Math.round(progress)}%)
         </Typography>
@@ -121,7 +121,7 @@ export default function ReleasesPage() {
         display: 'flex', alignItems: 'center', gap: 1.5,
       }}>
         <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontSize: 11, fontWeight: 600,
+          <Typography sx={{ fontSize: 13, fontWeight: 600,
             letterSpacing: '0.04em', textTransform: 'uppercase',
             color: 'text.secondary', mb: 0.25 }}>
             {project.name}
@@ -154,7 +154,7 @@ export default function ReleasesPage() {
             <Typography sx={{ fontSize: 14, fontWeight: 600, mb: 0.5, color: 'text.primary' }}>
               Zatím žádné verze
             </Typography>
-            <Typography sx={{ fontSize: 12, mb: 2 }}>
+            <Typography sx={{ fontSize: 14, mb: 2 }}>
               Verze (např. „v1.2.0”) slouží pro plánování releases a release notes.
             </Typography>
             <Button size="small" variant="outlined" startIcon={<PlusIcon/>} onClick={handleCreate}>
