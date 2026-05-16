@@ -1,16 +1,15 @@
 import { useMemo, useState, type ReactElement } from 'react';
 import { useNavigate, useLocation, useMatch } from 'react-router-dom';
-import { Box, Divider, IconButton, ListItemButton, Typography, useTheme } from '@mui/material';
+import { Box, Divider, IconButton, ListItemButton, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useProjects } from '../hooks/useProjects';
 import { useAllProjectTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../store/auth-store';
 import { useNotificationsStore } from '../store/notifications-store';
 import StrideLogoIcon from '../components/icons/stride-logo-icon';
-import FluxAvatar from '../components/flux-avatar';
 import CountBadge from './count-badge';
 import {
-  PlusIcon, BellIcon, DashboardIcon, ReportsIcon, SettingsIcon,
+  PlusIcon, BellIcon, DashboardIcon, ReportsIcon,
   CaretIcon, CheckIcon, TeamIcon, CalendarIcon,
 } from '../components/icons/icons';
 
@@ -23,9 +22,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
   const projectMatch = useMatch('/projects/:projectKey/*');
-  const theme = useTheme();
   const { t } = useTranslation();
-  const me = useAuthStore(s => s.user);
   const userId = useAuthStore(s => s.userId);
   const unreadCount = useNotificationsStore(s => s.items.filter(i => !i.read).length);
   const [showArchived, setShowArchived] = useState(false);
@@ -80,17 +77,17 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
       aria-label={t('nav.projects')}
       sx={{ width: 232, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}
     >
-      <Box sx={{ px: 1.5, py: 1.25, display: 'flex', alignItems: 'center', gap: 1, minHeight: 48,
+      <Box sx={{ px: 1.5, display: 'flex', alignItems: 'center', gap: 1, minHeight: 36,
         borderBottom: 1, borderColor: 'divider' }}>
-        <Box sx={{ width: 26, height: 26, borderRadius: 1.2, bgcolor: 'primary.main',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'primary.contrastText' }}>
-          <StrideLogoIcon size={16}/>
+        <Box sx={{ width: 20, height: 20, borderRadius: '5px', bgcolor: 'primary.main',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'primary.contrastText',
+          flexShrink: 0 }}>
+          <StrideLogoIcon size={13}/>
         </Box>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.1 }}>Stride</Typography>
-          <Typography sx={{ fontSize: 14, color: 'text.secondary', lineHeight: 1.1 }}>Acme s.r.o.</Typography>
-        </Box>
-        <CaretIcon style={{ color: theme.palette.text.secondary }}/>
+        <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          Acme s.r.o.
+        </Typography>
       </Box>
 
       <Box sx={{ p: 0.75 }}>
@@ -131,14 +128,11 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
           const active = projectMatch?.params.projectKey === p.key;
           const counts = perProject.get(p.id) ?? { board: 0, backlog: 0 };
           const boardPath = `/projects/${p.key}/board`;
-          const backlogPath = `/projects/${p.key}/backlog`;
-          const boardActive = location.pathname === boardPath;
-          const backlogActive = location.pathname === backlogPath;
           return (
             <Box key={p.id}>
-              <ListItemButton selected={active && !backlogActive}
+              <ListItemButton selected={active}
                 onClick={() => { navigate(boardPath); onClose?.(); }}
-                aria-current={boardActive ? 'page' : undefined}
+                aria-current={active ? 'page' : undefined}
                 aria-label={`${p.name}, ${counts.board} aktivních úkolů${p.archived ? ', archivováno' : ''}`}
                 sx={{ pl: 1, pr: 1, py: 0.5, gap: 1, minHeight: 28,
                   opacity: p.archived ? 0.55 : 1 }}>
@@ -153,39 +147,9 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                 </Typography>
                 <CountBadge count={counts.board} variant="muted" />
               </ListItemButton>
-              {active && (
-                <Box>
-                  <ListItemButton selected={boardActive}
-                    onClick={() => { navigate(boardPath); onClose?.(); }}
-                    aria-current={boardActive ? 'page' : undefined}
-                    sx={{ pl: 4, pr: 1, py: 0.25, gap: 1, minHeight: 24 }}>
-                    <Typography sx={{ fontSize: 14, fontWeight: boardActive ? 600 : 500, flex: 1,
-                      color: boardActive ? 'text.primary' : 'text.secondary' }}>{t('project.board')}</Typography>
-                    <CountBadge count={counts.board} variant="muted" />
-                  </ListItemButton>
-                  <ListItemButton selected={backlogActive}
-                    onClick={() => { navigate(backlogPath); onClose?.(); }}
-                    aria-current={backlogActive ? 'page' : undefined}
-                    sx={{ pl: 4, pr: 1, py: 0.25, gap: 1, minHeight: 24 }}>
-                    <Typography sx={{ fontSize: 14, fontWeight: backlogActive ? 600 : 500, flex: 1,
-                      color: backlogActive ? 'text.primary' : 'text.secondary' }}>{t('project.backlog')}</Typography>
-                    <CountBadge count={counts.backlog} variant="muted" />
-                  </ListItemButton>
-                </Box>
-              )}
             </Box>
           );
         })}
-      </Box>
-
-      <Divider/>
-      <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <FluxAvatar user={me} size={26}/>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 14, fontWeight: 600, lineHeight: 1.1 }}>{me?.name}</Typography>
-          <Typography sx={{ fontSize: 14, color: 'text.secondary', lineHeight: 1.1 }}>{me?.workspaceRole}</Typography>
-        </Box>
-        <IconButton size="small" aria-label="Nastavení"><SettingsIcon/></IconButton>
       </Box>
     </Box>
   );
