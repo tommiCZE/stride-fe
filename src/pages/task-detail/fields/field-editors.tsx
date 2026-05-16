@@ -354,6 +354,16 @@ export function DueDateEditor({ task, onPatch }: { task: TaskDto; onPatch: Patch
     ? new Date(task.dueDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })
     : null;
 
+  const daysUntilDue = task.dueDate
+    ? Math.ceil((new Date(task.dueDate).getTime() - Date.now()) / 86_400_000)
+    : null;
+
+  const color =
+    daysUntilDue === null ? 'text.disabled' :
+    daysUntilDue < 0 ? 'error.main' :
+    daysUntilDue <= 3 ? 'warning.main' :
+    'text.primary';
+
   if (editing) {
     return (
       <InputBase
@@ -372,24 +382,50 @@ export function DueDateEditor({ task, onPatch }: { task: TaskDto; onPatch: Patch
     <Typography
       onClick={() => setEditing(true)}
       sx={{ fontSize: 14, cursor: 'text', px: 0.5, borderRadius: 0.5,
-        '&:hover': { bgcolor: 'action.hover' },
-        color: task.dueDate ? 'text.primary' : 'text.disabled' }}
+        '&:hover': { bgcolor: 'action.hover' }, color }}
     >
       {display ?? '—'}
+      {daysUntilDue !== null && daysUntilDue >= 0 && daysUntilDue <= 7 && (
+        <Box component="span" sx={{ ml: 0.5, fontSize: 11 }}>
+          · za {daysUntilDue} {daysUntilDue === 1 ? 'den' : daysUntilDue < 5 ? 'dny' : 'dní'}
+        </Box>
+      )}
+      {daysUntilDue !== null && daysUntilDue < 0 && (
+        <Box component="span" sx={{ ml: 0.5, fontSize: 11 }}>
+          · po termínu
+        </Box>
+      )}
     </Typography>
   );
 }
 
-export function LoggedBar({ logged, estimate }: { logged: number; estimate?: number | null }) {
+export function EstimateProgressCard({ task, onPatch }: { task: TaskDto; onPatch: PatchFn }) {
+  const { logged, estimate } = task;
+  const hasEstimate = estimate != null && estimate > 0;
+  const pct = hasEstimate ? Math.min(logged / estimate, 1) : 0;
+  const overBudget = hasEstimate && logged > estimate;
+
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14, fontWeight: 600 }}>
-      {logged}h{estimate != null && ` / ${estimate}h`}
-      {estimate != null && (
-        <Box sx={{ flex: 1, height: 4, borderRadius: 2, bgcolor: 'action.hover', overflow: 'hidden' }}>
-          <Box sx={{ height: '100%',
-            width: `${Math.min(100, (logged / estimate) * 100)}%`,
-            bgcolor: logged > estimate ? 'error.main' : 'primary.main',
-            transition: '0.3s' }}/>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, width: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 13 }}>
+        <EstimateEditor task={task} onPatch={onPatch}/>
+        {hasEstimate ? (
+          <Typography component="span" sx={{ fontSize: 12, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
+            ({logged}h / {estimate}h · {Math.round(pct * 100)}%)
+          </Typography>
+        ) : logged > 0 ? (
+          <Typography component="span" sx={{ fontSize: 12, color: 'text.disabled' }}>
+            ({logged}h zalogováno)
+          </Typography>
+        ) : null}
+      </Box>
+      {hasEstimate && (
+        <Box sx={{ width: '100%', height: 3, bgcolor: 'action.hover', borderRadius: 1, overflow: 'hidden' }}>
+          <Box sx={{
+            width: `${pct * 100}%`, height: '100%',
+            bgcolor: overBudget ? 'error.main' : 'warning.main',
+            transition: '0.3s',
+          }}/>
         </Box>
       )}
     </Box>
