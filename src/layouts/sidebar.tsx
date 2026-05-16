@@ -9,9 +9,18 @@ import { useNotificationsStore } from '../store/notifications-store';
 import StrideLogoIcon from '../components/icons/stride-logo-icon';
 import CountBadge from './count-badge';
 import {
-  PlusIcon, BellIcon, DashboardIcon, ReportsIcon,
+  PlusIcon, BellIcon, DashboardIcon, ReportsIcon, SettingsIcon,
   CaretIcon, CheckIcon, TeamIcon, CalendarIcon,
+  CreditCardIcon, PluginIcon, HistoryIcon,
 } from '../components/icons/icons';
+
+const GLOBAL_NAV: { path: string; label: string; icon: ReactElement }[] = [
+  { path: '/settings',              label: 'Globální nastavení', icon: <SettingsIcon/> },
+  { path: '/settings/members',      label: 'Členové & týmy',     icon: <TeamIcon/> },
+  { path: '/settings/billing',      label: 'Billing',            icon: <CreditCardIcon/> },
+  { path: '/settings/integrations', label: 'Integrace',          icon: <PluginIcon/> },
+  { path: '/settings/audit',        label: 'Audit log',          icon: <HistoryIcon/> },
+];
 
 interface ProjectCounts {
   board: number;
@@ -24,6 +33,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const projectMatch = useMatch('/projects/:projectKey/*');
   const { t } = useTranslation();
   const userId = useAuthStore(s => s.userId);
+  const isAdmin = useAuthStore(s => s.user?.workspaceRole === 'admin');
   const unreadCount = useNotificationsStore(s => s.items.filter(i => !i.read).length);
   const [showArchived, setShowArchived] = useState(false);
   const { data: allProjects = [] } = useProjects();
@@ -96,7 +106,6 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         {navItem('/my-work',   t('nav.myWork'),    <CheckIcon/>,  myWorkCount)}
         {navItem('/calendar',  t('nav.calendar'),  <CalendarIcon/>)}
         {navItem('/reports',   t('nav.reports'),   <ReportsIcon/>)}
-        {navItem('/team',      t('nav.team'),      <TeamIcon/>)}
       </Box>
 
       <Divider/>
@@ -151,6 +160,22 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
           );
         })}
       </Box>
+
+      {isAdmin && (
+        <>
+          <Divider/>
+          <Box sx={{ p: 0.75, flexShrink: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.75,
+              color: 'text.secondary', userSelect: 'none' }}>
+              <Typography sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em',
+                textTransform: 'uppercase', flex: 1 }}>
+                Global
+              </Typography>
+            </Box>
+            {GLOBAL_NAV.map(item => navItem(item.path, item.label, item.icon))}
+          </Box>
+        </>
+      )}
     </Box>
   );
 }

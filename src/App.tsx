@@ -12,7 +12,6 @@ import Reports from './pages/reports';
 import Settings from './pages/settings';
 import MyWork from './pages/my-work';
 import Inbox from './pages/inbox';
-import Team from './pages/team';
 import TaskDetail from './pages/task-detail';
 import TaskPage from './pages/task-page';
 import Login from './pages/login';
@@ -72,7 +71,6 @@ const router = createBrowserRouter([
       { path: 'my-work',   element: <MyWork /> },
       { path: 'calendar',  element: <Suspense fallback={<PageFallback />}><Calendar /></Suspense> },
       { path: 'reports',   element: <Reports /> },
-      { path: 'team',      element: <Team /> },
       { path: 'profile',   element: <Profile /> },
       { path: 'search',    element: <SearchPage /> },
       { path: 'task/:taskKey', element: <TaskPage /> },
