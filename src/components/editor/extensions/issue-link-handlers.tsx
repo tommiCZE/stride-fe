@@ -45,7 +45,8 @@ export function IssueLinkLayer({ children }: { children: React.ReactNode }) {
       if (!key) return;
       const task = lookupTaskByKey(qc, key);
       if (!task) return;
-      navigate(`/projects/${task.projectId}/board?task=${task.id}`);
+      const projectKey = task.key.split('-')[0];
+      navigate(`/projects/${projectKey}/board?task=${task.key}`);
     };
 
     const onMouseOver = (event: MouseEvent) => {

@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react';
 import { Box, Button, Card, IconButton, TextField, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { TASK_TYPES } from '../constants/taskTypes';
 import { PRIORITIES } from '../constants/priorities';
 import { useProjects } from '../hooks/useProjects';
 import { useCreateTask } from '../hooks/useTasks';
+import { useReleases } from '../hooks/useReleases';
 import { usePermissions } from '../hooks/usePermissions';
 import { useUiStore } from '../store/ui-store';
 import TypeIcon from './icons/type-icon';
@@ -15,19 +16,24 @@ import { CloseIcon } from './icons/icons';
 import EditorBody, { type EditorBodyHandle } from './editor/editor-body';
 
 export default function CreateTaskModal() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
+  const [, setSearchParams] = useSearchParams();
   const { closeCreateModal } = useUiStore();
   const { enqueueSnackbar } = useSnackbar();
   const { data: projects = [] } = useProjects();
   const createTask = useCreateTask();
   const { canEdit } = usePermissions();
 
-  const project = projects.find(p => p.id === projectId) ?? projects[0];
+  const project = projects.find(p => p.key === projectKey) ?? projects[0];
 
   const [title, setTitle] = useState('');
   const [type, setType] = useState('TASK');
   const [priority, setPriority] = useState('MEDIUM');
+  const [fixVersionId, setFixVersionId] = useState<string | null>(null);
   const descriptionRef = useRef<EditorBodyHandle>(null);
+
+  const { data: releases = [] } = useReleases(project?.id);
+  const selectableReleases = releases.filter(r => r.status === 'unreleased');
 
   const handleCreate = () => {
     if (!title.trim() || !project || !canEdit) return;
@@ -38,12 +44,14 @@ export default function CreateTaskModal() {
         projectId: project.id,
         type,
         priority,
+        fixVersionId: fixVersionId ?? undefined,
         description: descJson ? JSON.stringify(descJson) : undefined,
       },
       {
-        onSuccess: () => {
+        onSuccess: (created) => {
           enqueueSnackbar('Task vytvořen', { variant: 'success' });
           closeCreateModal();
+          setSearchParams({ task: created.key });
         },
       },
     );
@@ -108,6 +116,32 @@ export default function CreateTaskModal() {
               </Box>
             ))}
           </Box>
+
+          {selectableReleases.length > 0 && (
+            <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Typography sx={{ fontSize: 11, color: 'text.disabled', mr: 0.5 }}>Fix version:</Typography>
+              <Box
+                onClick={() => setFixVersionId(null)}
+                sx={{ px: 0.75, py: 0.3, borderRadius: 0.8, fontSize: 11.5,
+                  border: '1px solid',
+                  borderColor: fixVersionId === null ? 'primary.main' : 'divider',
+                  color: fixVersionId === null ? 'primary.main' : 'text.secondary',
+                  fontWeight: fixVersionId === null ? 600 : 400, cursor: 'default' }}>
+                Žádná
+              </Box>
+              {selectableReleases.map(r => (
+                <Box key={r.id} onClick={() => setFixVersionId(r.id)}
+                  sx={{ px: 0.75, py: 0.3, borderRadius: 0.8, fontSize: 11.5,
+                    fontFamily: 'ui-monospace, monospace',
+                    border: '1px solid',
+                    borderColor: fixVersionId === r.id ? 'primary.main' : 'divider',
+                    color: fixVersionId === r.id ? 'primary.main' : 'text.secondary',
+                    fontWeight: fixVersionId === r.id ? 600 : 400, cursor: 'default' }}>
+                  {r.name}
+                </Box>
+              ))}
+            </Box>
+          )}
         </Box>
 
         <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>

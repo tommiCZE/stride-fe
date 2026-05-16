@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useProjects } from '../hooks/useProjects';
 import { useAllProjectTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../store/auth-store';
@@ -11,27 +11,13 @@ import { CheckIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
 
 export default function MyWork() {
-  const location = useLocation();
   const [, setSearchParams] = useSearchParams();
-  const openTask = (id: string) => setSearchParams({ task: id });
-  const isInbox = location.pathname === '/inbox';
+  const openTask = (key: string) => setSearchParams({ task: key });
 
   const userId = useAuthStore(s => s.userId);
   const { data: projects = [] } = useProjects();
   const { data: allTasks } = useAllProjectTasks(projects.map(p => p.id));
   const myTasks = allTasks.filter(t => t.assigneeId === userId);
-
-  if (isInbox) {
-    return (
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%' }}>
-        <Typography sx={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', mb: 0.5 }}>Inbox</Typography>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 3 }}>Žádná nová oznámení</Typography>
-        <Box sx={{ p: 3, color: 'text.disabled', fontSize: 12.5, textAlign: 'center' }}>
-          Oznámení přes SSE stream budou dostupná brzy.
-        </Box>
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%' }}>
@@ -49,7 +35,7 @@ export default function MyWork() {
         {myTasks.map(t => {
           const status = BOARD_STATUSES.find(s => s.id === t.status);
           return (
-            <Box key={t.id} onClick={() => openTask(t.id)}
+            <Box key={t.id} onClick={() => openTask(t.key)}
               sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1,
                 borderRadius: 1.2, border: 1, borderColor: 'divider', bgcolor: 'background.paper',
                 cursor: 'default', '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' } }}>

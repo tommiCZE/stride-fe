@@ -4,11 +4,12 @@ import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useUiStore } from '../store/ui-store';
 import { useProjects } from '../hooks/useProjects';
-import { BoardIcon, BacklogIcon, ListIcon, ReportsIcon, SettingsIcon, PlusIcon } from '../components/icons/icons';
+import { BoardIcon, BacklogIcon, ListIcon, ReportsIcon, SettingsIcon, PlusIcon, CalendarIcon } from '../components/icons/icons';
 
 export default function ProjectTopbar() {
   const navigate = useNavigate();
-  const match = useMatch('/projects/:projectId/:view');
+  const match = useMatch('/projects/:projectKey/:view');
+  const nestedMatch = useMatch('/projects/:projectKey/:view/*');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { openCreateModal } = useUiStore();
@@ -16,16 +17,17 @@ export default function ProjectTopbar() {
 
   const { data: projects = [] } = useProjects();
 
-  if (!match) return null;
+  const activeMatch = match ?? nestedMatch;
+  if (!activeMatch) return null;
 
-  const { projectId, view } = match.params;
-  const project = projects.find(p => p.id === projectId);
+  const { projectKey, view } = activeMatch.params;
+  const project = projects.find(p => p.key === projectKey);
   if (!project) return null;
 
   const tab = (tabView: string, label: string, icon: ReactElement) => {
     const active = view === tabView;
     return (
-      <Box key={tabView} onClick={() => navigate(`/projects/${projectId}/${tabView}`)}
+      <Box key={tabView} onClick={() => navigate(`/projects/${projectKey}/${tabView}`)}
         sx={{ display: 'flex', alignItems: 'center', gap: 0.75, px: 1.25, py: 0.75,
           borderRadius: 1.2, cursor: 'default', userSelect: 'none', flexShrink: 0,
           color: active ? 'text.primary' : 'text.secondary',
@@ -68,6 +70,7 @@ export default function ProjectTopbar() {
         {tab('board',    t('project.board'),    <BoardIcon/>)}
         {tab('backlog',  t('project.backlog'),  <BacklogIcon/>)}
         {tab('list',     t('project.list'),     <ListIcon/>)}
+        {tab('releases', t('project.releases'), <CalendarIcon/>)}
         {tab('reports',  t('project.reports'),  <ReportsIcon/>)}
         {tab('settings', t('project.settings'), <SettingsIcon/>)}
       </Box>

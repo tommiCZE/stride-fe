@@ -29,7 +29,7 @@ function buildMonthGrid(anchor: Dayjs): Dayjs[] {
 
 interface TaskPillProps {
   task: TaskSummaryDto;
-  onOpen: (id: string) => void;
+  onOpen: (key: string) => void;
 }
 
 function TaskPill({ task, onOpen }: TaskPillProps) {
@@ -38,7 +38,7 @@ function TaskPill({ task, onOpen }: TaskPillProps) {
   return (
     <Tooltip title={`${task.key} — ${task.title}`} placement="top" disableInteractive>
       <Box
-        onClick={() => onOpen(task.id)}
+        onClick={() => onOpen(task.key)}
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -81,7 +81,7 @@ interface DayCellProps {
   isCurrentMonth: boolean;
   isToday: boolean;
   tasks: TaskSummaryDto[];
-  onOpen: (id: string) => void;
+  onOpen: (key: string) => void;
 }
 
 function DayCell({ day, isCurrentMonth, isToday, tasks, onOpen }: DayCellProps) {
@@ -175,7 +175,7 @@ export default function Calendar() {
     return map;
   }, [allTasks]);
 
-  const openTask = (id: string) => setSearchParams({ task: id });
+  const openTask = (key: string) => setSearchParams({ task: key });
 
   const goPrev  = () => setAnchor(a => a.subtract(1, 'month'));
   const goNext  = () => setAnchor(a => a.add(1, 'month'));

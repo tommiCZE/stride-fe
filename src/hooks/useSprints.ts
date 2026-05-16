@@ -5,6 +5,8 @@ import type { CreateSprintRequest, UpdateSprintRequest } from '../api/types';
 export const sprintKeys = {
   all: ['sprints'] as const,
   list: (projectId: string) => [...sprintKeys.all, projectId] as const,
+  byNumber: (projectKey: string, number: number) =>
+    [...sprintKeys.all, 'by-number', projectKey, number] as const,
 };
 
 export function useSprints(projectId: string) {
@@ -12,6 +14,14 @@ export function useSprints(projectId: string) {
     queryKey: sprintKeys.list(projectId),
     queryFn: () => sprintsApi.list(projectId),
     enabled: !!projectId,
+  });
+}
+
+export function useSprintByNumber(projectKey: string | undefined, number: number | undefined) {
+  return useQuery({
+    queryKey: sprintKeys.byNumber(projectKey ?? '', number ?? 0),
+    queryFn: () => sprintsApi.getByNumber(projectKey as string, number as number),
+    enabled: !!projectKey && !!number,
   });
 }
 

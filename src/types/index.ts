@@ -14,6 +14,7 @@ export interface User {
   color: string;
   role: string;
   email?: string;
+  username?: string;
   workspaceRole?: 'admin' | 'member' | 'viewer';
   status?: 'active' | 'pending';
 }
@@ -59,6 +60,7 @@ export interface Label {
 export interface Sprint {
   id: string;
   name: string;
+  number: number;
   project: string;
   start: string;
   end: string;
@@ -176,69 +178,6 @@ export interface GitIntegration {
   smartCommits: boolean;
   autoTransition: boolean;
   lastSync: string;
-}
-
-export interface DevBranch {
-  name: string;
-  repo: string;
-  provider: 'github' | 'gitlab';
-  author: string;
-  ahead: number;
-  behind: number;
-  updated: string;
-}
-
-export interface ReviewState {
-  user: string;
-  state: 'approved' | 'comment' | 'changes';
-}
-
-export interface CheckCounts {
-  passed: number;
-  failed: number;
-  pending: number;
-}
-
-export interface DevPull {
-  id: string;
-  title: string;
-  repo: string;
-  provider: 'github' | 'gitlab';
-  author: string;
-  state: 'open' | 'merged' | 'closed' | 'draft';
-  draft: boolean;
-  head: string;
-  base: string;
-  additions: number;
-  deletions: number;
-  files: number;
-  reviews: ReviewState[];
-  checks: CheckCounts;
-  updated: string;
-}
-
-export interface DevCommit {
-  sha: string;
-  message: string;
-  author: string;
-  repo: string;
-  provider: 'github' | 'gitlab';
-  at: string;
-}
-
-export interface DevBuild {
-  id: string;
-  name: string;
-  state: 'success' | 'failed' | 'running' | 'pending';
-  duration: string;
-  at: string;
-}
-
-export interface DevData {
-  branches: DevBranch[];
-  pulls: DevPull[];
-  commits: DevCommit[];
-  builds: DevBuild[];
 }
 
 export type NavView = 'dashboard' | 'inbox' | 'mywork' | 'reports' | 'board' | 'backlog' | 'list' | 'settings';

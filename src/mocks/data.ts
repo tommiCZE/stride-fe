@@ -1,6 +1,6 @@
 import type {
   User, Project, Status, Priority, TaskType, Label,
-  Sprint, Epic, Task, ActivityItem, GitIntegration, DevData, RichBlock,
+  Sprint, Epic, Task, ActivityItem, GitIntegration, RichBlock,
 } from '../types';
 
 export const USERS: User[] = [
@@ -181,7 +181,7 @@ export const TASKS: Task[] = [
     updated: '2026-04-26T08:00:00', created: '2026-04-26T08:00:00',
   },
   {
-    id: 't10', key: 'WEB-138', title: 'Filtr „moje tasky" v boardu',
+    id: 't10', key: 'WEB-138', title: 'Filtr „moje tasky” v boardu',
     type: 'task', status: 'review', priority: 'medium', project: 'p1', sprint: 's1',
     assignee: 'u6', reporter: 'u1', labels: ['l1'],
     estimate: 2, logged: 2, due: '2026-04-28',
@@ -241,57 +241,6 @@ export const GIT_INTEGRATIONS: GitIntegration[] = [
     smartCommits: true, autoTransition: false, lastSync: '2026-04-29T07:55:00',
   },
 ];
-
-export const DEV_DATA: Record<string, DevData> = {
-  'WEB-142': {
-    branches: [
-      { name: 'feature/WEB-142-slash-menu', repo: 'flexo-team/flux-web', provider: 'github',
-        author: 'u2', ahead: 14, behind: 2, updated: '2026-04-29T09:14:00' },
-    ],
-    pulls: [
-      { id: '#487', title: 'WEB-142: slash menu base + heading/list/quote',
-        repo: 'flexo-team/flux-web', provider: 'github', author: 'u2',
-        state: 'open', draft: false, head: 'feature/WEB-142-slash-menu', base: 'main',
-        additions: 412, deletions: 38, files: 9,
-        reviews: [{ user: 'u1', state: 'approved' }, { user: 'u3', state: 'comment' }],
-        checks: { passed: 7, failed: 0, pending: 1 },
-        updated: '2026-04-29T09:14:00',
-      },
-    ],
-    commits: [
-      { sha: 'a1f24e9', message: 'WEB-142: extract slash trigger regex into util',  author: 'u2', repo: 'flexo-team/flux-web', provider: 'github', at: '2026-04-29T09:14:00' },
-      { sha: '7c83b12', message: 'WEB-142: keyboard nav (↑ ↓ Enter Esc)',           author: 'u2', repo: 'flexo-team/flux-web', provider: 'github', at: '2026-04-28T17:42:00' },
-      { sha: '4d09a55', message: 'WEB-142: heading / list / quote inserts',         author: 'u2', repo: 'flexo-team/flux-web', provider: 'github', at: '2026-04-28T11:20:00' },
-      { sha: '0b71ee3', message: 'WEB-142: render floating menu near caret',        author: 'u2', repo: 'flexo-team/flux-web', provider: 'github', at: '2026-04-27T16:08:00' },
-    ],
-    builds: [
-      { id: '#1284', name: 'CI · build & test', state: 'success', duration: '3m 14s', at: '2026-04-29T09:18:00' },
-      { id: '#1283', name: 'CI · e2e',           state: 'running', duration: '1m 44s', at: '2026-04-29T09:18:00' },
-    ],
-  },
-  'WEB-148': {
-    branches: [
-      { name: 'feature/WEB-148-paste-images', repo: 'flexo-team/flux-web', provider: 'github',
-        author: 'u6', ahead: 6, behind: 0, updated: '2026-04-28T20:11:00' },
-    ],
-    pulls: [
-      { id: '#491', title: 'WEB-148: paste / drag obrázku → S3',
-        repo: 'flexo-team/flux-web', provider: 'github', author: 'u6',
-        state: 'draft', draft: true, head: 'feature/WEB-148-paste-images', base: 'main',
-        additions: 188, deletions: 12, files: 5,
-        reviews: [], checks: { passed: 5, failed: 1, pending: 0 },
-        updated: '2026-04-28T20:11:00',
-      },
-    ],
-    commits: [
-      { sha: 'e2c4811', message: 'WEB-148: optimistic preview + retry',   author: 'u6', repo: 'flexo-team/flux-web', provider: 'github', at: '2026-04-28T20:11:00' },
-      { sha: 'f81b339', message: 'WEB-148: hook clipboard paste handler', author: 'u6', repo: 'flexo-team/flux-web', provider: 'github', at: '2026-04-28T11:33:00' },
-    ],
-    builds: [
-      { id: '#1281', name: 'CI · build & test', state: 'failed', duration: '2m 51s', at: '2026-04-28T20:14:00' },
-    ],
-  },
-};
 
 // Helpers
 export const getUser    = (id: string) => USERS.find(u => u.id === id);

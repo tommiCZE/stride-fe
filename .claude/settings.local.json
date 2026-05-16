@@ -10,7 +10,14 @@
       "Bash(yarn add *)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Lenovo\\\\IdeaProjects\\\\stride\\\\stride-fe\\\\src\" -Recurse -File)",
       "Bash(Select-Object FullName)",
-      "Bash(Sort-Object FullName)"
+      "Bash(Sort-Object FullName)",
+      "Read(//home/tomas/.claude/**)",
+      "Bash(git cherry-pick *)",
+      "Bash(yarn eslint *)",
+      "mcp__playwright__*"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "playwright"
+  ]
 }

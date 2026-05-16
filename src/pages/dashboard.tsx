@@ -15,7 +15,7 @@ import ActivityFeed from '../components/activity-feed';
 export default function Dashboard() {
   const navigate = useNavigate();
   const [, setSearchParams] = useSearchParams();
-  const openTask = (id: string) => setSearchParams({ task: id });
+  const openTask = (key: string) => setSearchParams({ task: key });
 
   const me = useAuthStore(s => s.user);
   const userId = useAuthStore(s => s.userId);
@@ -84,7 +84,7 @@ export default function Dashboard() {
           {!tasksError && myTasks.slice(0, 6).map(t => {
             const status = BOARD_STATUSES.find(s => s.id === t.status);
             return (
-              <Box key={t.id} onClick={() => openTask(t.id)}
+              <Box key={t.id} onClick={() => openTask(t.key)}
                 sx={{ px: 1.5, py: 1, display: 'flex', alignItems: 'center', gap: 1,
                   borderBottom: 1, borderColor: 'divider', cursor: 'default',
                   '&:hover': { bgcolor: 'action.hover' },
@@ -158,7 +158,7 @@ export default function Dashboard() {
               const done = p.taskCount - p.openCount;
               const pct = p.taskCount > 0 ? done / p.taskCount : 0;
               return (
-                <Box key={p.id} onClick={() => navigate(`/projects/${p.id}/board`)}
+                <Box key={p.id} onClick={() => navigate(`/projects/${p.key}/board`)}
                   sx={{ p: 1.5, borderRadius: 1.2, border: 1, borderColor: 'divider', cursor: 'default',
                     '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' } }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>

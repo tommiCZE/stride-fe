@@ -9,5 +9,7 @@ export interface UpdateProfileRequest {
 
 export const usersApi = {
   getMe: () => api.get<UserDto>('/api/users/me').then(r => r.data),
+  getByUsername: (username: string) =>
+    api.get<UserDto>(`/api/users/by-username/${username}`).then(r => r.data),
   updateMe: (body: UpdateProfileRequest) => api.patch('/api/users/me', body),
 };

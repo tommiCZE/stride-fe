@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Badge, Box, IconButton, InputAdornment, Menu, MenuItem, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useUiStore } from '../store/ui-store';
 import { useAuthStore } from '../store/auth-store';
+import { useNotificationsStore } from '../store/notifications-store';
 import FluxAvatar from '../components/flux-avatar';
 import LanguageSwitcher from '../components/language-switcher';
+import NotificationsPopover from '../components/notifications-popover';
 import {
   SearchIcon, BellIcon, HelpIcon, SunIcon, MoonIcon,
   HamburgerIcon, PlayIcon, PauseIcon, CloseIcon,
@@ -32,6 +34,23 @@ export default function GlobalHeader() {
   const qc = useQueryClient();
 
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const [notifAnchor, setNotifAnchor] = useState<HTMLElement | null>(null);
+  const unreadCount = useNotificationsStore(s => s.items.filter(i => !i.read).length);
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const [searchValue, setSearchValue] = useState('');
+
+  useEffect(() => {
+    if (location.pathname === '/search') {
+      setSearchValue(searchParams.get('q') ?? '');
+    }
+  }, [location.pathname, searchParams]);
+
+  const submitSearch = () => {
+    const q = searchValue.trim();
+    if (!q) return;
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+  };
 
   const handleLogout = () => {
     setAnchor(null);
@@ -58,6 +77,9 @@ export default function GlobalHeader() {
         <TextField
           placeholder={t('header.searchPlaceholder')}
           size="small" variant="outlined"
+          value={searchValue}
+          onChange={e => setSearchValue(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') submitSearch(); }}
           sx={{ width: 360, '& .MuiOutlinedInput-root': { height: 28, fontSize: 12.5,
             bgcolor: 'action.hover', '& fieldset': { borderColor: 'transparent' } } }}
           slotProps={{
@@ -100,12 +122,18 @@ export default function GlobalHeader() {
       </Tooltip>
       {!isMobile && <Tooltip title={t('header.help')}><IconButton size="small"><HelpIcon/></IconButton></Tooltip>}
       <Tooltip title={t('header.notifications')}>
-        <IconButton size="small">
-          <Badge badgeContent={3} color="error" sx={{ '& .MuiBadge-badge': { fontSize: 9, height: 14, minWidth: 14 } }}>
+        <IconButton size="small" onClick={(e) => setNotifAnchor(e.currentTarget)}>
+          <Badge
+            badgeContent={unreadCount}
+            color="error"
+            invisible={unreadCount === 0}
+            sx={{ '& .MuiBadge-badge': { fontSize: 9, height: 14, minWidth: 14 } }}
+          >
             <BellIcon/>
           </Badge>
         </IconButton>
       </Tooltip>
+      <NotificationsPopover anchorEl={notifAnchor} onClose={() => setNotifAnchor(null)} />
 
       <Box sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
         onClick={e => setAnchor(e.currentTarget)}>

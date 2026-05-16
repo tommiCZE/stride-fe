@@ -111,3 +111,27 @@ Pokud handoff obsahuje další obrazovky, implementuj je všechny.
 - Dodržuj barvy, fonty a rozložení z handoff bundle – neupravuj design svévolně
 - Kde design není jednoznačný, zeptej se před implementací
 - Generuj realistická mock data (jména, tasky, projekty) – ne "Lorem ipsum"
+
+---
+
+## Dev-time verifikace přes Playwright MCP
+
+V repu je nakonfigurován **Playwright MCP server** (`.mcp.json` v rootu). Použij ho POUZE když tě uživatel výslovně požádá frází typu „ověř / proklikni / zkontroluj že [feature] funguje". Nezahajuj verifikaci spontánně po každé změně kódu.
+
+### Pre-condition check (před každou verifikací)
+
+1. **FE běží na `http://localhost:5173`** — ověř přes `curl -s http://localhost:5173 -o /dev/null -w "%{http_code}"`. Pokud ne, **nespouštěj `yarn dev` sám** — řekni uživateli, ať ho pustí.
+2. **BE běží na `http://localhost:8080`** — `curl -s http://localhost:8080/actuator/health` nebo libovolný známý endpoint. Pokud ne, řekni uživateli, ať v `../stride-be/` pustí `docker-compose up`.
+
+### Auth
+
+- Výchozí testovací účet: `tomas.knytl@gmail.com` / `stride123` (je už předvyplněn v `src/pages/login.tsx`).
+- Token se ukládá do `localStorage` pod klíčem `stride-auth` (viz `src/store/auth-store.ts`).
+- API base URL: `http://localhost:8080` (`src/api/axios.ts`).
+
+### Pravidla pro verifikaci
+
+- **Neresetuj DB** mezi verifikacemi — testovací data se kumulují, je to v pořádku pro dev-time check.
+- **Multi-user scénáře** (notifikace, mention) nelze ověřit jedním účtem. Pokud na to narazíš, nahlas limitaci a navrhni vytvoření druhého test usera.
+- **Závěr verifikace**: stručný report **pass / fail**, klíčové screenshoty (`browser_screenshot`), popis co se reálně ověřilo a co BE odpověděl (případně mrkni do Network requests přes MCP).
+- **Negeneruj automaticky regresní Playwright testy** — pokud uživatel chce trvalý test, vygeneruj ho na vyžádání jako samostatný krok.

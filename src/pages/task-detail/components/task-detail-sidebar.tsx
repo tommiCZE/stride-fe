@@ -5,6 +5,7 @@ import { FieldRow } from '../fields/field-helpers';
 import {
   AssigneeEditor, PriorityEditor, TypeEditor, EpicEditor,
   SprintEditor, LabelsEditor, EstimateEditor, DueDateEditor, LoggedBar,
+  FixVersionEditor,
   type PatchFn,
 } from '../fields/field-editors';
 import { useWatchers } from '../../../hooks/useWatchers';
@@ -41,6 +42,9 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
       </FieldRow>
       <FieldRow label="Sprint">
         <SprintEditor task={task} onPatch={onPatch}/>
+      </FieldRow>
+      <FieldRow label="Fix version">
+        <FixVersionEditor task={task} onPatch={onPatch}/>
       </FieldRow>
       <FieldRow label="Štítky">
         <LabelsEditor task={task} onPatch={onPatch}/>

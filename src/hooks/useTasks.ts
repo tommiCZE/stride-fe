@@ -9,6 +9,7 @@ export const taskKeys = {
     [...taskKeys.lists(), projectId, filters] as const,
   details: () => [...taskKeys.all, 'detail'] as const,
   detail: (id: string) => [...taskKeys.details(), id] as const,
+  byKey: (key: string) => [...taskKeys.details(), 'by-key', key] as const,
 };
 
 export function useTasks(projectId: string, filters?: TaskFilters) {
@@ -24,6 +25,14 @@ export function useTask(id: string) {
     queryKey: taskKeys.detail(id),
     queryFn: () => tasksApi.get(id),
     enabled: !!id,
+  });
+}
+
+export function useTaskByKey(key: string) {
+  return useQuery({
+    queryKey: taskKeys.byKey(key),
+    queryFn: () => tasksApi.getByKey(key),
+    enabled: !!key,
   });
 }
 
@@ -43,6 +52,7 @@ export function useUpdateTask(projectId?: string) {
       tasksApi.update(id, body),
     onSuccess: (_, { id }) => {
       qc.invalidateQueries({ queryKey: taskKeys.detail(id) });
+      qc.invalidateQueries({ queryKey: taskKeys.details() });
       if (projectId) qc.invalidateQueries({ queryKey: taskKeys.list(projectId) });
     },
   });

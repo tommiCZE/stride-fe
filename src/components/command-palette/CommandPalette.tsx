@@ -223,12 +223,12 @@ export default function CommandPalette({ open, onClose }: Props) {
       case 'task':
         setSearchParams(prev => {
           const next = new URLSearchParams(prev);
-          next.set('task', r.task.id);
+          next.set('task', r.task.key);
           return next;
         });
         break;
       case 'project':
-        navigate(`/projects/${r.project.id}/board`);
+        navigate(`/projects/${r.project.key}/board`);
         break;
       case 'user':
         navigate('/team');

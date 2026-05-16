@@ -13,6 +13,9 @@ export const sprintsApi = {
   list: (projectId: string) =>
     api.get<SprintDto[]>(`/api/projects/${projectId}/sprints`).then(r => r.data),
 
+  getByNumber: (projectKey: string, number: number) =>
+    api.get<SprintDto>(`/api/projects/${projectKey}/sprints/by-number/${number}`).then(r => r.data),
+
   create: (body: CreateSprintRequest) =>
     api.post<SprintDto>('/api/sprints', body).then(r => r.data),
 

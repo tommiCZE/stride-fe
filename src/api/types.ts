@@ -4,6 +4,7 @@ export interface UserDto {
   initials: string;
   color: string;
   email: string;
+  username: string;
   workspaceRole: string;
   status: string;
 }
@@ -13,6 +14,77 @@ export interface LabelDto {
   name: string;
   color: string;
   projectId: string;
+}
+
+export interface SlackIntegrationDto {
+  id: string;
+  projectId: string;
+  teamId: string;
+  teamName: string;
+  defaultChannelId: string | null;
+  defaultChannelName: string | null;
+  installedAt: string;
+}
+
+export interface SlackChannel {
+  id: string;
+  name: string;
+  isPrivate: boolean;
+}
+
+export interface GithubIntegrationDto {
+  id: string;
+  projectId: string;
+  accountLogin: string;
+  accountAvatarUrl: string | null;
+  defaultRepoId: number | null;
+  defaultRepoFullName: string | null;
+  installedAt: string;
+}
+
+export interface GithubRepo {
+  id: number;
+  fullName: string;
+  name: string;
+  isPrivate: boolean;
+  htmlUrl: string;
+}
+
+export interface GitlabIntegrationDto {
+  id: string;
+  projectId: string;
+  baseUrl: string;
+  accountUsername: string;
+  accountAvatarUrl: string | null;
+  defaultProjectId: number | null;
+  defaultProjectPath: string | null;
+  installedAt: string;
+}
+
+export interface GitlabProject {
+  id: number;
+  pathWithNamespace: string;
+  name: string;
+  visibility: string;
+  webUrl: string;
+}
+
+export type RemoteLinkProvider = 'github' | 'gitlab';
+export type RemoteLinkKind = 'pull_request' | 'merge_request';
+export type RemoteLinkState = 'open' | 'closed' | 'merged';
+
+export interface TaskRemoteLinkDto {
+  id: string;
+  taskId: string;
+  provider: RemoteLinkProvider;
+  remoteKind: RemoteLinkKind;
+  remoteNumber: number;
+  remoteUrl: string;
+  state: RemoteLinkState;
+  title: string;
+  repoRef: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProjectDto {
@@ -25,6 +97,22 @@ export interface ProjectDto {
   lead: UserDto | null;
   taskCount: number;
   openCount: number;
+  description: string;
+  category: string;
+  kind: string;
+  visibility: string;
+  archived: boolean;
+  slackChannel: string;
+  defaultAssigneeId: string | null;
+  estimateUnit: string;
+  defaultTaskType: string;
+  defaultPriority: string;
+  sprintLengthWeeks: number;
+  sprintCapacity: number;
+  sprintStartWeekday: number;
+  sprintRollover: string;
+  velocityBaseline: number;
+  definitionOfDone: string[];
 }
 
 export interface CreateProjectRequest {
@@ -39,13 +127,30 @@ export interface UpdateProjectRequest {
   name?: string;
   color?: string;
   icon?: string;
-  leadId?: string;
+  leadId?: string | null;
+  description?: string;
+  category?: string;
+  kind?: string;
+  visibility?: string;
+  archived?: boolean;
+  slackChannel?: string;
+  defaultAssigneeId?: string | null;
+  estimateUnit?: string;
+  defaultTaskType?: string;
+  defaultPriority?: string;
+  sprintLengthWeeks?: number;
+  sprintCapacity?: number;
+  sprintStartWeekday?: number;
+  sprintRollover?: string;
+  velocityBaseline?: number;
+  definitionOfDone?: string[];
 }
 
 export interface SprintDto {
   id: string;
   name: string;
   projectId: string;
+  number: number;
   startDate: string | null;
   endDate: string | null;
   state: string;
@@ -77,6 +182,40 @@ export interface EpicDto {
   progress: number;
 }
 
+export type ReleaseStatus = 'unreleased' | 'released' | 'archived';
+
+export interface ReleaseDto {
+  id: string;
+  projectId: string;
+  name: string;
+  description: string | null;
+  status: ReleaseStatus;
+  startDate: string | null;
+  releaseDate: string | null;
+  goal: string | null;
+  taskCount: number;
+  doneCount: number;
+  createdAt: string;
+}
+
+export interface CreateReleaseRequest {
+  projectId: string;
+  name: string;
+  description?: string;
+  startDate?: string;
+  releaseDate?: string;
+  goal?: string;
+}
+
+export interface UpdateReleaseRequest {
+  name?: string;
+  description?: string | null;
+  status?: ReleaseStatus;
+  startDate?: string | null;
+  releaseDate?: string | null;
+  goal?: string | null;
+}
+
 export interface TaskSummaryDto {
   id: string;
   key: string;
@@ -87,6 +226,7 @@ export interface TaskSummaryDto {
   projectId: string;
   epicId: string | null;
   sprintId: string | null;
+  fixVersionId: string | null;
   assigneeId: string | null;
   assigneeName: string | null;
   assigneeInitials: string | null;
@@ -107,6 +247,7 @@ export interface TaskDto {
   projectId: string;
   epicId: string | null;
   sprintId: string | null;
+  fixVersionId: string | null;
   assigneeId: string | null;
   assignee: UserDto | null;
   reporterId: string | null;
@@ -122,6 +263,11 @@ export interface TaskDto {
   updatedAt: string;
 }
 
+export interface TaskCreatedResponse {
+  id: string;
+  key: string;
+}
+
 export interface CreateTaskRequest {
   title: string;
   projectId: string;
@@ -130,6 +276,7 @@ export interface CreateTaskRequest {
   priority?: string;
   epicId?: string;
   sprintId?: string;
+  fixVersionId?: string;
   assigneeId?: string;
   labelIds?: string[];
   description?: string;
@@ -144,6 +291,7 @@ export interface UpdateTaskRequest {
   priority?: string;
   epicId?: string | null;
   sprintId?: string | null;
+  fixVersionId?: string | null;
   assigneeId?: string | null;
   labelIds?: string[];
   description?: string | null;
@@ -168,6 +316,7 @@ export interface CommentDto {
   user: UserDto;
   text: string;
   parentCommentId: string | null;
+  sequence: number;
   createdAt: string;
   updatedAt: string;
 }

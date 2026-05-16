@@ -9,9 +9,9 @@ interface Props {
 
 export default function ActivityFeed({ limit = 20 }: Props) {
   const [, setSearchParams] = useSearchParams();
-  const openTask = (id: string) =>
+  const openTask = (key: string) =>
     setSearchParams(prev => {
-      prev.set('task', id);
+      prev.set('task', key);
       return prev;
     });
 

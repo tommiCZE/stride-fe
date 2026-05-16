@@ -1,116 +1,164 @@
-import { Alert, Box, Button, Card, IconButton, TextField, Typography } from '@mui/material';
-import { useParams } from 'react-router-dom';
-import { GIT_INTEGRATIONS } from '../../mocks/data';
-import FluxAvatar from '../../components/flux-avatar';
-import { CardTitle } from '../../components/ui/ui';
-import { PlusIcon, MoreIcon } from '../../components/icons/icons';
-import { IntegrationCard, ProviderLogo } from './integration-card';
+import { useState } from 'react';
+import { Alert, Box, CircularProgress, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { useIsMutating } from '@tanstack/react-query';
 import { useProjects } from '../../hooks/useProjects';
-import { useTeamMembers } from '../../hooks/useTeam';
 import { usePermissions } from '../../hooks/usePermissions';
-import { BOARD_STATUSES } from '../../constants/statuses';
+import { projectSettingsKeys } from '../../store/project-settings-store';
+import { GeneralSection } from './sections/general';
+import { MembersSection } from './sections/members';
+import { PermissionsSection } from './sections/permissions';
+import { TaskConfigSection } from './sections/task-config';
+import { WorkflowSection } from './sections/workflow';
+import { SprintsSection } from './sections/sprints';
+import { NotificationsSection } from './sections/notifications';
+import { IntegrationsSection } from './sections/integrations';
+import { AppearanceSection } from './sections/appearance';
+import { AdvancedSection } from './sections/advanced';
+import { ReleasesSection } from './sections/releases';
+import { WorkingHoursSection } from './sections/working-hours';
+
+type SectionId =
+  | 'general' | 'members' | 'permissions' | 'tasks' | 'workflow'
+  | 'sprints' | 'releases' | 'working-hours'
+  | 'notifications' | 'integrations' | 'appearance' | 'advanced';
+
+interface SectionEntry {
+  id: SectionId;
+  group: string;
+  label: string;
+}
+
+const SECTIONS: SectionEntry[] = [
+  { id: 'general',       group: 'Projekt', label: 'Obecné' },
+  { id: 'members',       group: 'Projekt', label: 'Členové' },
+  { id: 'permissions',   group: 'Projekt', label: 'Oprávnění' },
+
+  { id: 'tasks',         group: 'Práce',   label: 'Tasky a labely' },
+  { id: 'workflow',      group: 'Práce',   label: 'Workflow' },
+  { id: 'sprints',       group: 'Práce',   label: 'Sprinty' },
+  { id: 'releases',      group: 'Práce',   label: 'Releases' },
+  { id: 'working-hours', group: 'Práce',   label: 'Pracovní doba' },
+
+  { id: 'notifications', group: 'Doručení',label: 'Notifikace' },
+  { id: 'integrations',  group: 'Doručení',label: 'Integrace' },
+
+  { id: 'appearance',    group: 'Pohled',  label: 'Vzhled boardu' },
+  { id: 'advanced',      group: 'Pohled',  label: 'Pokročilé' },
+];
 
 export default function Settings() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
   const { data: projects = [] } = useProjects();
-  const { data: members = [] } = useTeamMembers();
   const { isAdmin } = usePermissions();
-  const project = projects.find(p => p.id === projectId);
-  if (!project) return null;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initial = (searchParams.get('section') as SectionId | null) ?? 'general';
+  const [section, setSectionState] = useState<SectionId>(
+    SECTIONS.some(s => s.id === initial) ? initial : 'general',
+  );
 
+  const setSection = (id: SectionId) => {
+    setSectionState(id);
+    const next = new URLSearchParams(searchParams);
+    next.set('section', id);
+    setSearchParams(next, { replace: true });
+  };
+
+  const project = projects.find(p => p.key === projectKey);
+  const isSaving = useIsMutating({
+    mutationKey: projectKey ? projectSettingsKeys.byKey(projectKey) : ['__none__'],
+  }) > 0;
+  if (!project) return null;
   const readOnly = !isAdmin;
 
+  const current = SECTIONS.find(s => s.id === section)!;
+  const groups = Array.from(new Set(SECTIONS.map(s => s.group)));
+
   return (
-    <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%', maxWidth: 720 }}>
-      <Typography sx={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', mb: 2 }}>
-        Nastavení projektu
-      </Typography>
+    <Box sx={{ flex: 1, display: 'flex', height: '100%', overflow: 'hidden', bgcolor: 'background.default' }}>
+      <Box sx={{
+        width: 200, flexShrink: 0,
+        borderRight: 1, borderColor: 'divider',
+        bgcolor: 'background.paper',
+        overflowY: 'auto', py: 1.5,
+      }}>
+        {groups.map((group, gi) => (
+          <Box key={group} sx={{ mb: gi === groups.length - 1 ? 0 : 0.5 }}>
+            <Typography sx={{
+              px: 2, pt: gi === 0 ? 0.25 : 1.5, pb: 0.5,
+              fontSize: 10.5, fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: '0.08em',
+              color: 'text.disabled',
+            }}>{group}</Typography>
+            {SECTIONS.filter(s => s.group === group).map(s => {
+              const active = s.id === section;
+              return (
+                <Box
+                  key={s.id}
+                  onClick={() => setSection(s.id)}
+                  sx={{
+                    mx: 1, px: 1.25, py: 0.65,
+                    cursor: 'pointer', borderRadius: 1,
+                    fontSize: 13,
+                    fontWeight: active ? 600 : 500,
+                    color: active ? 'primary.main' : 'text.primary',
+                    bgcolor: active ? (theme => alpha(theme.palette.primary.main, 0.10)) : 'transparent',
+                    '&:hover': { bgcolor: active ? undefined : 'action.hover' },
+                  }}
+                >{s.label}</Box>
+              );
+            })}
+          </Box>
+        ))}
+      </Box>
 
-      {readOnly && (
-        <Alert severity="info" sx={{ mb: 2, fontSize: 12.5 }}>
-          Nastavení projektu může upravovat pouze administrátor. Zobrazení je pouze ke čtení.
-        </Alert>
-      )}
-
-      <Card sx={{ borderRadius: 1.5, p: 2.5, mb: 2 }}>
-        <CardTitle sx={{ mb: 1.5 }}>Obecné</CardTitle>
-        <Box sx={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 2, alignItems: 'center' }}>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Název</Typography>
-          <TextField size="small" defaultValue={project.name} disabled={readOnly}/>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Klíč</Typography>
-          <TextField size="small" defaultValue={project.key} disabled={readOnly} sx={{ width: 140, '& .MuiInputBase-root': { fontFamily: 'ui-monospace, monospace' } }}/>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Lead</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {project.lead && (
-              <>
-                <FluxAvatar user={project.lead} size={22}/>
-                <Typography sx={{ fontSize: 13 }}>{project.lead.name}</Typography>
-              </>
+      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+        <Box sx={{
+          position: 'sticky', top: 0, zIndex: 1,
+          px: 4, pt: 2.5, pb: 1.75,
+          bgcolor: 'background.default',
+          borderBottom: 1, borderColor: 'divider',
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 2 }}>
+            <Box>
+              <Typography sx={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'text.secondary', mb: 0.5 }}>
+                {current.group} · {project.name}
+              </Typography>
+              <Typography sx={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>
+                {current.label}
+              </Typography>
+            </Box>
+            {isSaving && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pb: 0.5, color: 'text.secondary' }}>
+                <CircularProgress size={12} thickness={5}/>
+                <Typography sx={{ fontSize: 11.5 }}>Ukládám…</Typography>
+              </Box>
             )}
           </Box>
-          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Barva</Typography>
-          <Box sx={{ display: 'flex', gap: 0.75 }}>
-            {['#6366f1', '#0ea5e9', '#ec4899', '#10b981', '#f59e0b', '#a855f7', '#ef4444'].map(c => (
-              <Box key={c} sx={{ width: 24, height: 24, borderRadius: 1, bgcolor: c, cursor: 'default',
-                outline: c === project.color ? '2px solid' : 'none', outlineColor: 'text.primary', outlineOffset: 2 }}/>
-            ))}
-          </Box>
         </Box>
-      </Card>
 
-      <Card sx={{ borderRadius: 1.5, p: 2.5, mb: 2 }}>
-        <CardTitle sx={{ mb: 1.5 }}>Workflow / sloupce</CardTitle>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          {BOARD_STATUSES.map(s => (
-            <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 0.75,
-              borderRadius: 1, border: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
-              <Box sx={{ color: 'text.disabled', fontSize: 14, userSelect: 'none' }}>≡</Box>
-              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: s.color }}/>
-              <Typography sx={{ fontSize: 13, fontWeight: 500, flex: 1 }}>{s.name}</Typography>
-              {s.wip != null && (
-                <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>WIP {s.wip}</Typography>
-              )}
-              <IconButton size="small" disabled={readOnly}><MoreIcon/></IconButton>
-            </Box>
-          ))}
-          <Button size="small" startIcon={<PlusIcon/>} disabled={readOnly} sx={{ alignSelf: 'flex-start', mt: 0.5 }}>
-            Přidat sloupec
-          </Button>
-        </Box>
-      </Card>
+        <Box sx={{ px: 4, py: 3, maxWidth: 960 }}>
+          {readOnly && (
+            <Alert severity="info" sx={{ mb: 2, fontSize: 12.5 }}>
+              Nastavení projektu může upravovat pouze administrátor. Změny se neuloží.
+            </Alert>
+          )}
 
-      <Card sx={{ borderRadius: 1.5, p: 2.5, mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 700 }}>Integrace s Gitem</Typography>
-          <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
-            Propoj branches, PR/MR a commity přímo s tasky.
-          </Typography>
+          {section === 'general'       && <GeneralSection project={project} readOnly={readOnly}/>}
+          {section === 'members'       && <MembersSection project={project} readOnly={readOnly}/>}
+          {section === 'permissions'   && <PermissionsSection project={project} readOnly={readOnly}/>}
+          {section === 'tasks'         && <TaskConfigSection project={project} readOnly={readOnly}/>}
+          {section === 'workflow'      && <WorkflowSection project={project} readOnly={readOnly}/>}
+          {section === 'sprints'       && <SprintsSection project={project} readOnly={readOnly}/>}
+          {section === 'releases'      && <ReleasesSection project={project} readOnly={readOnly}/>}
+          {section === 'working-hours' && <WorkingHoursSection project={project} readOnly={readOnly}/>}
+          {section === 'notifications' && <NotificationsSection project={project} readOnly={readOnly}/>}
+          {section === 'integrations'  && <IntegrationsSection project={project} readOnly={readOnly}/>}
+          {section === 'appearance'    && <AppearanceSection project={project} readOnly={readOnly}/>}
+          {section === 'advanced'      && <AdvancedSection project={project} readOnly={readOnly}/>}
         </Box>
-        {GIT_INTEGRATIONS.map(ig => <IntegrationCard key={ig.id} ig={ig}/>)}
-        <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-          <Button size="small" variant="outlined" disabled={readOnly} startIcon={<ProviderLogo provider="github" size={14}/>}>Přidat GitHub účet</Button>
-          <Button size="small" variant="outlined" disabled={readOnly} startIcon={<ProviderLogo provider="gitlab" size={14}/>}>Přidat GitLab účet</Button>
-        </Box>
-      </Card>
-
-      <Card sx={{ borderRadius: 1.5, p: 2.5 }}>
-        <CardTitle sx={{ mb: 1.5 }}>Členové týmu</CardTitle>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-          {members.map(u => (
-            <Box key={u.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, px: 1, py: 0.75 }}>
-              <FluxAvatar user={u} size={26}/>
-              <Box sx={{ flex: 1 }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 500 }}>{u.name}</Typography>
-                <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>{u.email}</Typography>
-              </Box>
-              <Box sx={{ fontSize: 10.5, fontWeight: 600, px: 0.75, py: 0.2, borderRadius: 0.6,
-                bgcolor: 'action.hover', color: 'text.secondary', textTransform: 'capitalize' }}>
-                {u.workspaceRole.toLowerCase()}
-              </Box>
-            </Box>
-          ))}
-        </Box>
-      </Card>
+      </Box>
     </Box>
   );
 }

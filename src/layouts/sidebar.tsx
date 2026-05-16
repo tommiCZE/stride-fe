@@ -1,10 +1,11 @@
-import { useMemo, type ReactElement } from 'react';
+import { useMemo, useState, type ReactElement } from 'react';
 import { useNavigate, useLocation, useMatch } from 'react-router-dom';
 import { Box, Divider, IconButton, ListItemButton, Typography, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useProjects } from '../hooks/useProjects';
 import { useAllProjectTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../store/auth-store';
+import { useNotificationsStore } from '../store/notifications-store';
 import StrideLogoIcon from '../components/icons/stride-logo-icon';
 import FluxAvatar from '../components/flux-avatar';
 import CountBadge from './count-badge';
@@ -21,12 +22,19 @@ interface ProjectCounts {
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const projectMatch = useMatch('/projects/:projectId/*');
+  const projectMatch = useMatch('/projects/:projectKey/*');
   const theme = useTheme();
   const { t } = useTranslation();
   const me = useAuthStore(s => s.user);
   const userId = useAuthStore(s => s.userId);
-  const { data: projects = [] } = useProjects();
+  const unreadCount = useNotificationsStore(s => s.items.filter(i => !i.read).length);
+  const [showArchived, setShowArchived] = useState(false);
+  const { data: allProjects = [] } = useProjects();
+  const projects = useMemo(
+    () => allProjects.filter(p => showArchived || !p.archived),
+    [allProjects, showArchived],
+  );
+  const archivedCount = allProjects.filter(p => p.archived).length;
 
   const projectIds = useMemo(() => projects.map(p => p.id), [projects]);
   const { data: allTasks } = useAllProjectTasks(projectIds);
@@ -87,7 +95,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
       <Box sx={{ p: 0.75 }}>
         {navItem('/dashboard', t('nav.dashboard'), <DashboardIcon/>)}
-        {navItem('/inbox',     t('nav.inbox'),     <BellIcon/>,   3)}
+        {navItem('/inbox',     t('nav.inbox'),     <BellIcon/>,   unreadCount)}
         {navItem('/my-work',   t('nav.myWork'),    <CheckIcon/>,  myWorkCount)}
         {navItem('/calendar',  t('nav.calendar'),  <CalendarIcon/>)}
         {navItem('/reports',   t('nav.reports'),   <ReportsIcon/>)}
@@ -107,11 +115,23 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
             <PlusIcon/>
           </IconButton>
         </Box>
+        {archivedCount > 0 && (
+          <Box
+            onClick={() => setShowArchived(v => !v)}
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, px: 1.25, py: 0.4,
+              cursor: 'default', borderRadius: 1, mb: 0.25,
+              color: showArchived ? 'text.primary' : 'text.disabled',
+              '&:hover': { bgcolor: 'action.hover' } }}>
+            <Typography sx={{ fontSize: 11, fontWeight: 500, flex: 1 }}>
+              {showArchived ? 'Skrýt archivované' : `Zobrazit archivované (${archivedCount})`}
+            </Typography>
+          </Box>
+        )}
         {projects.map(p => {
-          const active = projectMatch?.params.projectId === p.id;
+          const active = projectMatch?.params.projectKey === p.key;
           const counts = perProject.get(p.id) ?? { board: 0, backlog: 0 };
-          const boardPath = `/projects/${p.id}/board`;
-          const backlogPath = `/projects/${p.id}/backlog`;
+          const boardPath = `/projects/${p.key}/board`;
+          const backlogPath = `/projects/${p.key}/backlog`;
           const boardActive = location.pathname === boardPath;
           const backlogActive = location.pathname === backlogPath;
           return (
@@ -119,14 +139,18 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
               <ListItemButton selected={active && !backlogActive}
                 onClick={() => { navigate(boardPath); onClose?.(); }}
                 aria-current={boardActive ? 'page' : undefined}
-                aria-label={`${p.name}, ${counts.board} aktivních úkolů`}
-                sx={{ pl: 1, pr: 1, py: 0.5, gap: 1, minHeight: 28 }}>
+                aria-label={`${p.name}, ${counts.board} aktivních úkolů${p.archived ? ', archivováno' : ''}`}
+                sx={{ pl: 1, pr: 1, py: 0.5, gap: 1, minHeight: 28,
+                  opacity: p.archived ? 0.55 : 1 }}>
                 <Box aria-hidden="true" sx={{ width: 18, height: 18, borderRadius: 0.8, bgcolor: p.color,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'common.white', fontSize: 11, fontWeight: 700 }}>{p.key[0]}</Box>
                 <Typography sx={{ fontSize: 12.5, fontWeight: active ? 600 : 500, flex: 1,
                   color: active ? 'text.primary' : 'text.secondary',
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</Typography>
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  fontStyle: p.archived ? 'italic' : 'normal' }}>
+                  {p.name}{p.archived && <Box component="span" sx={{ fontSize: 10, color: 'text.disabled', ml: 0.5 }}>· archiv</Box>}
+                </Typography>
                 <CountBadge count={counts.board} variant="muted" />
               </ListItemButton>
               {active && (

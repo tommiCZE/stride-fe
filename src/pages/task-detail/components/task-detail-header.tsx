@@ -1,4 +1,5 @@
 import { Box, Button, IconButton, Tooltip, Typography, useTheme } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import TypeIcon from '../../../components/icons/type-icon';
 import {
@@ -14,18 +15,18 @@ interface Props {
   task: TaskDto;
   proj: ProjectDto | undefined;
   timer: { taskKey: string | null; running: boolean };
-  pinned: boolean;
-  expanded: boolean;
-  onPin: () => void;
-  onExpand: () => void;
-  onClose: () => void;
+  pinned?: boolean;
+  expanded?: boolean;
+  onPin?: () => void;
+  onExpand?: () => void;
+  onClose?: () => void;
   onStartTimer: (key: string) => void;
 }
 
-function CopyLinkButton({ taskId }: { taskId: string }) {
+function CopyLinkButton({ taskKey }: { taskKey: string }) {
   const { enqueueSnackbar } = useSnackbar();
   const handleCopy = async () => {
-    const url = `${window.location.origin}${window.location.pathname}?task=${taskId}`;
+    const url = `${window.location.origin}/task/${taskKey}`;
     try {
       await navigator.clipboard.writeText(url);
       enqueueSnackbar('Odkaz zkopírován', { variant: 'success' });
@@ -69,10 +70,25 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
         <Box sx={{ width: 16, height: 16, borderRadius: 0.5, bgcolor: proj?.color ?? '#64748b',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: '#fff', fontSize: 9.5, fontWeight: 700 }}>{proj?.key[0]}</Box>
-        <Typography sx={{ fontSize: 11.5, color: 'text.secondary' }}>{proj?.name}</Typography>
+        <Typography
+          component={RouterLink}
+          to={`/projects/${proj?.key ?? task.key.split('-')[0]}/board`}
+          sx={{ fontSize: 11.5, color: 'text.secondary', textDecoration: 'none',
+            '&:hover': { color: 'text.primary', textDecoration: 'underline' } }}
+        >
+          {proj?.name}
+        </Typography>
         <CaretRIcon style={{ color: theme.palette.text.disabled }}/>
         <TypeIcon type={task.type} size={13}/>
-        <Typography sx={{ fontSize: 11.5, color: 'text.secondary', fontFamily: 'ui-monospace, monospace' }}>{task.key}</Typography>
+        <Typography
+          component={RouterLink}
+          to={`/task/${task.key}`}
+          sx={{ fontSize: 11.5, color: 'text.secondary', fontFamily: 'ui-monospace, monospace',
+            textDecoration: 'none',
+            '&:hover': { color: 'text.primary', textDecoration: 'underline' } }}
+        >
+          {task.key}
+        </Typography>
       </Box>
       <Box sx={{ flex: 1 }}/>
       {canEdit && (
@@ -94,19 +110,23 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title={pinned ? 'Odepnout' : 'Připnout panel'}>
-        <IconButton size="small" onClick={onPin} sx={{ color: pinned ? 'primary.main' : 'text.secondary' }}>
-          {pinned ? <PinFilledIcon/> : <PinIcon/>}
-        </IconButton>
-      </Tooltip>
-      <Tooltip title={expanded ? 'Sbalit' : 'Celé okno'}>
-        <IconButton size="small" onClick={onExpand}>
-          {expanded ? <CollapseIcon/> : <ExpandIcon/>}
-        </IconButton>
-      </Tooltip>
-      <CopyLinkButton taskId={task.id}/>
+      {onPin && (
+        <Tooltip title={pinned ? 'Odepnout' : 'Připnout panel'}>
+          <IconButton size="small" onClick={onPin} sx={{ color: pinned ? 'primary.main' : 'text.secondary' }}>
+            {pinned ? <PinFilledIcon/> : <PinIcon/>}
+          </IconButton>
+        </Tooltip>
+      )}
+      {onExpand && (
+        <Tooltip title={expanded ? 'Sbalit' : 'Celé okno'}>
+          <IconButton size="small" onClick={onExpand}>
+            {expanded ? <CollapseIcon/> : <ExpandIcon/>}
+          </IconButton>
+        </Tooltip>
+      )}
+      <CopyLinkButton taskKey={task.key}/>
       <IconButton size="small"><MoreIcon/></IconButton>
-      <IconButton size="small" onClick={onClose}><CloseIcon/></IconButton>
+      {onClose && <IconButton size="small" onClick={onClose}><CloseIcon/></IconButton>}
     </Box>
   );
 }

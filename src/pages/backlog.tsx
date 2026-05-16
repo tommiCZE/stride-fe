@@ -13,6 +13,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useSnackbar } from 'notistack';
 import { useTasks, useUpdateTask } from '../hooks/useTasks';
 import { useSprints, useUpdateSprint, useCreateSprint } from '../hooks/useSprints';
+import { useProjectByKey } from '../hooks/useProjects';
 import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
@@ -35,7 +36,7 @@ function GripIcon() {
 
 interface RowProps {
   task: TaskSummaryDto;
-  onOpen: (id: string) => void;
+  onOpen: (key: string) => void;
   showEstimate?: boolean;
   isLast?: boolean;
 }
@@ -65,7 +66,7 @@ function SortableRow({ task: t, onOpen, showEstimate, isLast }: RowProps) {
           color: 'text.disabled', flexShrink: 0, '&:active': { cursor: 'grabbing' } }}>
         <GripIcon />
       </Box>
-      <Box onClick={() => !isDragging && onOpen(t.id)}
+      <Box onClick={() => !isDragging && onOpen(t.key)}
         sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 0.85, minWidth: 0, cursor: 'default' }}>
         <PriorityIcon priority={t.priority} />
         <TypeIcon type={t.type} size={13} />
@@ -96,9 +97,11 @@ function DroppableList({ id, children }: { id: string; children: React.ReactNode
 }
 
 export default function Backlog() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
+  const { data: project } = useProjectByKey(projectKey);
+  const projectId = project?.id;
   const [, setSearchParams] = useSearchParams();
-  const openTask = (id: string) => setSearchParams({ task: id });
+  const openTask = (key: string) => setSearchParams({ task: key });
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
 

@@ -6,7 +6,8 @@ import { TaskActivity } from '../panels/task-activity';
 import { Attachments } from '../panels/attachments';
 import type { TaskDto } from '../../../api/types';
 
-type TabKey = 'comments' | 'dev' | 'worklog' | 'activity' | 'attachments';
+export type TaskDetailTab = 'comments' | 'dev' | 'worklog' | 'activity' | 'attachments';
+type TabKey = TaskDetailTab;
 
 interface Props {
   task: TaskDto;
@@ -37,7 +38,7 @@ export default function TaskDetailTabs({ task, tab, devCount, onChange }: Props)
       <Box sx={{ mt: 2 }}>
         {tab === 'comments'    && <Comments taskId={task.id}/>}
         {tab === 'attachments' && <Attachments taskId={task.id}/>}
-        {tab === 'dev'         && <DevPanel  taskKey={task.key}/>}
+        {tab === 'dev'         && <DevPanel  taskId={task.id} taskKey={task.key} taskTitle={task.title} projectId={task.projectId}/>}
         {tab === 'worklog'     && <Worklog   taskId={task.id}/>}
         {tab === 'activity'    && <TaskActivity taskId={task.id}/>}
       </Box>

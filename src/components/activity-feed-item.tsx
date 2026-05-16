@@ -5,7 +5,7 @@ import { timeAgo, STATUSES } from '../mocks/data';
 
 interface Props {
   item: ActivityDto;
-  onOpen: (taskId: string) => void;
+  onOpen: (taskKey: string) => void;
 }
 
 /**
@@ -31,12 +31,12 @@ function describeAction(item: ActivityDto): string {
 
   // Status change: action=updated, target=status
   if (action === 'updated' && target === 'status') {
-    if (from && to) return `změnil/a status z „${from}“ na „${to}“`;
-    if (to) return `změnil/a status na „${to}“`;
+    if (from && to) return `změnil/a status z „${from}” na „${to}”`;
+    if (to) return `změnil/a status na „${to}”`;
     return 'změnil/a status';
   }
   if (action === 'updated' && target === 'priority') {
-    if (from && to) return `změnil/a prioritu z „${from}“ na „${to}“`;
+    if (from && to) return `změnil/a prioritu z „${from}” na „${to}”`;
     return 'změnil/a prioritu';
   }
   if (action === 'updated' && target === 'title') return 'přejmenoval/a úkol';
@@ -67,7 +67,7 @@ export default function ActivityFeedItem({ item, onOpen }: Props) {
 
   return (
     <Box
-      onClick={() => onOpen(item.taskId)}
+      onClick={() => onOpen(item.taskKey)}
       sx={{
         display: 'flex',
         gap: 1,

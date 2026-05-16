@@ -1,11 +1,31 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Link, Typography } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import { SectionLabel } from '../../../components/ui/ui';
-import { BranchIcon } from '../../../components/icons/icons';
-import { DEV_DATA, getUser } from '../../../mocks/data';
+import { useTaskRemoteLinks } from '../../../hooks/useTaskRemoteLinks';
+import { useProjects } from '../../../hooks/useProjects';
+import { useProjectSettings } from '../../../store/project-settings-store';
+import { useAuthStore } from '../../../store/auth-store';
 import { timeAgo } from '../../../utils/time';
-import FluxAvatar from '../../../components/flux-avatar';
+import type { RemoteLinkProvider, RemoteLinkState, TaskRemoteLinkDto } from '../../../api/types';
 
-function ProviderIcon({ provider, size = 14 }: { provider: 'github' | 'gitlab'; size?: number }) {
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '')
+    .slice(0, 40);
+}
+
+function applyBranchTemplate(template: string, ctx: { key: string; slug: string; type: string; user: string }) {
+  return template
+    .replace(/\{key\}/g, ctx.key)
+    .replace(/\{slug\}/g, ctx.slug)
+    .replace(/\{type\}/g, ctx.type)
+    .replace(/\{user\}/g, ctx.user);
+}
+
+function ProviderIcon({ provider, size = 14 }: { provider: RemoteLinkProvider; size?: number }) {
   if (provider === 'gitlab') {
     return (
       <svg width={size} height={size} viewBox="0 0 24 24">
@@ -26,169 +46,151 @@ function ProviderIcon({ provider, size = 14 }: { provider: 'github' | 'gitlab'; 
   );
 }
 
-function PRStateBadge({ state, draft }: { state: string; draft: boolean }) {
-  const m = draft
-    ? { label: 'Draft', color: '#94a3b8' }
-    : state === 'open'   ? { label: 'Open',   color: '#10b981' }
-    : state === 'merged' ? { label: 'Merged', color: '#a855f7' }
-    :                      { label: 'Closed', color: '#ef4444' };
+function StateBadge({ state }: { state: RemoteLinkState }) {
+  const m = state === 'open'   ? { label: 'Open',   color: '#10b981' }
+         : state === 'merged' ? { label: 'Merged', color: '#a855f7' }
+         :                      { label: 'Closed', color: '#ef4444' };
   return (
-    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.15,
+    <Box sx={{
+      display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.15,
       borderRadius: 1, fontSize: 11, fontWeight: 600,
-      color: m.color, bgcolor: m.color + '22', border: 1, borderColor: m.color + '55' }}>
+      color: m.color, bgcolor: m.color + '22', border: 1, borderColor: m.color + '55',
+    }}>
       <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: m.color }}/>
       {m.label}
     </Box>
   );
 }
 
-export function DevPanel({ taskKey }: { taskKey: string }) {
-  const dev = DEV_DATA[taskKey];
-  if (!dev) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center', border: 1, borderStyle: 'dashed',
-        borderColor: 'divider', borderRadius: 1.5, color: 'text.secondary' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 1.5 }}>
-          <ProviderIcon provider="github" size={22}/>
-          <ProviderIcon provider="gitlab" size={22}/>
-        </Box>
-        <Typography sx={{ fontSize: 13.5, fontWeight: 600, mb: 0.5 }}>Žádná dev aktivita</Typography>
-        <Typography sx={{ fontSize: 12, mb: 2 }}>
-          Vytvoř branch s názvem obsahujícím <code>{taskKey}</code> a Stride ji automaticky propojí.
+function LinkRow({ link }: { link: TaskRemoteLinkDto }) {
+  const symbol = link.provider === 'github' ? '#' : '!';
+  const numeric = `${symbol}${link.remoteNumber}`;
+  return (
+    <Box sx={{
+      border: 1, borderColor: 'divider', borderRadius: 1.5, p: 1.5,
+      '&:hover': { borderColor: 'primary.main' },
+    }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
+        <ProviderIcon provider={link.provider} size={14}/>
+        <Typography sx={{
+          fontSize: 11.5, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          color: 'info.main', fontWeight: 700,
+        }}>{numeric}</Typography>
+        <StateBadge state={link.state}/>
+        <Box sx={{ flex: 1 }}/>
+        <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{timeAgo(link.updatedAt)}</Typography>
+      </Box>
+      <Link
+        href={link.remoteUrl} target="_blank" rel="noopener noreferrer"
+        underline="hover"
+        sx={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.35, color: 'text.primary' }}
+      >
+        {link.title}
+      </Link>
+      <Typography sx={{ fontSize: 11.5, color: 'text.secondary', mt: 0.5 }}>
+        {link.provider === 'github'
+          ? link.repoRef
+          : `project #${link.repoRef}`}
+      </Typography>
+    </Box>
+  );
+}
+
+interface DevPanelProps {
+  taskId: string;
+  taskKey: string;
+  taskTitle: string;
+  projectId: string;
+}
+
+function BranchNameCopy({ taskKey, taskTitle, projectId }: Omit<DevPanelProps, 'taskId'>) {
+  const { enqueueSnackbar } = useSnackbar();
+  const { data: projects = [] } = useProjects();
+  const project = projects.find(p => p.id === projectId);
+  const projectKey = project?.key ?? taskKey.split('-')[0];
+  const { settings } = useProjectSettings(projectKey);
+  const user = useAuthStore(s => s.user);
+
+  const branch = applyBranchTemplate(settings.branchNamingTemplate, {
+    key: taskKey,
+    slug: slugify(taskTitle),
+    type: 'feat',
+    user: user?.username ?? user?.name?.split(' ')[0]?.toLowerCase() ?? 'me',
+  });
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(branch);
+      enqueueSnackbar('Branch zkopírována', { variant: 'success' });
+    } catch {
+      enqueueSnackbar('Kopírování selhalo', { variant: 'error' });
+    }
+  };
+
+  return (
+    <Box sx={{
+      mb: 2, p: 1.25, border: 1, borderColor: 'divider', borderRadius: 1.25,
+      display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'background.paper',
+    }}>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em',
+          textTransform: 'uppercase', color: 'text.disabled', mb: 0.25 }}>Branch name</Typography>
+        <Typography sx={{ fontFamily: 'ui-monospace, monospace', fontSize: 12.5,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {branch}
         </Typography>
+      </Box>
+      <Button size="small" variant="outlined" onClick={handleCopy}>Copy</Button>
+    </Box>
+  );
+}
+
+export function DevPanel({ taskId, taskKey, taskTitle, projectId }: DevPanelProps) {
+  const { data: links = [], isLoading } = useTaskRemoteLinks(taskId);
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+        <CircularProgress size={20} thickness={5}/>
       </Box>
     );
   }
 
-  const sec = (label: string, count: number) => (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, mt: 2 }}>
-      <SectionLabel>{label}</SectionLabel>
-      <Box sx={{ minWidth: 18, height: 18, borderRadius: 9, px: 0.6, bgcolor: 'action.hover',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10.5, fontWeight: 700, color: 'text.secondary' }}>{count}</Box>
-    </Box>
-  );
+  if (links.length === 0) {
+    return (
+      <Box>
+        <BranchNameCopy taskKey={taskKey} taskTitle={taskTitle} projectId={projectId}/>
+        <Box sx={{
+          p: 3, textAlign: 'center', border: 1, borderStyle: 'dashed',
+          borderColor: 'divider', borderRadius: 1.5, color: 'text.secondary',
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 1.5 }}>
+            <ProviderIcon provider="github" size={22}/>
+            <ProviderIcon provider="gitlab" size={22}/>
+          </Box>
+          <Typography sx={{ fontSize: 13.5, fontWeight: 600, mb: 0.5 }}>Žádná dev aktivita</Typography>
+          <Typography sx={{ fontSize: 12, mb: 2 }}>
+            Otevři PR nebo MR s <code>{taskKey}</code> v titulu nebo názvu větve a Stride ho automaticky propojí.
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box>
-      {dev.branches.length > 0 && <>
-        {sec('Branches', dev.branches.length)}
-        <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1.5, overflow: 'hidden' }}>
-          {dev.branches.map((b, i) => {
-            const a = getUser(b.author)!;
-            return (
-              <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.25,
-                borderTop: i ? 1 : 0, borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}>
-                <Box sx={{ color: 'text.secondary', flexShrink: 0 }}><ProviderIcon provider={b.provider} size={15}/></Box>
-                <BranchIcon style={{ color: 'var(--mui-palette-text-disabled)', flexShrink: 0 }}/>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 12.5, fontWeight: 600, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.name}</Typography>
-                  <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{b.repo} · ↑ {b.ahead} · ↓ {b.behind} · {timeAgo(b.updated)}</Typography>
-                </Box>
-                <FluxAvatar user={a} size={20}/>
-              </Box>
-            );
-          })}
-        </Box>
-      </>}
-
-      {dev.pulls.length > 0 && <>
-        {sec('Pull requests', dev.pulls.length)}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {dev.pulls.map((p, i) => {
-            const a = getUser(p.author)!;
-            const total = p.checks.passed + p.checks.failed + p.checks.pending;
-            const checkColor = p.checks.failed > 0 ? '#ef4444' : p.checks.pending > 0 ? '#f59e0b' : '#10b981';
-            return (
-              <Box key={i} sx={{ border: 1, borderColor: 'divider', borderRadius: 1.5, p: 1.5,
-                '&:hover': { borderColor: 'primary.main' } }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
-                  <ProviderIcon provider={p.provider} size={14}/>
-                  <Typography sx={{ fontSize: 11.5, fontFamily: 'JetBrains Mono, ui-monospace, monospace', color: 'info.main', fontWeight: 700 }}>{p.id}</Typography>
-                  <PRStateBadge state={p.state} draft={p.draft}/>
-                  <Box sx={{ flex: 1 }}/>
-                  <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{timeAgo(p.updated)}</Typography>
-                </Box>
-                <Typography sx={{ fontSize: 13.5, fontWeight: 600, mb: 0.75, lineHeight: 1.35 }}>{p.title}</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 11.5, color: 'text.secondary', flexWrap: 'wrap' }}>
-                  <Box component="span" sx={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace', px: 0.5, bgcolor: 'action.hover', borderRadius: 0.5 }}>{p.head}</Box>
-                  <Box component="span" sx={{ color: 'text.disabled' }}>→</Box>
-                  <Box component="span" sx={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace', px: 0.5, bgcolor: 'action.hover', borderRadius: 0.5 }}>{p.base}</Box>
-                  <Box component="span" sx={{ color: '#10b981', fontWeight: 600 }}>+{p.additions}</Box>
-                  <Box component="span" sx={{ color: '#ef4444', fontWeight: 600 }}>−{p.deletions}</Box>
-                  <Box component="span" sx={{ color: 'text.disabled' }}>· {p.files} souborů</Box>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <FluxAvatar user={a} size={20}/>
-                    <Typography sx={{ fontSize: 12 }}>{a.name}</Typography>
-                  </Box>
-                  {p.reviews.length > 0 && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      {p.reviews.map((r, j) => {
-                        const ru = getUser(r.user)!;
-                        const rc = r.state === 'approved' ? '#10b981' : r.state === 'changes' ? '#ef4444' : '#94a3b8';
-                        return (
-                          <Box key={j} sx={{ position: 'relative' }}>
-                            <FluxAvatar user={ru} size={20}/>
-                            <Box sx={{ position: 'absolute', right: -2, bottom: -2, width: 10, height: 10,
-                              borderRadius: '50%', bgcolor: rc, border: 2, borderColor: 'background.paper' }}/>
-                          </Box>
-                        );
-                      })}
-                    </Box>
-                  )}
-                  <Box sx={{ flex: 1 }}/>
-                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: 11.5, color: checkColor }}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: checkColor }}/>
-                    {p.checks.passed}/{total} checks
-                  </Box>
-                </Box>
-              </Box>
-            );
-          })}
-        </Box>
-      </>}
-
-      {dev.builds.length > 0 && <>
-        {sec('CI / Builds', dev.builds.length)}
-        <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1.5, overflow: 'hidden' }}>
-          {dev.builds.map((b, i) => {
-            const c = b.state === 'success' ? '#10b981' : b.state === 'failed' ? '#ef4444' : b.state === 'running' ? '#3b82f6' : '#94a3b8';
-            return (
-              <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.25, borderTop: i ? 1 : 0, borderColor: 'divider' }}>
-                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: c }}/>
-                <Typography sx={{ fontSize: 12, fontFamily: 'JetBrains Mono, ui-monospace, monospace', color: 'info.main', minWidth: 50 }}>{b.id}</Typography>
-                <Typography sx={{ fontSize: 12.5, flex: 1 }}>{b.name}</Typography>
-                <Typography sx={{ fontSize: 11.5, color: 'text.disabled' }}>{b.duration}</Typography>
-                <Typography sx={{ fontSize: 11, color: c, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', minWidth: 60, textAlign: 'right' }}>{b.state}</Typography>
-              </Box>
-            );
-          })}
-        </Box>
-      </>}
-
-      {dev.commits.length > 0 && <>
-        {sec('Commity', dev.commits.length)}
-        <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1.5, overflow: 'hidden' }}>
-          {dev.commits.map((c, i) => {
-            const a = getUser(c.author)!;
-            return (
-              <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.25, borderTop: i ? 1 : 0, borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}>
-                <FluxAvatar user={a} size={22}/>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.message}</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25 }}>
-                    <Box component="span" sx={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace', fontSize: 11.5, color: 'info.main', bgcolor: 'action.hover', px: 0.6, py: 0.1, borderRadius: 0.6 }}>{c.sha.slice(0, 7)}</Box>
-                    <Typography sx={{ fontSize: 11, color: 'text.disabled' }}>{a.name} · {timeAgo(c.at)}</Typography>
-                  </Box>
-                </Box>
-                <ProviderIcon provider={c.provider} size={13}/>
-              </Box>
-            );
-          })}
-        </Box>
-      </>}
+      <BranchNameCopy taskKey={taskKey} taskTitle={taskTitle} projectId={projectId}/>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <SectionLabel>Pull / Merge requests</SectionLabel>
+        <Box sx={{
+          minWidth: 18, height: 18, borderRadius: 9, px: 0.6, bgcolor: 'action.hover',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 10.5, fontWeight: 700, color: 'text.secondary',
+        }}>{links.length}</Box>
+      </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {links.map(l => <LinkRow key={l.id} link={l}/>)}
+      </Box>
     </Box>
   );
 }

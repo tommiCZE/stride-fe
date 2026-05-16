@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import Papa from 'papaparse';
 import { useSnackbar } from 'notistack';
 import { useTasksPaginated } from '../hooks/useTasksPaginated';
-import { useProjects } from '../hooks/useProjects';
+import { useProjects, useProjectByKey } from '../hooks/useProjects';
 import { BOARD_STATUSES } from '../constants/statuses';
 import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
@@ -31,10 +31,12 @@ const COLS = [
 ] as const;
 
 export default function ListView() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
+  const { data: project } = useProjectByKey(projectKey);
+  const projectId = project?.id;
   const [, setSearchParams] = useSearchParams();
   const { enqueueSnackbar } = useSnackbar();
-  const openTask = (id: string) => setSearchParams({ task: id });
+  const openTask = (key: string) => setSearchParams({ task: key });
   const {
     data,
     isError: tasksError,
@@ -197,7 +199,7 @@ export default function ListView() {
             : null;
           const isSelected = selectedIds.has(t.id);
           return (
-            <Box key={t.id} onClick={() => openTask(t.id)}
+            <Box key={t.id} onClick={() => openTask(t.key)}
               sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, fontSize: 12.5,
                 borderBottom: 1, borderColor: 'divider', cursor: 'default',
                 bgcolor: isSelected ? 'action.selected' : 'transparent',

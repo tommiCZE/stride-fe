@@ -7,20 +7,23 @@ import { useSnackbar } from 'notistack';
 import { PlusIcon, MoreIcon } from '../../components/icons/icons';
 import { SortableTaskCard } from './task-card';
 import { useCreateTask } from '../../hooks/useTasks';
+import { useProjectByKey } from '../../hooks/useProjects';
 import type { TaskSummaryDto } from '../../api/types';
 import type { BoardStatus } from '../../constants/statuses';
 
 interface ColumnProps {
   status: BoardStatus;
   tasks: TaskSummaryDto[];
-  onTaskClick: (id: string) => void;
+  onTaskClick: (key: string) => void;
 }
 
 export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
   const count = tasks.length;
   const isWipBreached = status.wip != null && count > status.wip;
   const { setNodeRef, isOver } = useDroppable({ id: status.id });
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
+  const { data: project } = useProjectByKey(projectKey);
+  const projectId = project?.id;
   const { enqueueSnackbar } = useSnackbar();
   const createTask = useCreateTask();
 
@@ -116,7 +119,7 @@ export default function Column({ status, tasks, onTaskClick }: ColumnProps) {
       >
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map(t => (
-            <SortableTaskCard key={t.id} task={t} onClick={() => onTaskClick(t.id)}/>
+            <SortableTaskCard key={t.id} task={t} onClick={() => onTaskClick(t.key)}/>
           ))}
         </SortableContext>
         {tasks.length === 0 && !adding && (

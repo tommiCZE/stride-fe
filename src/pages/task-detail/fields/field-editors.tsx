@@ -4,6 +4,7 @@ import { alpha } from '@mui/material/styles';
 import { useTeamMembers } from '../../../hooks/useTeam';
 import { useEpics } from '../../../hooks/useEpics';
 import { useSprints } from '../../../hooks/useSprints';
+import { useReleases } from '../../../hooks/useReleases';
 import { PRIORITIES } from '../../../constants/priorities';
 import { TASK_TYPES } from '../../../constants/taskTypes';
 import FluxAvatar from '../../../components/flux-avatar';
@@ -198,6 +199,49 @@ export function SprintEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchF
             <Typography sx={{ fontSize: 12.5 }}>{s.name}</Typography>
           </MenuItem>
         ))}
+      </Menu>
+    </>
+  );
+}
+
+export function FixVersionEditor({ task, onPatch }: { task: TaskDto; onPatch: PatchFn }) {
+  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const { data: releases = [] } = useReleases(task.projectId);
+  const release = task.fixVersionId ? releases.find(r => r.id === task.fixVersionId) : null;
+  const selectable = releases.filter(r => r.status !== 'archived');
+
+  return (
+    <>
+      <Box onClick={e => setAnchor(e.currentTarget)} sx={{ cursor: 'default', display: 'inline-flex' }}>
+        {release ? (
+          <FieldPill>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%',
+              bgcolor: release.status === 'released' ? 'success.main' : 'warning.main' }}/>
+            {release.name}
+          </FieldPill>
+        ) : (
+          <FieldPill dashed>Set version</FieldPill>
+        )}
+      </Box>
+      <Menu open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)}>
+        <MenuItem onClick={() => { onPatch({ fixVersionId: null }); setAnchor(null); }}>
+          <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>Žádná verze</Typography>
+        </MenuItem>
+        {selectable.map(r => (
+          <MenuItem key={r.id} onClick={() => { onPatch({ fixVersionId: r.id }); setAnchor(null); }}
+            selected={task.fixVersionId === r.id}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ width: 6, height: 6, borderRadius: '50%',
+                bgcolor: r.status === 'released' ? 'success.main' : 'warning.main' }}/>
+              <Typography sx={{ fontSize: 12.5 }}>{r.name}</Typography>
+            </Box>
+          </MenuItem>
+        ))}
+        {selectable.length === 0 && (
+          <MenuItem disabled>
+            <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>Žádné verze nejsou nastaveny</Typography>
+          </MenuItem>
+        )}
       </Menu>
     </>
   );

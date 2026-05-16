@@ -13,6 +13,7 @@ import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable';
 import { useTasks, useUpdateTask } from '../../hooks/useTasks';
 import { useSprints } from '../../hooks/useSprints';
+import { useProjectByKey } from '../../hooks/useProjects';
 import { useAuthStore } from '../../store/auth-store';
 import { useUiStore } from '../../store/ui-store';
 import { BOARD_STATUSES } from '../../constants/statuses';
@@ -51,9 +52,11 @@ function loadAdvancedFilter(projectId: string | undefined): FilterGroup {
 }
 
 export default function Board() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
+  const { data: project } = useProjectByKey(projectKey);
+  const projectId = project?.id;
   const [, setSearchParams] = useSearchParams();
-  const openTask = (id: string) => setSearchParams({ task: id });
+  const openTask = (key: string) => setSearchParams({ task: key });
   const [search, setSearch] = useState('');
   const [filterAssignee, setFilterAssignee] = useState<string | null>(null);
   const [filterMine, setFilterMine] = useState(false);

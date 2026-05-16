@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { useAuthStore } from '../store/auth-store';
+import { useNotificationsStore } from '../store/notifications-store';
 import { taskKeys } from './useTasks';
 import { commentKeys } from './useComments';
 import { sprintKeys } from './useSprints';
@@ -93,6 +94,14 @@ export function useRealtimeEvents(): void {
         queryClient.invalidateQueries({ queryKey: taskKeys.list(payload.projectId) });
         if (!isSelf(payload.actorId)) {
           enqueueSnackbar(`New task: ${payload.taskKey}`, { variant: 'info' });
+          useNotificationsStore.getState().addNotification({
+            type: 'task:created',
+            message: `New task: ${payload.taskKey}${payload.taskTitle ? ` — ${payload.taskTitle}` : ''}`,
+            taskKey: payload.taskKey,
+            taskId: payload.taskId,
+            projectId: payload.projectId,
+            actorId: payload.actorId,
+          });
         }
       });
 
@@ -103,6 +112,14 @@ export function useRealtimeEvents(): void {
         queryClient.invalidateQueries({ queryKey: taskKeys.detail(payload.taskId) });
         if (!isSelf(payload.actorId)) {
           enqueueSnackbar(`Colleague updated ${payload.taskKey}`, { variant: 'info' });
+          useNotificationsStore.getState().addNotification({
+            type: 'task:updated',
+            message: `Colleague updated ${payload.taskKey}${payload.field ? ` (${payload.field})` : ''}`,
+            taskKey: payload.taskKey,
+            taskId: payload.taskId,
+            projectId: payload.projectId,
+            actorId: payload.actorId,
+          });
         }
       });
 
@@ -113,6 +130,14 @@ export function useRealtimeEvents(): void {
         queryClient.invalidateQueries({ queryKey: taskKeys.detail(payload.taskId) });
         if (!isSelf(payload.actorId)) {
           enqueueSnackbar(`New comment on ${payload.taskKey}`, { variant: 'info' });
+          useNotificationsStore.getState().addNotification({
+            type: 'comment:added',
+            message: `New comment on ${payload.taskKey}`,
+            taskKey: payload.taskKey,
+            taskId: payload.taskId,
+            projectId: payload.projectId,
+            actorId: payload.actorId,
+          });
         }
       });
 
@@ -120,6 +145,14 @@ export function useRealtimeEvents(): void {
         const payload = parse<SprintUpdatedPayload>((e as MessageEvent).data);
         if (!payload) return;
         queryClient.invalidateQueries({ queryKey: sprintKeys.list(payload.projectId) });
+        if (!isSelf(payload.actorId)) {
+          useNotificationsStore.getState().addNotification({
+            type: 'sprint:updated',
+            message: `Sprint updated${payload.field ? ` (${payload.field})` : ''}`,
+            projectId: payload.projectId,
+            actorId: payload.actorId,
+          });
+        }
       });
 
       source.onerror = () => {

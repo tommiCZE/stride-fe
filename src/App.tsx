@@ -11,10 +11,15 @@ import ListView from './pages/list-view';
 import Reports from './pages/reports';
 import Settings from './pages/settings';
 import MyWork from './pages/my-work';
+import Inbox from './pages/inbox';
 import Team from './pages/team';
 import TaskDetail from './pages/task-detail';
+import TaskPage from './pages/task-page';
 import Login from './pages/login';
 import Profile from './pages/profile';
+import SearchPage from './pages/search';
+import ReleasesPage from './pages/releases';
+import ReleaseDetailPage from './pages/releases/release-detail';
 import CreateTaskModal from './components/create-task-modal';
 import KeyboardHelpDialog from './components/keyboard-help/keyboard-help-dialog';
 import CommandPalette from './components/command-palette/CommandPalette';
@@ -63,20 +68,24 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: 'dashboard', element: <Dashboard /> },
-      { path: 'inbox',     element: <MyWork /> },
+      { path: 'inbox',     element: <Inbox /> },
       { path: 'my-work',   element: <MyWork /> },
       { path: 'calendar',  element: <Suspense fallback={<PageFallback />}><Calendar /></Suspense> },
       { path: 'reports',   element: <Reports /> },
       { path: 'team',      element: <Team /> },
       { path: 'profile',   element: <Profile /> },
+      { path: 'search',    element: <SearchPage /> },
+      { path: 'task/:taskKey', element: <TaskPage /> },
       {
-        path: 'projects/:projectId',
+        path: 'projects/:projectKey',
         children: [
           { index: true, element: <Navigate to="board" relative="path" replace /> },
           { path: 'board',     element: <Board /> },
           { path: 'backlog',   element: <Backlog /> },
           { path: 'list',      element: <ListView /> },
           { path: 'reports',   element: <Reports /> },
+          { path: 'releases',  element: <ReleasesPage /> },
+          { path: 'releases/:releaseId', element: <ReleaseDetailPage /> },
           { path: 'settings',  element: <Settings /> },
         ],
       },

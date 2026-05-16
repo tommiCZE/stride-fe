@@ -9,12 +9,13 @@ import { CardTitle } from '../components/ui/ui';
 import SprintVelocityChart from '../components/charts/SprintVelocityChart';
 
 export default function Reports() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectKey } = useParams<{ projectKey: string }>();
 
   const { data: projects = [] } = useProjects();
   const { data: members = [] } = useTeamMembers();
   const { data: allTasks } = useAllProjectTasks(projects.map(p => p.id));
 
+  const projectId = projectKey ? projects.find(p => p.key === projectKey)?.id : undefined;
   const tasks = projectId ? allTasks.filter(t => t.projectId === projectId) : allTasks;
 
   const membersById = Object.fromEntries(members.map(u => [u.id, u]));
