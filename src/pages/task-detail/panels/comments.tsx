@@ -11,7 +11,7 @@ import EditorBody from '../../../components/editor/editor-body';
 import { attachmentsApi } from '../../../api/attachments';
 import type { CommentDto } from '../../../api/types';
 
-function timeAgo(iso: string) {
+export function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
   if (m < 1) return 'právě teď';
@@ -21,7 +21,7 @@ function timeAgo(iso: string) {
   return `před ${Math.floor(h / 24)} d`;
 }
 
-function exactDate(iso: string) {
+export function exactDate(iso: string) {
   return new Date(iso).toLocaleString('cs-CZ', {
     day: 'numeric', month: 'long', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
@@ -46,7 +46,7 @@ interface CommentEditorProps {
   onCancel: () => void;
 }
 
-function CommentEditor({ taskId, placeholder, onSubmit, onCancel }: CommentEditorProps) {
+export function CommentEditor({ taskId, placeholder, onSubmit, onCancel }: CommentEditorProps) {
   return (
     <Box sx={{ mt: 1 }}>
       <EditorBody
@@ -75,9 +75,10 @@ interface CommentItemProps {
   onReplyCancel: () => void;
   onReplySubmit: (parentId: string, text: string) => void;
   showReply: boolean;
+  highlighted?: boolean;
 }
 
-function CommentItem({ comment, taskId, isReply, parentAuthorName, replyingTo, onReplyClick, onReplyCancel, onReplySubmit, showReply, highlighted }: CommentItemProps & { highlighted?: boolean }) {
+export function CommentItem({ comment, taskId, isReply, parentAuthorName, replyingTo, onReplyClick, onReplyCancel, onReplySubmit, showReply, highlighted }: CommentItemProps) {
   return (
     <Box
       id={`comment-${comment.sequence}`}
@@ -137,6 +138,71 @@ function CommentItem({ comment, taskId, isReply, parentAuthorName, replyingTo, o
   );
 }
 
+interface CommentThreadProps {
+  taskId: string;
+  comments: CommentDto[];
+  replyingTo: string | null;
+  highlightedSequence: number | null;
+  onReplyClick: (id: string) => void;
+  onReplyCancel: () => void;
+  onReplySubmit: (parentId: string, text: string) => void;
+}
+
+export function CommentThread({ taskId, comments, replyingTo, highlightedSequence, onReplyClick, onReplyCancel, onReplySubmit }: CommentThreadProps) {
+  const replies = useMemo(() => {
+    const byParent = new Map<string, CommentDto[]>();
+    for (const c of comments) {
+      if (!c.parentCommentId) continue;
+      const arr = byParent.get(c.parentCommentId) ?? [];
+      arr.push(c);
+      byParent.set(c.parentCommentId, arr);
+    }
+    return byParent;
+  }, [comments]);
+
+  return (
+    <>
+      {comments.filter(c => !c.parentCommentId).map(c => {
+        const childReplies = replies.get(c.id) ?? [];
+        return (
+          <Box key={c.id} sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+            <CommentItem
+              comment={c}
+              taskId={taskId}
+              isReply={false}
+              replyingTo={replyingTo}
+              onReplyClick={onReplyClick}
+              onReplyCancel={onReplyCancel}
+              onReplySubmit={onReplySubmit}
+              showReply={childReplies.length === 0}
+              highlighted={highlightedSequence === c.sequence}
+            />
+            {childReplies.length > 0 && (
+              <Box sx={{ ml: 3.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {childReplies.map((r, idx) => (
+                  <CommentItem
+                    key={r.id}
+                    comment={r}
+                    taskId={taskId}
+                    isReply
+                    parentAuthorName={c.user.name}
+                    replyingTo={replyingTo}
+                    onReplyClick={onReplyClick}
+                    onReplyCancel={onReplyCancel}
+                    onReplySubmit={(_, text) => onReplySubmit(c.id, text)}
+                    showReply={idx === childReplies.length - 1}
+                    highlighted={highlightedSequence === r.sequence}
+                  />
+                ))}
+              </Box>
+            )}
+          </Box>
+        );
+      })}
+    </>
+  );
+}
+
 export function Comments({ taskId }: { taskId: string }) {
   const { enqueueSnackbar } = useSnackbar();
   const { data: comments = [], isLoading } = useComments(taskId);
@@ -178,21 +244,6 @@ export function Comments({ taskId }: { taskId: string }) {
     });
   };
 
-  const { topLevel, repliesByParent } = useMemo(() => {
-    const top: CommentDto[] = [];
-    const byParent = new Map<string, CommentDto[]>();
-    for (const c of comments) {
-      if (c.parentCommentId) {
-        const arr = byParent.get(c.parentCommentId) ?? [];
-        arr.push(c);
-        byParent.set(c.parentCommentId, arr);
-      } else {
-        top.push(c);
-      }
-    }
-    return { topLevel: top, repliesByParent: byParent };
-  }, [comments]);
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <Typography sx={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' }}>
@@ -201,50 +252,15 @@ export function Comments({ taskId }: { taskId: string }) {
 
       {isLoading && <CircularProgress size={16}/>}
 
-      {topLevel.map(c => {
-        const replies = repliesByParent.get(c.id) ?? [];
-        return (
-          <Box key={c.id} sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-            <CommentItem
-              comment={c}
-              taskId={taskId}
-              isReply={false}
-              replyingTo={replyingTo}
-              onReplyClick={id => setReplyingTo(id)}
-              onReplyCancel={() => setReplyingTo(null)}
-              onReplySubmit={submitReply}
-              showReply={replies.length === 0}
-              highlighted={highlightedSequence === c.sequence}
-            />
-            {replies.length > 0 && (
-              <Box
-                sx={{
-                  ml: 3.5,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1.5,
-                }}
-              >
-                {replies.map((r, idx) => (
-                  <CommentItem
-                    key={r.id}
-                    comment={r}
-                    taskId={taskId}
-                    isReply
-                    parentAuthorName={c.user.name}
-                    replyingTo={replyingTo}
-                    onReplyClick={id => setReplyingTo(id)}
-                    onReplyCancel={() => setReplyingTo(null)}
-                    onReplySubmit={(_, text) => submitReply(c.id, text)}
-                    showReply={idx === replies.length - 1}
-                    highlighted={highlightedSequence === r.sequence}
-                  />
-                ))}
-              </Box>
-            )}
-          </Box>
-        );
-      })}
+      <CommentThread
+        taskId={taskId}
+        comments={comments}
+        replyingTo={replyingTo}
+        highlightedSequence={highlightedSequence}
+        onReplyClick={id => setReplyingTo(id)}
+        onReplyCancel={() => setReplyingTo(null)}
+        onReplySubmit={submitReply}
+      />
 
       <Box sx={{ display: 'flex', gap: 1.25, mt: 1 }}>
         <FluxAvatar user={me} size={28}/>

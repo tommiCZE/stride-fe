@@ -65,7 +65,7 @@ export default function TaskDetail() {
     const saved = localStorage.getItem('stride-detail-width');
     return saved ? Number(saved) : 900;
   });
-  const [tab, setTab] = useState<TaskDetailTab>('comments');
+  const [tab, setTab] = useState<TaskDetailTab>('activity');
 
   const { data: task, isLoading, isError: taskError, error: taskErrorObj, refetch: refetchTask } = useTaskByKey(taskKey ?? '');
   const { data: projects = [] } = useProjects();
@@ -81,7 +81,7 @@ export default function TaskDetail() {
     );
   };
 
-  useEffect(() => { setTab('comments'); }, [taskKey]);
+  useEffect(() => { setTab('activity'); }, [taskKey]);
 
   useEffect(() => {
     localStorage.setItem('stride-detail-pinned', pinned ? '1' : '0');
