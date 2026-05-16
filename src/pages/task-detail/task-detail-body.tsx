@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import RichEditor from '../../components/editor/rich-editor';
-import { SectionLabel, ColorPill, ColorDot } from '../../components/ui/ui';
+import { SectionLabel } from '../../components/ui/ui';
 import PriorityIcon from '../../components/icons/priority-icon';
 import { StatusPicker } from './fields/status-picker';
 import { TitleEditor } from './fields/field-editors';
@@ -42,14 +42,24 @@ export default function TaskDetailBody({ task, proj, tab, onTabChange, onPatch }
             }}
           />
           {prio && (
-            <ColorPill pillColor={prio.color}>
+            <Box sx={{
+              display: 'inline-flex', alignItems: 'center', gap: 0.5,
+              px: 1, py: 0.4, borderRadius: 999,
+              border: 1, borderColor: 'divider',
+              fontSize: 12, color: 'text.secondary',
+            }}>
               <PriorityIcon priority={task.priority}/> {prio.name}
-            </ColorPill>
+            </Box>
           )}
           {task.epicId && proj && (
-            <ColorPill pillColor="#a855f7">
-              <ColorDot dotColor="#a855f7"/>{task.epicId}
-            </ColorPill>
+            <Box sx={{
+              display: 'inline-flex', alignItems: 'center',
+              px: 1, py: 0.4, borderRadius: 999,
+              border: 1, borderColor: 'divider',
+              fontSize: 12, fontFamily: 'ui-monospace, monospace', color: 'text.secondary',
+            }}>
+              {task.epicId}
+            </Box>
           )}
         </Box>
         <SectionLabel sx={{ mb: 0.75 }}>Popis</SectionLabel>
