@@ -1,12 +1,15 @@
-import { Box, Button, CircularProgress, Link, Typography } from '@mui/material';
+import { useMemo, useState } from 'react';
+import { Box, Button, CircularProgress, IconButton, Link, Stack, Tooltip, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { SectionLabel } from '../../../components/ui/ui';
-import { useTaskRemoteLinks } from '../../../hooks/useTaskRemoteLinks';
+import { CloseIcon, PlusIcon } from '../../../components/icons/icons';
+import { useTaskRemoteLinks, useDeleteTaskRemoteLink } from '../../../hooks/useTaskRemoteLinks';
 import { useProjects } from '../../../hooks/useProjects';
 import { useProjectSettings } from '../../../store/project-settings-store';
 import { useAuthStore } from '../../../store/auth-store';
 import { timeAgo } from '../../../utils/time';
 import type { RemoteLinkProvider, RemoteLinkState, TaskRemoteLinkDto } from '../../../api/types';
+import { LinkRemoteDialog } from '../dialogs/link-remote-dialog';
 
 function slugify(s: string): string {
   return s
@@ -53,7 +56,7 @@ function StateBadge({ state }: { state: RemoteLinkState }) {
   return (
     <Box sx={{
       display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.15,
-      borderRadius: 1, fontSize: 13, fontWeight: 600,
+      borderRadius: 1, fontSize: '13px', fontWeight: 600,
       color: m.color, bgcolor: m.color + '22', border: 1, borderColor: m.color + '55',
     }}>
       <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: m.color }}/>
@@ -62,24 +65,44 @@ function StateBadge({ state }: { state: RemoteLinkState }) {
   );
 }
 
-function LinkRow({ link }: { link: TaskRemoteLinkDto }) {
+function LinkRow({ link, onUnlink, unlinking }: {
+  link: TaskRemoteLinkDto;
+  onUnlink: () => void;
+  unlinking: boolean;
+}) {
   const symbol = link.provider === 'github' ? '#' : '!';
   const numeric = `${symbol}${link.remoteNumber}`;
   return (
     <Box sx={{
+      position: 'relative',
       border: 1, borderColor: 'divider', borderRadius: 1.5, p: 1.5,
       '&:hover': { borderColor: 'primary.main' },
+      '&:hover .link-row-unlink': { opacity: 1 },
     }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.75 }}>
         <ProviderIcon provider={link.provider} size={14}/>
         <Typography sx={{
-          fontSize: 13, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+          fontSize: '13px', fontFamily: 'JetBrains Mono, ui-monospace, monospace',
           color: 'info.main', fontWeight: 700,
         }}>{numeric}</Typography>
         <StateBadge state={link.state}/>
         <Box sx={{ flex: 1 }}/>
-        <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{timeAgo(link.updatedAt)}</Typography>
-      </Box>
+        <Typography sx={{ fontSize: '13px', color: 'text.disabled' }}>{timeAgo(link.updatedAt)}</Typography>
+        <Tooltip title="Odpojit">
+          <span>
+            <IconButton
+              className="link-row-unlink"
+              size="small"
+              onClick={onUnlink}
+              disabled={unlinking}
+              sx={{ opacity: 0, transition: 'opacity 120ms', p: 0.25 }}
+              aria-label="Odpojit"
+            >
+              <CloseIcon/>
+            </IconButton>
+          </span>
+        </Tooltip>
+      </Stack>
       <Link
         href={link.remoteUrl} target="_blank" rel="noopener noreferrer"
         underline="hover"
@@ -87,7 +110,7 @@ function LinkRow({ link }: { link: TaskRemoteLinkDto }) {
       >
         {link.title}
       </Link>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.5 }}>
+      <Typography sx={{ fontSize: '13px', color: 'text.secondary', mt: 0.5 }}>
         {link.provider === 'github'
           ? link.repoRef
           : `project #${link.repoRef}`}
@@ -128,69 +151,106 @@ function BranchNameCopy({ taskKey, taskTitle, projectId }: Omit<DevPanelProps, '
   };
 
   return (
-    <Box sx={{
-      mb: 2, p: 1.25, border: 1, borderColor: 'divider', borderRadius: 1.25,
-      display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'background.paper',
-    }}>
+    <Stack direction="row" spacing={1} sx={{
+        mb: 2, p: 1.25, border: 1, borderColor: 'divider', borderRadius: 1.25,
+      alignItems: 'center', bgcolor: 'background.paper' }}>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.06em',
+        <Typography sx={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.06em',
           textTransform: 'uppercase', color: 'text.disabled', mb: 0.25 }}>Branch name</Typography>
-        <Typography sx={{ fontFamily: 'ui-monospace, monospace', fontSize: 14,
+        <Typography sx={{ fontFamily: 'ui-monospace, monospace', fontSize: '14px',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {branch}
         </Typography>
       </Box>
       <Button size="small" variant="outlined" onClick={handleCopy}>Copy</Button>
-    </Box>
+    </Stack>
   );
 }
 
 export function DevPanel({ taskId, taskKey, taskTitle, projectId }: DevPanelProps) {
   const { data: links = [], isLoading } = useTaskRemoteLinks(taskId);
+  const deleteLink = useDeleteTaskRemoteLink(taskId);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const { data: projects = [] } = useProjects();
+  const projectKey = useMemo(
+    () => projects.find(p => p.id === projectId)?.key ?? taskKey.split('-')[0],
+    [projects, projectId, taskKey],
+  );
+
+  const handleUnlink = (linkId: string) => {
+    if (!window.confirm('Odebrat tento odkaz?')) return;
+    deleteLink.mutate(linkId);
+  };
+
+  const linkButton = (
+    <Button
+      size="small"
+      variant="outlined"
+      startIcon={<PlusIcon/>}
+      onClick={() => setLinkDialogOpen(true)}
+    >
+      Linkovat MR / PR
+    </Button>
+  );
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+      <Stack direction="row" sx={{ justifyContent: 'center', py: 3 }}>
         <CircularProgress size={20} thickness={5}/>
-      </Box>
-    );
-  }
-
-  if (links.length === 0) {
-    return (
-      <Box>
-        <BranchNameCopy taskKey={taskKey} taskTitle={taskTitle} projectId={projectId}/>
-        <Box sx={{
-          p: 3, textAlign: 'center', border: 1, borderStyle: 'dashed',
-          borderColor: 'divider', borderRadius: 1.5, color: 'text.secondary',
-        }}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 1.5 }}>
-            <ProviderIcon provider="github" size={22}/>
-            <ProviderIcon provider="gitlab" size={22}/>
-          </Box>
-          <Typography sx={{ fontSize: 13.5, fontWeight: 600, mb: 0.5 }}>Žádná dev aktivita</Typography>
-          <Typography sx={{ fontSize: 14, mb: 2 }}>
-            Otevři PR nebo MR s <code>{taskKey}</code> v titulu nebo názvu větve a Stride ho automaticky propojí.
-          </Typography>
-        </Box>
-      </Box>
+      </Stack>
     );
   }
 
   return (
     <Box>
       <BranchNameCopy taskKey={taskKey} taskTitle={taskTitle} projectId={projectId}/>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
         <SectionLabel>Pull / Merge requests</SectionLabel>
+        {links.length > 0 && (
+          <Stack direction="row" sx={{
+            minWidth: 18, height: 18, borderRadius: 9, px: 0.6, bgcolor: 'action.hover',
+            alignItems: 'center', justifyContent: 'center',
+            fontSize: '14px', fontWeight: 700, color: 'text.secondary',
+          }}>{links.length}</Stack>
+        )}
+        <Box sx={{ flex: 1 }}/>
+        {linkButton}
+      </Stack>
+
+      {links.length === 0 ? (
         <Box sx={{
-          minWidth: 18, height: 18, borderRadius: 9, px: 0.6, bgcolor: 'action.hover',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 14, fontWeight: 700, color: 'text.secondary',
-        }}>{links.length}</Box>
-      </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {links.map(l => <LinkRow key={l.id} link={l}/>)}
-      </Box>
+          p: 3, textAlign: 'center', border: 1, borderStyle: 'dashed',
+          borderColor: 'divider', borderRadius: 1.5, color: 'text.secondary',
+        }}>
+          <Stack direction="row" spacing={1} sx={{ justifyContent: 'center', mb: 1.5 }}>
+            <ProviderIcon provider="github" size={22}/>
+            <ProviderIcon provider="gitlab" size={22}/>
+          </Stack>
+          <Typography sx={{ fontSize: 13.5, fontWeight: 600, mb: 0.5 }}>Žádná dev aktivita</Typography>
+          <Typography sx={{ fontSize: '14px' }}>
+            Otevři PR nebo MR s <code>{taskKey}</code> v titulu nebo názvu větve a Stride ho automaticky propojí
+            — nebo ho propoj ručně tlačítkem výše.
+          </Typography>
+        </Box>
+      ) : (
+        <Stack spacing={1}>
+          {links.map(l => (
+            <LinkRow
+              key={l.id}
+              link={l}
+              onUnlink={() => handleUnlink(l.id)}
+              unlinking={deleteLink.isPending}
+            />
+          ))}
+        </Stack>
+      )}
+
+      <LinkRemoteDialog
+        open={linkDialogOpen}
+        onClose={() => setLinkDialogOpen(false)}
+        taskId={taskId}
+        projectKey={projectKey}
+      />
     </Box>
   );
 }
