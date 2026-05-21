@@ -65,6 +65,19 @@ yarn lint
 yarn build   # tsc -b runs as part of build
 ```
 
+### E2E Tests (Playwright)
+
+Pre-requisite (one-time): `yarn playwright install chromium`.
+
+E2E suite expects both BE (`:8080`) and FE (`:5173`) to be running.
+
+```bash
+yarn e2e        # headless
+yarn e2e:ui     # Playwright UI mode (debug)
+```
+
+Scénáře jsou v `e2e/` (Playwright spec) a `docs/test-scenarios/` (lidsky čitelný popis).
+
 ## Project Structure
 
 ```
