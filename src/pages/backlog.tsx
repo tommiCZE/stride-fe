@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Box, Button, Card, TextField, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, Stack, TextField, Tooltip, Typography, useTheme } from '@mui/material';
 import {
   DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
   closestCenter, useDroppable,
@@ -11,7 +11,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useSnackbar } from 'notistack';
-import { useTasks, useUpdateTask } from '../hooks/useTasks';
+import { useTasks, useUpdateTask, useCreateTask } from '../hooks/useTasks';
 import { useSprints, useUpdateSprint, useCreateSprint } from '../hooks/useSprints';
 import { useProjectByKey } from '../hooks/useProjects';
 import FluxAvatar from '../components/flux-avatar';
@@ -21,7 +21,7 @@ import { MonoKey, StatusBadge } from '../components/ui/ui';
 import { CaretIcon, BacklogIcon, PlusIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
 import QueryError from '../components/query-error/QueryError';
-import SprintBurndownChart from '../components/charts/SprintBurndownChart';
+import { taskLinkProps } from '../utils/task-link';
 import type { TaskSummaryDto } from '../api/types';
 
 function GripIcon() {
@@ -49,11 +49,13 @@ function SortableRow({ task: t, onOpen, showEstimate, isLast }: RowProps) {
     : undefined;
 
   return (
-    <Box
+    <Stack
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
+      direction="row"
       sx={{
-        display: 'flex', alignItems: 'center',
+        transform: CSS.Transform.toString(transform),
+        transition,
+        alignItems: 'center',
         borderBottom: isLast ? 0 : 1, borderColor: 'divider',
         bgcolor: isDragging ? 'action.selected' : 'background.paper',
         opacity: isDragging ? 0.45 : 1,
@@ -66,23 +68,83 @@ function SortableRow({ task: t, onOpen, showEstimate, isLast }: RowProps) {
           color: 'text.disabled', flexShrink: 0, '&:active': { cursor: 'grabbing' } }}>
         <GripIcon />
       </Box>
-      <Box onClick={() => !isDragging && onOpen(t.key)}
-        sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 0.85, minWidth: 0, cursor: 'default' }}>
+      <Stack direction="row" spacing={1}
+        {...taskLinkProps(t.key, onOpen)}
+        onClick={(e) => {
+          if (isDragging) { e.preventDefault(); return; }
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+          e.preventDefault();
+          onOpen(t.key);
+        }}
+        sx={{ flex: 1, alignItems: 'center', px: 1, py: 0.85, minWidth: 0, cursor: 'default',
+          textDecoration: 'none', color: 'text.primary' }}>
         <PriorityIcon priority={t.priority} />
         <TypeIcon type={t.type} size={13} />
         <MonoKey sx={{ minWidth: 60 }}>{t.key}</MonoKey>
-        <Typography sx={{ fontSize: 14, flex: 1, minWidth: 0,
+        <Typography variant="body2" sx={{ flex: 1, minWidth: 0,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {t.title}
         </Typography>
         {showEstimate && (
-          <Box sx={{ fontSize: 14, fontWeight: 600, px: 0.5, borderRadius: 0.6, bgcolor: 'action.hover', flexShrink: 0 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, px: 0.5, borderRadius: 0.6, bgcolor: 'action.hover', flexShrink: 0 }}>
             {t.estimate ?? '—'}
-          </Box>
+          </Typography>
         )}
         <FluxAvatar user={assignee} size={18} />
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
+  );
+}
+
+function QuickAddTaskRow({
+  projectId, sprintId, isPending, onCreate,
+}: {
+  projectId: string;
+  sprintId: string | null;
+  isPending: boolean;
+  onCreate: (title: string, sprintId: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+
+  const submit = () => {
+    const trimmed = title.trim();
+    if (!trimmed || !projectId) return;
+    onCreate(trimmed, sprintId);
+    setTitle('');
+  };
+
+  if (!open) {
+    return (
+      <Stack
+        direction="row" spacing={0.75}
+        onClick={() => setOpen(true)}
+        sx={{ alignItems: 'center', px: 1.5, py: 0.85, cursor: 'default',
+          color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
+        <PlusIcon/>
+        <Typography variant="body2" color="inherit">Přidat task</Typography>
+      </Stack>
+    );
+  }
+  return (
+    <Stack direction="row" spacing={1} sx={{ alignItems: 'center', px: 1.5, py: 0.5 }}>
+      <TextField
+        size="small" autoFocus placeholder="Název tasku…" value={title}
+        onChange={e => setTitle(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter') submit();
+          if (e.key === 'Escape') { setOpen(false); setTitle(''); }
+        }}
+        onBlur={() => { if (!title.trim()) setOpen(false); }}
+        disabled={isPending}
+        sx={{ flex: 1, '& .MuiInputBase-root': { height: 30, fontSize: '14px' } }}
+      />
+      <Button size="small" variant="outlined"
+        disabled={!title.trim() || isPending}
+        onClick={submit}>
+        Přidat
+      </Button>
+    </Stack>
   );
 }
 
@@ -120,7 +182,17 @@ export default function Backlog() {
   const updateTask = useUpdateTask(projectId);
   const updateSprint = useUpdateSprint(projectId!);
   const createSprint = useCreateSprint();
+  const createTask = useCreateTask();
   const [newSprintName, setNewSprintName] = useState('');
+
+  const handleCreateTask = (title: string, sprintId: string | null) => {
+    if (!projectId) return;
+    createTask.mutate(
+      { title, projectId, type: 'TASK', priority: 'MEDIUM',
+        ...(sprintId ? { sprintId } : {}) },
+      { onError: () => enqueueSnackbar('Task se nepodařilo vytvořit', { variant: 'error' }) },
+    );
+  };
 
   const [localTasks, setLocalTasks] = useState<TaskSummaryDto[] | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -176,7 +248,6 @@ export default function Backlog() {
     const activeTask = tasks.find(t => t.id === active.id);
     const overTask = tasks.find(t => t.id === over.id);
 
-    // Reorder within same sprint
     if (activeTask && overTask && activeTask.sprintId === overTask.sprintId) {
       setLocalTasks(prev => {
         const arr = prev ?? remoteTasks;
@@ -190,7 +261,6 @@ export default function Backlog() {
       return;
     }
 
-    // Sprint changed — persist to BE
     const originalSprintId = remoteTasks.find(t => t.id === active.id)?.sprintId ?? null;
     const newSprintId = activeTask?.sprintId ?? null;
     if (newSprintId !== originalSprintId) {
@@ -205,10 +275,12 @@ export default function Backlog() {
 
   const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
   const backlogTasks = getContainerTasks(null);
+  const visibleSprints = sprints.filter(s => s.state !== 'COMPLETED');
+  const hasActiveSprint = sprints.some(s => s.state === 'ACTIVE');
 
   if (tasksError || sprintsError) {
     return (
-      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', height: '100%' }}>
+      <Stack sx={{ flex: 1, alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', height: '100%' }}>
         <QueryError
           error={tasksError ? tasksErrorObj : sprintsErrorObj}
           onRetry={() => {
@@ -216,13 +288,13 @@ export default function Backlog() {
             if (sprintsError) void refetchSprints();
           }}
         />
-      </Box>
+      </Stack>
     );
   }
 
-  if (sprints.length === 0 && backlogTasks.length === 0) {
+  if (visibleSprints.length === 0 && backlogTasks.length === 0) {
     return (
-      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', height: '100%' }}>
+      <Stack sx={{ flex: 1, alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', height: '100%' }}>
         <EmptyState
           icon={<BacklogIcon />}
           title="Zatím žádné sprinty"
@@ -233,26 +305,26 @@ export default function Backlog() {
             </Button>
           }
         />
-      </Box>
+      </Stack>
     );
   }
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter}
       onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 2, display: 'flex', flexDirection: 'column', gap: 2, bgcolor: 'background.default', height: '100%' }}>
-        {sprints.map(sp => {
+      <Stack spacing={2} sx={{ overflowY: 'auto', p: 2, bgcolor: 'background.default', height: '100%' }}>
+        {visibleSprints.map(sp => {
           const sprintTasks = getContainerTasks(sp.id);
           const totalE = sprintTasks.reduce((a, t) => a + (t.estimate ?? 0), 0);
           const totalL = sprintTasks.reduce((a, t) => a + (t.logged ?? 0), 0);
 
           return (
             <Card key={sp.id} sx={{ borderRadius: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
                 <CaretIcon/>
                 <Box>
-                  <Typography sx={{ fontSize: 13.5, fontWeight: 700 }}>{sp.name}</Typography>
-                  <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+                  <Typography sx={{ fontSize: '13.5px', fontWeight: 700 }}>{sp.name}</Typography>
+                  <Typography variant="caption" color="text.secondary">
                     {sp.startDate && new Date(sp.startDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
                     {sp.startDate && sp.endDate && ' – '}
                     {sp.endDate && new Date(sp.endDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
@@ -260,18 +332,28 @@ export default function Backlog() {
                   </Typography>
                 </Box>
                 <Box sx={{ flex: 1 }}/>
-                <StatusBadge badgeColor={sprintColor(sp.state)} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: 14 }}>
+                <StatusBadge badgeColor={sprintColor(sp.state)} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   {sprintLabel(sp.state)}
                 </StatusBadge>
                 {sp.state === 'PLANNED' && (
-                  <Button size="small" variant="contained"
-                    disabled={updateSprint.isPending}
-                    onClick={() => updateSprint.mutate(
-                      { id: sp.id, body: { state: 'ACTIVE' } },
-                      { onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" aktivován`, { variant: 'success' }) },
-                    )}>
-                    Spustit sprint
-                  </Button>
+                  <Tooltip title={hasActiveSprint ? 'Nejdřív dokonči aktivní sprint' : ''}>
+                    <span>
+                      <Button size="small" variant="contained"
+                        disabled={updateSprint.isPending || hasActiveSprint}
+                        onClick={() => updateSprint.mutate(
+                          { id: sp.id, body: { state: 'ACTIVE' } },
+                          {
+                            onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" aktivován`, { variant: 'success' }),
+                            onError: (err) => {
+                              const detail = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail;
+                              enqueueSnackbar(detail ?? 'Sprint se nepodařilo aktivovat', { variant: 'error' });
+                            },
+                          },
+                        )}>
+                        Spustit sprint
+                      </Button>
+                    </span>
+                  </Tooltip>
                 )}
                 {sp.state === 'ACTIVE' && (
                   <Button size="small" variant="outlined" color="inherit"
@@ -283,12 +365,7 @@ export default function Backlog() {
                     Dokončit sprint
                   </Button>
                 )}
-              </Box>
-              {sp.state === 'ACTIVE' && (
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <SprintBurndownChart sprintId={sp.id} sprintName={sp.name} />
-                </Box>
-              )}
+              </Stack>
               <DroppableList id={sp.id}>
                 <SortableContext items={sprintTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                   {sprintTasks.map((t, i) => (
@@ -297,16 +374,22 @@ export default function Backlog() {
                   ))}
                 </SortableContext>
               </DroppableList>
+              {projectId && (
+                <Box sx={{ borderTop: sprintTasks.length > 0 ? 1 : 0, borderColor: 'divider' }}>
+                  <QuickAddTaskRow projectId={projectId} sprintId={sp.id}
+                    isPending={createTask.isPending} onCreate={handleCreateTask}/>
+                </Box>
+              )}
             </Card>
           );
         })}
 
         <Card sx={{ borderRadius: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
             <CaretIcon/>
-            <Typography sx={{ fontSize: 13.5, fontWeight: 700 }}>Backlog</Typography>
-            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>· {getContainerTasks(null).length} tasků</Typography>
-          </Box>
+            <Typography sx={{ fontSize: '13.5px', fontWeight: 700 }}>Backlog</Typography>
+            <Typography variant="caption" color="text.secondary">· {getContainerTasks(null).length} tasků</Typography>
+          </Stack>
           <DroppableList id="backlog">
             <SortableContext items={getContainerTasks(null).map(t => t.id)} strategy={verticalListSortingStrategy}>
               {getContainerTasks(null).map((t, i, arr) => (
@@ -315,8 +398,14 @@ export default function Backlog() {
               ))}
             </SortableContext>
           </DroppableList>
-          <Box sx={{ p: 1.5, borderTop: getContainerTasks(null).length > 0 ? 1 : 0, borderColor: 'divider',
-            display: 'flex', gap: 1, alignItems: 'center' }}>
+          {projectId && (
+            <Box sx={{ borderTop: getContainerTasks(null).length > 0 ? 1 : 0, borderColor: 'divider' }}>
+              <QuickAddTaskRow projectId={projectId} sprintId={null}
+                isPending={createTask.isPending} onCreate={handleCreateTask}/>
+            </Box>
+          )}
+          <Stack direction="row" spacing={1} sx={{ p: 1.5, borderTop: 1, borderColor: 'divider',
+            alignItems: 'center' }}>
             <TextField
               size="small" placeholder="Název nového sprintu…" value={newSprintName}
               onChange={e => setNewSprintName(e.target.value)}
@@ -326,7 +415,7 @@ export default function Backlog() {
                     { onSuccess: () => setNewSprintName('') });
                 }
               }}
-              sx={{ flex: 1, '& .MuiInputBase-root': { height: 30, fontSize: 14 } }}
+              sx={{ flex: 1, '& .MuiInputBase-root': { height: 30, fontSize: '14px' } }}
             />
             <Button size="small" variant="outlined"
               disabled={!newSprintName.trim() || createSprint.isPending}
@@ -337,23 +426,23 @@ export default function Backlog() {
               }}>
               Nový sprint
             </Button>
-          </Box>
+          </Stack>
         </Card>
-      </Box>
+      </Stack>
 
       <DragOverlay>
         {activeTask && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.85,
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', px: 1.5, py: 0.85,
             bgcolor: 'background.paper', border: 1, borderColor: 'primary.main',
             borderRadius: 0.5, boxShadow: 6 }}>
             <PriorityIcon priority={activeTask.priority}/>
             <TypeIcon type={activeTask.type} size={13}/>
             <MonoKey sx={{ minWidth: 60 }}>{activeTask.key}</MonoKey>
-            <Typography sx={{ fontSize: 14, minWidth: 0,
+            <Typography variant="body2" sx={{ minWidth: 0,
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 320 }}>
               {activeTask.title}
             </Typography>
-          </Box>
+          </Stack>
         )}
       </DragOverlay>
     </DndContext>
