@@ -1,4 +1,4 @@
-import { useState, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
+import { useState, forwardRef, useImperativeHandle, useMemo, useRef, useEffect } from 'react';
 import { useEditor, Tiptap } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
@@ -11,7 +11,7 @@ import { Highlight } from '@tiptap/extension-highlight';
 import { Underline } from '@tiptap/extension-underline';
 import { CharacterCount } from '@tiptap/extension-character-count';
 import { TableKit } from '@tiptap/extension-table';
-import { Box, Button, Typography, useTheme } from '@mui/material';
+import { Box, Button, Stack, Typography, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import type { AttachmentFile } from '../../types';
 import MenuBar, { BubbleToolbar } from './menu-bar';
@@ -40,18 +40,18 @@ function makeId(): string {
 
 function FileTypeLabel({ mimeType }: { mimeType: string }) {
   if (mimeType === 'application/pdf') {
-    return <Box component="span" sx={{ fontSize: 13, fontWeight: 700, color: 'error.main', lineHeight: 1 }}>PDF</Box>;
+    return <Box component="span" sx={{ fontSize: '13px', fontWeight: 700, color: 'error.main', lineHeight: 1 }}>PDF</Box>;
   }
   if (mimeType.includes('zip') || mimeType.includes('archive') || mimeType.includes('compressed') || mimeType.includes('x-rar')) {
-    return <Box component="span" sx={{ fontSize: 13, fontWeight: 700, color: 'warning.main', lineHeight: 1 }}>ZIP</Box>;
+    return <Box component="span" sx={{ fontSize: '13px', fontWeight: 700, color: 'warning.main', lineHeight: 1 }}>ZIP</Box>;
   }
   return (
-    <Box component="span" sx={{ color: 'text.secondary', display: 'flex' }}>
+    <Stack direction="row" component="span" sx={{ color: 'text.secondary' }}>
       <svg width="11" height="12" viewBox="0 0 11 12" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round">
         <path d="M1.5 1h6l2 2v8h-8V1z"/>
         <path d="M7.5 1v2h2"/>
       </svg>
-    </Box>
+    </Stack>
   );
 }
 
@@ -63,16 +63,16 @@ function AttachmentChip({ file, onRemove }: { file: AttachmentFile; onRemove: ()
       px: 1, py: 0.5, bgcolor: 'action.hover', maxWidth: 260,
     }}>
       <FileTypeLabel mimeType={file.mimeType} />
-      <Box sx={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+      <Box sx={{ fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
         {file.name}
       </Box>
-      <Box component="span" sx={{ fontSize: 13, color: 'text.disabled', flexShrink: 0 }}>
+      <Box component="span" sx={{ fontSize: '13px', color: 'text.disabled', flexShrink: 0 }}>
         {formatBytes(file.size)}
       </Box>
       <Box
         component="span"
         onMouseDown={e => { e.preventDefault(); onRemove(); }}
-        sx={{ fontSize: 15, lineHeight: 1, color: 'text.disabled', cursor: 'default', flexShrink: 0,
+        sx={{ fontSize: '15px', lineHeight: 1, color: 'text.disabled', cursor: 'default', flexShrink: 0,
           '&:hover': { color: 'error.main' } }}
       >
         ×
@@ -108,9 +108,10 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
 
   const { data: teamMembers } = useTeamMembers();
   const membersRef = useRef(teamMembers ?? []);
-  membersRef.current = teamMembers ?? [];
+  useEffect(() => { membersRef.current = teamMembers ?? []; }, [teamMembers]);
 
   const mentionExtension = useMemo(
+    // eslint-disable-next-line react-hooks/refs -- getMembers is called lazily inside Tiptap suggestion popup, not during render
     () => buildMentionExtension({ getMembers: () => membersRef.current }),
     [],
   );
@@ -202,7 +203,7 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
   }), [editor]);
 
   if (!editor) {
-    return <Box sx={{ p: 2, color: 'text.disabled', fontSize: 13 }}>Načítám editor…</Box>;
+    return <Box sx={{ p: 2, color: 'text.disabled', fontSize: '13px' }}>Načítám editor…</Box>;
   }
 
   const charCount = (editor.storage.characterCount?.characters?.() as number | undefined) ?? 0;
@@ -247,7 +248,7 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
           <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.disabled', letterSpacing: 0.5 }}>
             PŘÍLOHY ({attachments.length})
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.75 }}>
+          <Stack direction="row" spacing={0.75} sx={{ flexWrap: 'wrap', mt: 0.75 }}>
             {attachments.map(att => (
               <AttachmentChip
                 key={att.id}
@@ -255,21 +256,21 @@ const EditorBody = forwardRef<EditorBodyHandle, Props>(function EditorBody(
                 onRemove={() => setAttachments(prev => prev.filter(a => a.id !== att.id))}
               />
             ))}
-          </Box>
+          </Stack>
         </Box>
       )}
 
       {!hideActions && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1,
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', p: 1,
           borderTop: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
-          <Box sx={{ fontSize: 13, color: 'text.disabled' }}>⌘B · ⌘I · ⌘K · Ctrl+V nebo drag obrázek/soubor</Box>
+          <Box sx={{ fontSize: '13px', color: 'text.disabled' }}>⌘B · ⌘I · ⌘K · Ctrl+V nebo drag obrázek/soubor</Box>
           <Box sx={{ flex: 1 }} />
           {charCount > 0 && (
             <Typography variant="caption" sx={{ color: 'text.disabled' }}>{charCount} znaků</Typography>
           )}
           <Button size="small" onClick={onCancel}>Zrušit</Button>
           <Button size="small" variant="contained" onClick={() => onSave?.(editor.getJSON())}>Uložit</Button>
-        </Box>
+        </Stack>
       )}
     </Box>
   );

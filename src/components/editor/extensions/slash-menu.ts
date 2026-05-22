@@ -45,7 +45,7 @@ const HeadingIcon = (level: 1 | 2 | 3) =>
     createElement('path', { d: 'M3 3v10M11 3v10M3 8h8', key: 'h' }),
     createElement(
       'text',
-      { x: 12.5, y: 13, fontSize: 6, fill: 'currentColor', stroke: 'none', key: 't' },
+      { x: 12.5, y: 13, fontSize: '6px', fill: 'currentColor', stroke: 'none', key: 't' },
       String(level),
     ),
   );

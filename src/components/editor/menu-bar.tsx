@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useCurrentEditor, useEditorState, posToDOMRect } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
-import { Box, useTheme, Portal, Paper, Menu, MenuItem, ListItemIcon, Tooltip, Typography } from '@mui/material';
+import { Box, useTheme, Portal, Paper, Menu, MenuItem, ListItemIcon, Stack, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { TBtn, Sep } from './t-btn';
 import type { CalloutTone } from './callout-extension';
@@ -67,13 +67,13 @@ export function BubbleToolbar() {
 
   return (
     <Portal>
-      <Paper elevation={4} sx={{
+      <Paper elevation={4} component={Stack} direction="row" spacing={0.25} sx={{
         position: 'fixed',
         left: `${left}px`,
         top: `${top}px`,
         transform: 'translate(-50%, -100%)',
         zIndex: theme.zIndex.tooltip,
-        display: 'flex', alignItems: 'center', gap: 0.25, px: 0.75, py: 0.5,
+        alignItems: 'center', px: 0.75, py: 0.5,
         borderRadius: 1.5, border: 1, borderColor: 'divider',
         pointerEvents: 'auto',
       }}>
@@ -89,7 +89,7 @@ export function BubbleToolbar() {
         </TBtn>
         <TBtn title="Přeškrtnuté" active={sel.strike}
           onMouseDown={e => run(e, () => editor.chain().focus().toggleStrike().run())}>
-          <Box component="span" sx={{ textDecoration: 'line-through', fontSize: 13 }}>S</Box>
+          <Box component="span" sx={{ textDecoration: 'line-through', fontSize: '13px' }}>S</Box>
         </TBtn>
         <TBtn title="Zvýraznění" active={sel.highlight}
           onMouseDown={e => run(e, () => editor.chain().focus().toggleHighlight().run())}>
@@ -98,7 +98,7 @@ export function BubbleToolbar() {
         <Sep />
         <TBtn title="Inline kód" active={sel.code}
           onMouseDown={e => run(e, () => editor.chain().focus().toggleCode().run())}>
-          <Box component="span" sx={{ fontFamily: 'monospace', fontSize: 13 }}>{`</>`}</Box>
+          <Box component="span" sx={{ fontFamily: 'monospace', fontSize: '13px' }}>{`</>`}</Box>
         </TBtn>
         <TBtn title="Link (⌘K)" active={sel.link} onMouseDown={handleLink}>
           <LinkIcon />
@@ -121,22 +121,24 @@ function DropdownTrigger({ active, title, onClick, children }: DropdownTriggerPr
   const theme = useTheme();
   return (
     <Tooltip title={title} enterDelay={600} enterNextDelay={600}>
-      <Box
+      <Stack
+        direction="row"
+        spacing={0.25}
         onMouseDown={e => e.preventDefault()}
         onClick={onClick}
         sx={{
-          display: 'inline-flex', alignItems: 'center', gap: 0.25,
+          display: 'inline-flex', alignItems: 'center',
           height: 26, px: 0.75, borderRadius: 0.75,
           cursor: 'default', userSelect: 'none',
-          fontSize: 13, fontWeight: 600,
+          fontSize: '13px', fontWeight: 600,
           color: active ? theme.palette.primary.main : theme.palette.text.secondary,
           bgcolor: active ? alpha(theme.palette.primary.main, 0.12) : undefined,
           '&:hover': { bgcolor: active ? alpha(theme.palette.primary.main, 0.18) : theme.palette.action.hover },
         }}
       >
         {children}
-        <Box sx={{ display: 'flex', opacity: 0.7 }}><CaretDownIcon /></Box>
-      </Box>
+        <Stack sx={{ opacity: 0.7 }}><CaretDownIcon /></Stack>
+      </Stack>
     </Tooltip>
   );
 }
@@ -177,16 +179,16 @@ function HeadingDropdown({ editor, state }: HeadingDropdownProps) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
-        <MenuItem selected={!active} onClick={() => setHeading(null)} sx={{ fontSize: 14 }}>
+        <MenuItem selected={!active} onClick={() => setHeading(null)}>
           Normální text
         </MenuItem>
-        <MenuItem selected={state.h1} onClick={() => setHeading(1)} sx={{ fontSize: 18, fontWeight: 700 }}>
+        <MenuItem selected={state.h1} onClick={() => setHeading(1)} sx={{ fontSize: '18px', fontWeight: 700 }}>
           Nadpis 1
         </MenuItem>
-        <MenuItem selected={state.h2} onClick={() => setHeading(2)} sx={{ fontSize: 16, fontWeight: 700 }}>
+        <MenuItem selected={state.h2} onClick={() => setHeading(2)} sx={{ fontSize: '16px', fontWeight: 700 }}>
           Nadpis 2
         </MenuItem>
-        <MenuItem selected={state.h3} onClick={() => setHeading(3)} sx={{ fontSize: 14, fontWeight: 700 }}>
+        <MenuItem selected={state.h3} onClick={() => setHeading(3)} sx={{ fontSize: '14px', fontWeight: 700 }}>
           Nadpis 3
         </MenuItem>
       </Menu>
@@ -270,24 +272,24 @@ function InsertDropdown({ editor, state, onUploadImage }: InsertDropdownProps) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
-        <MenuItem selected={state.link} onClick={handleLink} sx={{ fontSize: 14, gap: 1 }}>
+        <MenuItem selected={state.link} onClick={handleLink} sx={{ gap: 1 }}>
           <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><LinkIcon /></ListItemIcon>
           Odkaz
-          <Box sx={{ ml: 'auto', pl: 2, fontSize: 11, fontFamily: 'ui-monospace, monospace', color: 'text.disabled' }}>⌘K</Box>
+          <Box sx={{ ml: 'auto', pl: 2, fontSize: '11px', fontFamily: 'ui-monospace, monospace', color: 'text.disabled' }}>⌘K</Box>
         </MenuItem>
-        <MenuItem onClick={handleImage} sx={{ fontSize: 14, gap: 1 }}>
+        <MenuItem onClick={handleImage} sx={{ gap: 1 }}>
           <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><ImageIcon /></ListItemIcon>
           Obrázek
         </MenuItem>
-        <MenuItem onClick={handleTable} sx={{ fontSize: 14, gap: 1 }}>
+        <MenuItem onClick={handleTable} sx={{ gap: 1 }}>
           <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><TableIcon /></ListItemIcon>
           Tabulka
         </MenuItem>
-        <MenuItem selected={state.codeBlock} onClick={handleCodeBlock} sx={{ fontSize: 14, gap: 1 }}>
+        <MenuItem selected={state.codeBlock} onClick={handleCodeBlock} sx={{ gap: 1 }}>
           <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><CodeBlockIcon /></ListItemIcon>
           Blok kódu
         </MenuItem>
-        <MenuItem selected={state.blockquote} onClick={handleQuote} sx={{ fontSize: 14, gap: 1 }}>
+        <MenuItem selected={state.blockquote} onClick={handleQuote} sx={{ gap: 1 }}>
           <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><BlockquoteIcon /></ListItemIcon>
           Citace
         </MenuItem>
@@ -360,7 +362,7 @@ function CalloutDropdown({ editor, state }: CalloutDropdownProps) {
             key={t.key}
             selected={t.active}
             onClick={() => toggleCallout(t.key)}
-            sx={{ fontSize: 14, gap: 1, color: t.active ? t.color : undefined }}
+            sx={{ gap: 1, color: t.active ? t.color : undefined }}
           >
             <ListItemIcon sx={{ minWidth: 26, color: t.color }}>{t.icon}</ListItemIcon>
             {t.label}
@@ -405,7 +407,7 @@ export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File
 
   return (
     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, px: 1, py: 0.5, flexWrap: 'wrap' }}>
+      <Stack direction="row" spacing={0.25} sx={{ alignItems: 'center', px: 1, py: 0.5, flexWrap: 'wrap' }}>
 
         {/* Skupina: inline formátování */}
         <TBtn title="Tučné (⌘B)" active={s.bold}
@@ -457,18 +459,18 @@ export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File
 
         {/* Shortcut hint vpravo */}
         <Box sx={{ ml: 'auto', pl: 1 }}>
-          <Typography sx={{ fontSize: 11, color: 'text.disabled', fontFamily: 'ui-monospace, monospace' }}>
+          <Typography sx={{ fontSize: '11px', color: 'text.disabled', fontFamily: 'ui-monospace, monospace' }}>
             ⌘B · ⌘I · / pro víc
           </Typography>
         </Box>
-      </Box>
+      </Stack>
 
       {s.table && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, px: 1, py: 0.5,
+        <Stack direction="row" spacing={0.25} sx={{ alignItems: 'center', px: 1, py: 0.5,
           borderTop: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
-          <Box sx={{ fontSize: 14, fontWeight: 600, color: 'text.disabled', mr: 0.5, userSelect: 'none' }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.disabled', mr: 0.5, userSelect: 'none' }}>
             Tabulka
-          </Box>
+          </Typography>
           <TBtn title="Přidat řádek níže" active={false}
             onMouseDown={e => run(e, () => editor.chain().focus().addRowAfter().run())}>
             <AddRowAfterIcon />
@@ -499,7 +501,7 @@ export default function MenuBar({ onUploadImage }: { onUploadImage?: (file: File
             onMouseDown={e => run(e, () => editor.chain().focus().deleteTable().run())}>
             <DeleteTableIcon />
           </TBtn>
-        </Box>
+        </Stack>
       )}
     </Box>
   );

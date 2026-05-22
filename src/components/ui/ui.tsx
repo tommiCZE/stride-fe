@@ -20,7 +20,7 @@ export const StatusBadge = styled(Box, {
   gap: 4,
   padding: '2px 7px',
   borderRadius: 6,
-  fontSize: 13,
+  fontSize: '13px',
   fontWeight: 600,
   lineHeight: 1.5,
   color: badgeColor,
@@ -35,14 +35,14 @@ export const ColorPill = styled(Box, {
   gap: 4,
   padding: '2px 7px',
   borderRadius: 6,
-  fontSize: 13,
+  fontSize: '13px',
   fontWeight: 600,
   color: pillColor,
   backgroundColor: alpha(pillColor, 0.12),
 }));
 
 export const MonoKey = styled(Box)(({ theme }) => ({
-  fontSize: 13,
+  fontSize: '13px',
   fontFamily: '"JetBrains Mono", ui-monospace, monospace',
   color: theme.palette.text.disabled,
   fontVariantNumeric: 'tabular-nums',
@@ -50,7 +50,7 @@ export const MonoKey = styled(Box)(({ theme }) => ({
 }));
 
 export const SectionLabel = styled(Typography)(({ theme }) => ({
-  fontSize: 13,
+  fontSize: '13px',
   fontWeight: 700,
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
@@ -58,7 +58,7 @@ export const SectionLabel = styled(Typography)(({ theme }) => ({
 })) as typeof Typography;
 
 export const CardTitle = styled(Typography)({
-  fontSize: 13,
+  fontSize: '13px',
   fontWeight: 700,
 }) as typeof Typography;
 
@@ -81,7 +81,7 @@ export const DashedPill = styled(Box)(({ theme }) => ({
   padding: '3px 7px',
   borderRadius: 6,
   border: `1px dashed ${theme.palette.divider}`,
-  fontSize: 14,
+  fontSize: '14px',
   color: theme.palette.text.secondary,
   cursor: 'default',
   '&:hover': { backgroundColor: theme.palette.action.hover },

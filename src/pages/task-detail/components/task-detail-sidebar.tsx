@@ -1,4 +1,4 @@
-import { Box, Divider, Tooltip, Typography } from '@mui/material';
+import { Divider, Stack, Tooltip, Typography } from '@mui/material';
 import { SectionLabel } from '../../../components/ui/ui';
 import FluxAvatar from '../../../components/flux-avatar';
 import { FieldRow } from '../fields/field-helpers';
@@ -22,34 +22,34 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
   const extraWatchers = watchers.length - visibleWatchers.length;
 
   return (
-    <Box sx={{ borderLeft: { xs: 0, md: 1 }, borderTop: { xs: 1, md: 0 }, borderColor: 'divider',
-      bgcolor: 'background.paper', overflowY: 'auto', p: 2, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+    <Stack spacing={1.25} sx={{ borderLeft: { xs: 0, md: 1 }, borderTop: { xs: 1, md: 0 }, borderColor: 'divider',
+      bgcolor: 'background.paper', overflowY: 'auto', p: 2 }}>
 
       <SectionLabel>Lidé</SectionLabel>
       <FieldRow label="Assignee">
         <AssigneeEditor task={task} onPatch={onPatch}/>
       </FieldRow>
       <FieldRow label="Reporter">
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 14 }}>
+        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', fontSize: '14px' }}>
           <FluxAvatar user={task.reporter} size={20}/> {task.reporter?.name}
-        </Box>
+        </Stack>
       </FieldRow>
       <FieldRow label="Sledující">
         {watchers.length > 0 ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
             {visibleWatchers.map(w => (
               <Tooltip key={w.id} title={w.name}>
                 <span><FluxAvatar user={w} size={20}/></span>
               </Tooltip>
             ))}
             {extraWatchers > 0 && (
-              <Typography sx={{ fontSize: 11, color: 'text.disabled', ml: 0.25 }}>
+              <Typography sx={{ fontSize: '11px', color: 'text.disabled', ml: 0.25 }}>
                 +{extraWatchers}
               </Typography>
             )}
-          </Box>
+          </Stack>
         ) : (
-          <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>Nikdo</Typography>
+          <Typography sx={{ fontSize: '13px', color: 'text.disabled' }}>Nikdo</Typography>
         )}
       </FieldRow>
 
@@ -86,11 +86,11 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
       {task.createdAt && (
         <>
           <Divider sx={{ my: 0.5 }}/>
-          <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>
+          <Typography sx={{ fontSize: '12px', color: 'text.disabled' }}>
             Vytvořeno {new Date(task.createdAt).toLocaleDateString('cs-CZ')}
           </Typography>
         </>
       )}
-    </Box>
+    </Stack>
   );
 }

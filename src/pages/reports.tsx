@@ -1,4 +1,4 @@
-import { Box, Card, Typography } from '@mui/material';
+import { Box, Card, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
 import { useProjects } from '../hooks/useProjects';
@@ -47,17 +47,15 @@ export default function Reports() {
 
   const totalLogged = allTasks.reduce((s, t) => s + (t.logged ?? 0), 0);
 
-  // Use the active project from URL, or fall back to the first available project
-  // so the chart still shows something on the global /reports route.
   const velocityProjectId = projectId ?? projects[0]?.id;
   const velocityProject = velocityProjectId ? projectsById[velocityProjectId] : undefined;
 
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%' }}>
-      <Typography sx={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', mb: 0.25 }}>
+      <Typography variant="h3" sx={{ mb: 0.25 }}>
         Reporty času
       </Typography>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 3 }}>
+      <Typography variant="caption" color="text.secondary" sx={{ mb: 3, display: 'block' }}>
         Všichni členové týmu · {projects.length} projektů
       </Typography>
 
@@ -68,9 +66,9 @@ export default function Reports() {
           { label: 'Členů týmu',         value: members.length,    sub: 'celkem',              color: '#f59e0b' },
         ].map((s, i) => (
           <Card key={i} sx={{ p: 1.75, borderRadius: 1.5 }}>
-            <Typography sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 500 }}>{s.label}</Typography>
-            <Typography sx={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', color: s.color, mt: 0.25 }}>{s.value}</Typography>
-            <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{s.sub}</Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>{s.label}</Typography>
+            <Typography variant="h2" sx={{ color: s.color, mt: 0.25 }}>{s.value}</Typography>
+            <Typography variant="caption" color="text.disabled">{s.sub}</Typography>
           </Card>
         ))}
       </Box>
@@ -78,69 +76,69 @@ export default function Reports() {
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 2 }}>
         <Card sx={{ borderRadius: 1.5, p: 2 }}>
           <CardTitle sx={{ mb: 1.5 }}>Čas podle člověka</CardTitle>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Stack spacing={1}>
             {userRows.map(r => (
-              <Box key={r.user.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Stack key={r.user.id} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                 <FluxAvatar user={r.user} size={20}/>
-                <Typography sx={{ fontSize: 14, width: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.user.name}</Typography>
+                <Typography variant="body2" sx={{ width: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.user.name}</Typography>
                 <Box sx={{ flex: 1, height: 8, bgcolor: 'action.hover', borderRadius: 1, overflow: 'hidden' }}>
                   <Box sx={{ height: '100%', width: `${(r.h / maxH) * 100}%`, bgcolor: r.user.color, borderRadius: 1 }}/>
                 </Box>
-                <Typography sx={{ fontSize: 13, fontWeight: 600, width: 36, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.h}h</Typography>
-              </Box>
+                <Typography variant="caption" sx={{ fontWeight: 600, width: 36, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.h}h</Typography>
+              </Stack>
             ))}
             {userRows.length === 0 && (
-              <Typography sx={{ fontSize: 14, color: 'text.disabled' }}>Žádná data</Typography>
+              <Typography variant="body2" color="text.disabled">Žádná data</Typography>
             )}
-          </Box>
+          </Stack>
         </Card>
 
         <Card sx={{ borderRadius: 1.5, p: 2 }}>
           <CardTitle sx={{ mb: 1.5 }}>Čas podle projektu</CardTitle>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Stack spacing={1}>
             {projRows.map(r => (
-              <Box key={r.project.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ width: 18, height: 18, borderRadius: 0.6, bgcolor: r.project.color,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontSize: 14, fontWeight: 700 }}>{r.project.key[0]}</Box>
-                <Typography sx={{ fontSize: 14, width: 130 }}>{r.project.name}</Typography>
+              <Stack key={r.project.id} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                <Stack sx={{ width: 18, height: 18, borderRadius: 0.6, bgcolor: r.project.color,
+                  alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontSize: '14px', fontWeight: 700 }}>{r.project.key[0]}</Stack>
+                <Typography variant="body2" sx={{ width: 130 }}>{r.project.name}</Typography>
                 <Box sx={{ flex: 1, height: 8, bgcolor: 'action.hover', borderRadius: 1, overflow: 'hidden' }}>
                   <Box sx={{ height: '100%', width: `${(r.h / maxP) * 100}%`, bgcolor: r.project.color, borderRadius: 1 }}/>
                 </Box>
-                <Typography sx={{ fontSize: 13, fontWeight: 600, width: 36, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.h}h</Typography>
-              </Box>
+                <Typography variant="caption" sx={{ fontWeight: 600, width: 36, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.h}h</Typography>
+              </Stack>
             ))}
             {projRows.length === 0 && (
-              <Typography sx={{ fontSize: 14, color: 'text.disabled' }}>Žádná data</Typography>
+              <Typography variant="body2" color="text.disabled">Žádná data</Typography>
             )}
-          </Box>
+          </Stack>
         </Card>
 
         <Card sx={{ borderRadius: 1.5, p: 2, gridColumn: '1 / -1' }}>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 1 }}>
+          <Stack direction="row" sx={{ alignItems: 'baseline', justifyContent: 'space-between', mb: 1 }}>
             <CardTitle>Sprint velocity</CardTitle>
-            <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
+            <Typography variant="caption" color="text.disabled">
               {velocityProject ? `${velocityProject.name} · posledních 6 sprintů` : 'posledních 6 sprintů'}
             </Typography>
-          </Box>
+          </Stack>
           <SprintVelocityChart projectId={velocityProjectId} lastN={6} />
         </Card>
 
         <Card sx={{ borderRadius: 1.5, p: 2, gridColumn: '1 / -1' }}>
           <CardTitle sx={{ mb: 1.5 }}>Tento týden</CardTitle>
-          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1, height: 140, mt: 1 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-end', height: 140, mt: 1 }}>
             {weekData.map((v, i) => (
-              <Box key={i} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-                <Typography sx={{ fontSize: 14, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
+              <Stack key={i} spacing={0.5} sx={{ flex: 1, alignItems: 'center' }}>
+                <Typography variant="body2" color="text.disabled" sx={{ fontVariantNumeric: 'tabular-nums' }}>
                   {v > 0 ? `${v}h` : ''}
                 </Typography>
                 <Box sx={{ width: '100%', height: `${(v / maxD) * 100}%`,
                   background: `linear-gradient(180deg, #5A5BFF, ${alpha('#5A5BFF', 0.6)})`,
                   borderRadius: '4px 4px 0 0', minHeight: 2 }}/>
-                <Typography sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 600 }}>{days[i]}</Typography>
-              </Box>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>{days[i]}</Typography>
+              </Stack>
             ))}
-          </Box>
+          </Stack>
         </Card>
       </Box>
     </Box>

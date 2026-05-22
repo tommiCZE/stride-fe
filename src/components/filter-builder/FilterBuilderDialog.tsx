@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -27,10 +27,12 @@ export default function FilterBuilderDialog({
   onApply,
 }: FilterBuilderDialogProps) {
   const [draft, setDraft] = useState<FilterGroup>(initialValue);
+  const [prevOpen, setPrevOpen] = useState(open);
 
-  useEffect(() => {
+  if (prevOpen !== open) {
+    setPrevOpen(open);
     if (open) setDraft(initialValue);
-  }, [open, initialValue]);
+  }
 
   const handleClear = () => setDraft(emptyGroup(draft.combinator));
 
@@ -39,7 +41,7 @@ export default function FilterBuilderDialog({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1.5 }}>
-        <Typography sx={{ fontSize: 14, fontWeight: 600, flex: 1 }}>
+        <Typography sx={{ fontSize: '14px', fontWeight: 600, flex: 1 }}>
           Pokročilý filtr
         </Typography>
         <IconButton size="small" onClick={onClose}>

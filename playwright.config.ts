@@ -29,6 +29,12 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE,
+        ...(process.env.CI
+          ? { viewport: { width: 1920, height: 1080 } }
+          : { viewport: null, deviceScaleFactor: undefined }),
+        launchOptions: {
+          args: process.env.CI ? [] : ['--start-maximized'],
+        },
       },
       dependencies: ['setup'],
     },

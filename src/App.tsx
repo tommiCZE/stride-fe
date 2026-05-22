@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet, useSearchParams } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { CircularProgress, Stack } from '@mui/material';
 import { useAuthStore } from './store/auth-store';
 import { useUiStore } from './store/ui-store';
 import AppLayout from './layouts/app-layout';
@@ -30,9 +30,9 @@ const Calendar = lazy(() => import('./pages/calendar'));
 
 function PageFallback() {
   return (
-    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+    <Stack direction="row" sx={{ flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' }}>
       <CircularProgress size={20}/>
-    </Box>
+    </Stack>
   );
 }
 

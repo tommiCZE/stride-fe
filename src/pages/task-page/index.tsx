@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { CircularProgress, Stack } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useTaskByKey, useUpdateTask } from '../../hooks/useTasks';
 import { useProjects } from '../../hooks/useProjects';
-import { useUiStore } from '../../store/ui-store';
 import QueryError from '../../components/query-error/QueryError';
 import TaskDetailHeader from '../task-detail/components/task-detail-header';
 import TaskDetailBody from '../task-detail/task-detail-body';
@@ -13,9 +12,14 @@ import type { UpdateTaskRequest } from '../../api/types';
 
 export default function TaskPage() {
   const { taskKey = '' } = useParams<{ taskKey: string }>();
-  const { timer, startTimer } = useUiStore();
   const { enqueueSnackbar } = useSnackbar();
-  const [tab, setTab] = useState<TaskDetailTab>('comments');
+  const [tab, setTab] = useState<TaskDetailTab>('activity');
+  const [prevTaskKey, setPrevTaskKey] = useState(taskKey);
+
+  if (prevTaskKey !== taskKey) {
+    setPrevTaskKey(taskKey);
+    setTab('activity');
+  }
 
   const { data: task, isLoading, isError, error, refetch } = useTaskByKey(taskKey);
   const { data: projects = [] } = useProjects();
@@ -31,35 +35,31 @@ export default function TaskPage() {
     );
   };
 
-  useEffect(() => { setTab('comments'); }, [taskKey]);
-
   if (isError) {
     return (
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <Stack sx={{ height: '100%', minHeight: 0 }}>
         <QueryError error={error} onRetry={() => { void refetch(); }} />
-      </Box>
+      </Stack>
     );
   }
 
   if (isLoading || !task) {
     return (
-      <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Stack sx={{ height: '100%', alignItems: 'center', justifyContent: 'center' }}>
         <CircularProgress/>
-      </Box>
+      </Stack>
     );
   }
 
   const proj = projects.find(p => p.id === task.projectId);
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0, bgcolor: 'background.default' }}>
+    <Stack sx={{ height: '100%', minHeight: 0, bgcolor: 'background.default' }}>
       <TaskDetailHeader
         task={task}
         proj={proj}
-        timer={timer}
-        onStartTimer={startTimer}
       />
       <TaskDetailBody task={task} proj={proj} tab={tab} onTabChange={setTab} onPatch={patchTask}/>
-    </Box>
+    </Stack>
   );
 }

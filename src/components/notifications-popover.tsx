@@ -35,12 +35,12 @@ function iconForType(type: NotificationType) {
 
 function NotificationRow({ item, onSelect }: { item: NotificationItem; onSelect: (it: NotificationItem) => void }) {
   return (
-    <Box
+    <Stack
+      direction="row"
+      spacing={1.25}
       onClick={() => onSelect(item)}
       sx={{
-        display: 'flex',
         alignItems: 'flex-start',
-        gap: 1.25,
         px: 1.75,
         py: 1.1,
         cursor: 'pointer',
@@ -48,16 +48,15 @@ function NotificationRow({ item, onSelect }: { item: NotificationItem; onSelect:
         '&:hover': { bgcolor: 'action.hover' },
       }}
     >
-      <Box sx={{
-        mt: 0.25, width: 24, height: 24, borderRadius: 1, display: 'flex',
+      <Stack sx={{
+        mt: 0.25, width: 24, height: 24, borderRadius: 1,
         alignItems: 'center', justifyContent: 'center',
         bgcolor: 'action.hover', color: 'text.secondary', flexShrink: 0,
       }}>
         {iconForType(item.type)}
-      </Box>
+      </Stack>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{
-          fontSize: 14,
+        <Typography variant="body2" sx={{
           fontWeight: item.read ? 400 : 600,
           color: 'text.primary',
           lineHeight: 1.35,
@@ -67,7 +66,7 @@ function NotificationRow({ item, onSelect }: { item: NotificationItem; onSelect:
         }}>
           {item.message}
         </Typography>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.25 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.25, display: 'block' }}>
           {relativeTime(item.createdAt)}
         </Typography>
       </Box>
@@ -77,7 +76,7 @@ function NotificationRow({ item, onSelect }: { item: NotificationItem; onSelect:
           mt: 1, flexShrink: 0,
         }}/>
       )}
-    </Box>
+    </Stack>
   );
 }
 
@@ -111,29 +110,29 @@ export default function NotificationsPopover({ anchorEl, onClose }: Props) {
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       slotProps={{ paper: { sx: { width: 360, maxHeight: 480, mt: 0.5 } } }}
     >
-      <Box sx={{
-        display: 'flex', alignItems: 'center', gap: 1,
+      <Stack direction="row" spacing={1} sx={{
+        alignItems: 'center',
         px: 1.75, py: 1.25, borderBottom: 1, borderColor: 'divider',
       }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 600, flex: 1 }}>
+        <Typography variant="label" sx={{ flex: 1 }}>
           {t('notifications.title')}
           {unreadCount > 0 && (
-            <Typography component="span" sx={{ fontSize: 13, color: 'text.secondary', ml: 0.75, fontWeight: 500 }}>
+            <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.75, fontWeight: 500 }}>
               · {unreadCount}
             </Typography>
           )}
         </Typography>
         {unreadCount > 0 && (
-          <Button size="small" onClick={markAllRead} sx={{ fontSize: 13, minWidth: 0, px: 1 }}>
+          <Button size="small" onClick={markAllRead} sx={{ minWidth: 0, px: 1 }}>
             {t('notifications.markAllRead')}
           </Button>
         )}
-      </Box>
+      </Stack>
 
       {visible.length === 0 ? (
-        <Stack alignItems="center" spacing={1} sx={{ py: 4, px: 2, color: 'text.secondary' }}>
+        <Stack spacing={1} sx={{ alignItems: 'center', py: 4, px: 2, color: 'text.secondary' }}>
           <BellIcon />
-          <Typography sx={{ fontSize: 14 }}>{t('notifications.empty')}</Typography>
+          <Typography variant="body2">{t('notifications.empty')}</Typography>
         </Stack>
       ) : (
         <Box sx={{ overflowY: 'auto', maxHeight: 360 }}>
@@ -146,11 +145,11 @@ export default function NotificationsPopover({ anchorEl, onClose }: Props) {
         </Box>
       )}
 
-      <Box sx={{ borderTop: 1, borderColor: 'divider', display: 'flex', justifyContent: 'center', py: 0.5 }}>
-        <Button size="small" onClick={handleViewAll} sx={{ fontSize: 14, fontWeight: 500 }}>
+      <Stack sx={{ borderTop: 1, borderColor: 'divider', alignItems: 'center', py: 0.5 }}>
+        <Button size="small" onClick={handleViewAll} sx={{ fontWeight: 500 }}>
           {t('notifications.viewAll')}
         </Button>
-      </Box>
+      </Stack>
     </Popover>
   );
 }

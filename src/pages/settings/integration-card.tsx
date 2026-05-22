@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Card, Chip, Stack, Typography } from '@mui/material';
 import { GIT_INTEGRATIONS } from '../../mocks/data';
 import { timeAgo } from '../../utils/time';
 import { SectionLabel } from '../../components/ui/ui';
@@ -25,90 +25,100 @@ export function ProviderLogo({ provider, size = 18 }: { provider: 'github' | 'gi
   );
 }
 
+const ROW_SX = {
+  p: 1,
+  border: 1,
+  borderColor: 'divider',
+  borderRadius: 1,
+  bgcolor: 'background.paper',
+  alignItems: 'center',
+} as const;
+
 export function IntegrationCard({ ig }: { ig: typeof GIT_INTEGRATIONS[number] }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1.5, overflow: 'hidden', mb: 1.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, bgcolor: 'background.paper', cursor: 'default' }}
+    <Card variant="outlined" sx={{ overflow: 'hidden', mb: 1.5 }}>
+      <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', p: 1.5, bgcolor: 'background.paper', cursor: 'default' }}
         onClick={() => setExpanded(e => !e)}>
-        <Box sx={{ width: 36, height: 36, borderRadius: 1, bgcolor: 'action.hover',
-          display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Stack sx={{ width: 36, height: 36, borderRadius: 1, bgcolor: 'action.hover',
+          alignItems: 'center', justifyContent: 'center' }}>
           <ProviderLogo provider={ig.provider} size={20}/>
-        </Box>
-        <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ fontSize: 14, fontWeight: 700 }}>{ig.name}</Typography>
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5,
-              px: 0.75, py: 0.15, borderRadius: 1, fontSize: 14, fontWeight: 600,
-              color: ig.connected ? '#10b981' : '#94a3b8',
-              bgcolor: (ig.connected ? '#10b981' : '#94a3b8') + '22' }}>
-              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: ig.connected ? '#10b981' : '#94a3b8' }}/>
-              {ig.connected ? 'Připojeno' : 'Nepřipojeno'}
-            </Box>
-          </Box>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        </Stack>
+        <Stack sx={{ flex: 1 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{ig.name}</Typography>
+            <Chip
+              size="small"
+              icon={<Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: ig.connected ? 'success.main' : 'text.disabled', ml: '6px !important' }}/>}
+              label={ig.connected ? 'Připojeno' : 'Nepřipojeno'}
+              color={ig.connected ? 'success' : 'default'}
+              variant="outlined"
+            />
+          </Stack>
+          <Typography variant="caption" color="text.secondary">
             {ig.connected
               ? `${ig.org} · ${ig.repos.filter(r => r.linked).length} repo · sync ${timeAgo(ig.lastSync)}`
               : 'Připoj svou organizaci a propoj repository.'}
           </Typography>
-        </Box>
+        </Stack>
         {ig.connected
           ? <Button size="small" variant="outlined" onClick={e => e.stopPropagation()}>Spravovat</Button>
           : <Button size="small" variant="contained">Připojit</Button>}
-      </Box>
+      </Stack>
 
       {expanded && ig.connected && (
         <Box sx={{ borderTop: 1, borderColor: 'divider', bgcolor: 'background.default', p: 1.5 }}>
           <SectionLabel sx={{ mb: 0.75 }}>Repository</SectionLabel>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1.5 }}>
+          <Stack spacing={0.5} sx={{ mb: 1.5 }}>
             {ig.repos.map((r, i) => (
-              <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1,
-                border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' }}>
+              <Stack key={i} direction="row" spacing={1} sx={ROW_SX}>
                 <ProviderLogo provider={ig.provider} size={13}/>
-                <Typography sx={{ fontSize: 14, fontFamily: 'JetBrains Mono, ui-monospace, monospace', flex: 1 }}>{r.full}</Typography>
-                <Typography sx={{ fontSize: 14, px: 0.5, py: 0.1, borderRadius: 0.5, bgcolor: 'action.hover', color: 'text.secondary' }}>{r.lang}</Typography>
-                <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4,
-                  px: 0.6, py: 0.2, borderRadius: 0.6, fontSize: 14, fontWeight: 600,
-                  color: r.linked ? '#10b981' : 'text.disabled',
-                  bgcolor: r.linked ? '#10b98122' : 'transparent',
-                  border: r.linked ? 0 : 1, borderColor: 'divider' }}>
-                  {r.linked ? '✓ propojeno' : 'připojit'}
-                </Box>
-              </Box>
+                <Typography variant="body2" sx={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace', flex: 1 }}>{r.full}</Typography>
+                <Typography variant="body2" sx={{ px: 0.5, py: 0.1, borderRadius: 0.5, bgcolor: 'action.hover', color: 'text.secondary' }}>{r.lang}</Typography>
+                <Chip
+                  size="small"
+                  label={r.linked ? '✓ propojeno' : 'připojit'}
+                  color={r.linked ? 'success' : 'default'}
+                  variant={r.linked ? 'filled' : 'outlined'}
+                />
+              </Stack>
             ))}
-          </Box>
+          </Stack>
 
           <SectionLabel sx={{ mb: 0.75 }}>Webhooky</SectionLabel>
-          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1.5 }}>
+          <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', mb: 1.5 }}>
             {ig.webhooks.map(w => (
-              <Box key={w} sx={{ fontSize: 13, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-                px: 0.75, py: 0.25, borderRadius: 0.6, bgcolor: 'action.hover' }}>{w}</Box>
+              <Chip
+                key={w}
+                size="small"
+                label={w}
+                sx={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}
+              />
             ))}
-          </Box>
+          </Stack>
 
           <SectionLabel sx={{ mb: 0.75 }}>Automatizace</SectionLabel>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Stack spacing={0.5}>
             {[
               { label: 'Smart commits', desc: `Logovat čas pomocí ${ig.provider === 'github' ? 'WEB-142' : ''} #log 1h, #done.`, on: ig.smartCommits },
               { label: 'Auto-přechod statusů', desc: 'Otevřený PR → In Review · Merge → Done.', on: ig.autoTransition },
             ].map((item, i) => (
-              <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1,
-                border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' }}>
-                <Box sx={{ flex: 1 }}>
-                  <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{item.label}</Typography>
-                  <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{item.desc}</Typography>
-                </Box>
+              <Stack key={i} direction="row" spacing={1} sx={ROW_SX}>
+                <Stack sx={{ flex: 1 }}>
+                  <Typography variant="subtitle2">{item.label}</Typography>
+                  <Typography variant="caption" color="text.secondary">{item.desc}</Typography>
+                </Stack>
                 <Box sx={{ width: 32, height: 18, borderRadius: 9, position: 'relative',
                   bgcolor: item.on ? 'primary.main' : 'action.hover' }}>
                   <Box sx={{ position: 'absolute', top: 2, left: item.on ? 16 : 2,
                     width: 14, height: 14, borderRadius: '50%', bgcolor: '#fff', transition: '0.2s' }}/>
                 </Box>
-              </Box>
+              </Stack>
             ))}
-          </Box>
+          </Stack>
         </Box>
       )}
-    </Box>
+    </Card>
   );
 }

@@ -1,13 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Box,
-  Button,
-  Checkbox,
-  CircularProgress,
-  IconButton,
-  LinearProgress,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Checkbox, CircularProgress, IconButton, LinearProgress, Stack, Typography } from '@mui/material';
 import {
   DndContext,
   PointerSensor,
@@ -69,14 +61,21 @@ function SortableRow({ subtask, onToggle, onRename, onDelete }: SortableRowProps
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(subtask.title);
   const [confirming, setConfirming] = useState(false);
+  const [prevEditing, setPrevEditing] = useState(editing);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  if (prevEditing !== editing) {
+    setPrevEditing(editing);
+    if (editing) {
+      setDraft(subtask.title);
+    }
+  }
 
   useEffect(() => {
     if (editing) {
-      setDraft(subtask.title);
       requestAnimationFrame(() => inputRef.current?.focus());
     }
-  }, [editing, subtask.title]);
+  }, [editing]);
 
   const commitEdit = () => {
     const trimmed = draft.trim();
@@ -87,38 +86,34 @@ function SortableRow({ subtask, onToggle, onRename, onDelete }: SortableRowProps
   };
 
   return (
-    <Box
+    <Stack direction="row" spacing={0.5}
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
       sx={{
-        display: 'flex',
+        transform: CSS.Transform.toString(transform),
+        transition,
         alignItems: 'center',
-        gap: 0.5,
         py: 0.25,
         borderRadius: 1,
         bgcolor: isDragging ? 'action.selected' : 'transparent',
         opacity: isDragging ? 0.6 : 1,
         '&:hover': { bgcolor: isDragging ? 'action.selected' : 'action.hover' },
-        '&:hover .subtask-grip, &:hover .subtask-delete': { opacity: 1 },
-      }}
+        '&:hover .subtask-grip, &:hover .subtask-delete': { opacity: 1 } }}
     >
-      <Box
+      <Stack direction="row"
         className="subtask-grip"
         {...attributes}
         {...listeners}
         sx={{
-          opacity: 0,
+        opacity: 0,
           cursor: 'grab',
           px: 0.5,
           color: 'text.disabled',
-          display: 'flex',
           alignItems: 'center',
-          '&:active': { cursor: 'grabbing' },
-        }}
+          '&:active': { cursor: 'grabbing' } }}
         aria-label="Přetáhnout pro změnu pořadí"
       >
         <GripIcon />
-      </Box>
+      </Stack>
 
       <Checkbox
         size="small"
@@ -151,7 +146,7 @@ function SortableRow({ subtask, onToggle, onRename, onDelete }: SortableRowProps
             borderRadius: 1,
             px: 1,
             py: 0.5,
-            fontSize: 13,
+            fontSize: '13px',
             bgcolor: 'background.paper',
             color: 'text.primary',
             outline: 'none',
@@ -164,7 +159,7 @@ function SortableRow({ subtask, onToggle, onRename, onDelete }: SortableRowProps
           sx={{
             flex: 1,
             minWidth: 0,
-            fontSize: 13,
+            fontSize: '13px',
             cursor: 'text',
             color: subtask.done ? 'text.disabled' : 'text.primary',
             textDecoration: subtask.done ? 'line-through' : 'none',
@@ -180,8 +175,8 @@ function SortableRow({ subtask, onToggle, onRename, onDelete }: SortableRowProps
       )}
 
       {confirming ? (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pr: 0.5 }}>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Smazat?</Typography>
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', pr: 0.5 }}>
+          <Typography sx={{ fontSize: '13px', color: 'text.secondary' }}>Smazat?</Typography>
           <Button
             size="small"
             color="error"
@@ -189,18 +184,18 @@ function SortableRow({ subtask, onToggle, onRename, onDelete }: SortableRowProps
               onDelete(subtask.id);
               setConfirming(false);
             }}
-            sx={{ minWidth: 0, px: 1, py: 0.25, fontSize: 13 }}
+            sx={{ minWidth: 0, px: 1, py: 0.25, fontSize: '13px' }}
           >
             Ano
           </Button>
           <Button
             size="small"
             onClick={() => setConfirming(false)}
-            sx={{ minWidth: 0, px: 1, py: 0.25, fontSize: 13 }}
+            sx={{ minWidth: 0, px: 1, py: 0.25, fontSize: '13px' }}
           >
             Ne
           </Button>
-        </Box>
+        </Stack>
       ) : (
         <IconButton
           className="subtask-delete"
@@ -216,7 +211,7 @@ function SortableRow({ subtask, onToggle, onRename, onDelete }: SortableRowProps
           <CloseIcon />
         </IconButton>
       )}
-    </Box>
+    </Stack>
   );
 }
 
@@ -301,12 +296,12 @@ export default function Subtasks({ taskId }: { taskId: string }) {
 
   return (
     <Box sx={{ mt: 3, mb: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.75 }}>
+      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 0.75 }}>
         <SectionLabel>
           Podúkoly{total > 0 ? ` · ${done}/${total}` : ''}
         </SectionLabel>
         {isLoading && <CircularProgress size={12} />}
-      </Box>
+      </Stack>
 
       {total > 0 && (
         <LinearProgress
@@ -318,7 +313,7 @@ export default function Subtasks({ taskId }: { taskId: string }) {
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={sorted.map(s => s.id)} strategy={verticalListSortingStrategy}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+          <Stack spacing={0.25} >
             {sorted.map(s => (
               <SortableRow
                 key={s.id}
@@ -328,13 +323,13 @@ export default function Subtasks({ taskId }: { taskId: string }) {
                 onDelete={handleDelete}
               />
             ))}
-          </Box>
+          </Stack>
         </SortableContext>
       </DndContext>
 
       <Box sx={{ mt: 0.5 }}>
         {adding ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 4 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', pl: 4 }}>
             <Box
               component="input"
               ref={newInputRef}
@@ -359,7 +354,7 @@ export default function Subtasks({ taskId }: { taskId: string }) {
                 borderRadius: 1,
                 px: 1,
                 py: 0.5,
-                fontSize: 13,
+                fontSize: '13px',
                 bgcolor: 'background.paper',
                 color: 'text.primary',
                 outline: 'none',
@@ -372,17 +367,17 @@ export default function Subtasks({ taskId }: { taskId: string }) {
                 setAdding(false);
                 setDraft('');
               }}
-              sx={{ fontSize: 13 }}
+              sx={{ fontSize: '13px' }}
             >
               Hotovo
             </Button>
-          </Box>
+          </Stack>
         ) : (
           <Button
             size="small"
             onClick={() => setAdding(true)}
             sx={{
-              fontSize: 14,
+              fontSize: '14px',
               color: 'text.secondary',
               justifyContent: 'flex-start',
               pl: 4,

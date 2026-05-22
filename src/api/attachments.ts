@@ -11,18 +11,6 @@ export interface Attachment {
   createdAt: string;
 }
 
-export const attachmentsApi = {
-  uploadImage: (taskId: string, file: File): Promise<string> => {
-    const form = new FormData();
-    form.append('file', file);
-    return api
-      .post<{ url: string }>(`/api/tasks/${taskId}/attachments`, form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      .then(r => r.data.url);
-  },
-};
-
 export async function fetchAttachments(taskId: string): Promise<Attachment[]> {
   const { data } = await api.get<Attachment[]>(`/api/tasks/${taskId}/attachments`);
   return data;
@@ -42,3 +30,8 @@ export async function uploadAttachment(taskId: string, file: File): Promise<Atta
 export async function deleteAttachment(attachmentId: string): Promise<void> {
   await api.delete(`/api/attachments/${attachmentId}`);
 }
+
+export const attachmentsApi = {
+  uploadImage: (taskId: string, file: File): Promise<string> =>
+    uploadAttachment(taskId, file).then(a => a.url),
+};

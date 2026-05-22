@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { DevPanel } from '../panels/dev-panel';
 import { Attachments } from '../panels/attachments';
 import { ActivityStream } from '../panels/activity-stream';
@@ -23,14 +23,14 @@ export default function TaskDetailTabs({ task, tab, devCount, onChange }: Props)
 
   return (
     <>
-      <Box sx={{ mt: 3, borderBottom: 1, borderColor: 'divider', display: 'flex', gap: 2 }}>
+      <Stack direction="row" spacing={2} sx={{ mt: 3, borderBottom: 1, borderColor: 'divider' }}>
         {tabs.map(([k, l]) => (
           <Box key={k} onClick={() => onChange(k)}
-            sx={{ py: 1, fontSize: 14, fontWeight: 600, cursor: 'default',
+            sx={{ py: 1, fontSize: '14px', fontWeight: 600, cursor: 'default',
               color: tab === k ? 'primary.main' : 'text.secondary',
               borderBottom: 2, borderColor: tab === k ? 'primary.main' : 'transparent', mb: '-1px' }}>{l}</Box>
         ))}
-      </Box>
+      </Stack>
       <Box sx={{ mt: 2 }}>
         {tab === 'activity'    && <ActivityStream taskId={task.id}/>}
         {tab === 'attachments' && <Attachments    taskId={task.id}/>}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Box, CircularProgress, Typography } from '@mui/material';
+import { Alert, Box, CircularProgress, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useIsMutating } from '@tanstack/react-query';
@@ -76,7 +76,7 @@ export default function Settings() {
   const groups = Array.from(new Set(SECTIONS.map(s => s.group)));
 
   return (
-    <Box sx={{ flex: 1, display: 'flex', height: '100%', overflow: 'hidden', bgcolor: 'background.default' }}>
+    <Stack direction="row" sx={{ flex: 1, height: '100%', overflow: 'hidden', bgcolor: 'background.default' }}>
       <Box sx={{
         width: 200, flexShrink: 0,
         borderRight: 1, borderColor: 'divider',
@@ -87,7 +87,7 @@ export default function Settings() {
           <Box key={group} sx={{ mb: gi === groups.length - 1 ? 0 : 0.5 }}>
             <Typography sx={{
               px: 2, pt: gi === 0 ? 0.25 : 1.5, pb: 0.5,
-              fontSize: 14, fontWeight: 700,
+              fontSize: '14px', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.08em',
               color: 'text.disabled',
             }}>{group}</Typography>
@@ -100,7 +100,7 @@ export default function Settings() {
                   sx={{
                     mx: 1, px: 1.25, py: 0.65,
                     cursor: 'pointer', borderRadius: 1,
-                    fontSize: 13,
+                    fontSize: '13px',
                     fontWeight: active ? 600 : 500,
                     color: active ? 'primary.main' : 'text.primary',
                     bgcolor: active ? (theme => alpha(theme.palette.primary.main, 0.10)) : 'transparent',
@@ -120,27 +120,27 @@ export default function Settings() {
           bgcolor: 'background.default',
           borderBottom: 1, borderColor: 'divider',
         }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'flex-end', justifyContent: 'space-between' }}>
             <Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'text.secondary', mb: 0.5 }}>
+              <Typography sx={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'text.secondary', mb: 0.5 }}>
                 {current.group} · {project.name}
               </Typography>
-              <Typography sx={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>
+              <Typography sx={{ fontSize: '20px', fontWeight: 700, letterSpacing: '-0.02em' }}>
                 {current.label}
               </Typography>
             </Box>
             {isSaving && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pb: 0.5, color: 'text.secondary' }}>
+              <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', pb: 0.5, color: 'text.secondary' }}>
                 <CircularProgress size={12} thickness={5}/>
-                <Typography sx={{ fontSize: 13 }}>Ukládám…</Typography>
-              </Box>
+                <Typography sx={{ fontSize: '13px' }}>Ukládám…</Typography>
+              </Stack>
             )}
-          </Box>
+          </Stack>
         </Box>
 
         <Box sx={{ px: 4, py: 3, maxWidth: 960 }}>
           {readOnly && (
-            <Alert severity="info" sx={{ mb: 2, fontSize: 14 }}>
+            <Alert severity="info" sx={{ mb: 2, fontSize: '14px' }}>
               Nastavení projektu může upravovat pouze administrátor. Změny se neuloží.
             </Alert>
           )}
@@ -159,6 +159,6 @@ export default function Settings() {
           {section === 'advanced'      && <AdvancedSection project={project} readOnly={readOnly}/>}
         </Box>
       </Box>
-    </Box>
+    </Stack>
   );
 }

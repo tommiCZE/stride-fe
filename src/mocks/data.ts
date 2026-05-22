@@ -56,9 +56,9 @@ export const LABELS: Label[] = [
 ];
 
 export const SPRINTS: Sprint[] = [
-  { id: 's1', name: 'Sprint 24 — Auth & onboarding', project: 'p1', start: '2026-04-14', end: '2026-04-28', state: 'active',    goal: 'Dokončit nový onboarding flow + 2FA' },
-  { id: 's2', name: 'Sprint 25 — Editor v2',         project: 'p1', start: '2026-04-28', end: '2026-05-12', state: 'planned',   goal: 'WYSIWYG editor s obrázky' },
-  { id: 's3', name: 'Sprint 23 — API rate limits',   project: 'p2', start: '2026-03-31', end: '2026-04-14', state: 'completed', goal: 'Rate limiting a observability' },
+  { id: 's1', number: 24, name: 'Sprint 24 — Auth & onboarding', project: 'p1', start: '2026-04-14', end: '2026-04-28', state: 'active',    goal: 'Dokončit nový onboarding flow + 2FA' },
+  { id: 's2', number: 25, name: 'Sprint 25 — Editor v2',         project: 'p1', start: '2026-04-28', end: '2026-05-12', state: 'planned',   goal: 'WYSIWYG editor s obrázky' },
+  { id: 's3', number: 23, name: 'Sprint 23 — API rate limits',   project: 'p2', start: '2026-03-31', end: '2026-04-14', state: 'completed', goal: 'Rate limiting a observability' },
 ];
 
 export const EPICS: Epic[] = [

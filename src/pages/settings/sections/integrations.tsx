@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Avatar, Box, Button, Chip, CircularProgress, IconButton, MenuItem, Switch, TextField, Typography } from '@mui/material';
+import { Avatar, Box, Button, Chip, CircularProgress, IconButton, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { SectionHeader, SettingsCard, FieldRow } from '../shared';
@@ -26,6 +26,19 @@ const WEBHOOK_EVENTS = [
   'comment.added', 'sprint.started', 'sprint.completed',
 ];
 
+const ROW_SX = {
+  p: 1,
+  border: 1,
+  borderColor: 'divider',
+  borderRadius: 1,
+  alignItems: 'center',
+} as const;
+
+function formatLastUsed(lastUsedAt: string | null): string {
+  if (!lastUsedAt) return 'nepoužito';
+  return `použito ${Math.round((Date.now() - new Date(lastUsedAt).getTime()) / 3600_000)}h zpět`;
+}
+
 export function IntegrationsSection({ project, readOnly }: { project: ProjectDto; readOnly: boolean }) {
   const tokens = useProjectApiTokensRes(project.key);
   const webhooks = useProjectWebhooksRes(project.key);
@@ -40,10 +53,10 @@ export function IntegrationsSection({ project, readOnly }: { project: ProjectDto
       />
 
       <SettingsCard title="Git" description="Propoj GitHub / GitLab repozitář s tímto projektem.">
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Stack spacing={2}>
           <GithubRow projectKey={project.key} readOnly={readOnly}/>
           <GitlabRow projectKey={project.key} readOnly={readOnly}/>
-        </Box>
+        </Stack>
       </SettingsCard>
 
       <BranchNamingCard projectKey={project.key} readOnly={readOnly}/>
@@ -51,30 +64,25 @@ export function IntegrationsSection({ project, readOnly }: { project: ProjectDto
       <SlackCard projectKey={project.key} readOnly={readOnly}/>
 
       <SettingsCard title="API tokeny" description="Servisní tokeny pro CI/CD a externí skripty.">
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1.5 }}>
+        <Stack spacing={0.5} sx={{ mb: 1.5 }}>
           {tokens.data.map((t, i) => (
-            <Box key={t.id} sx={{
-              display: 'flex', alignItems: 'center', gap: 1, p: 1,
-              border: 1, borderColor: 'divider', borderRadius: 1,
-            }}>
-              <Box sx={{ flex: 1 }}>
-                <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{t.name}</Typography>
-                <Typography sx={{ fontSize: 13, color: 'text.disabled', fontFamily: 'ui-monospace, monospace' }}>
+            <Stack key={t.id} direction="row" spacing={1} sx={ROW_SX}>
+              <Stack sx={{ flex: 1 }}>
+                <Typography variant="subtitle2">{t.name}</Typography>
+                <Typography variant="caption" color="text.disabled" sx={{ fontFamily: 'ui-monospace, monospace' }}>
                   {t.prefix}…  ·  {t.scopes.join(', ')}
                 </Typography>
-              </Box>
-              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-                {t.lastUsedAt
-                  ? `použito ${Math.round((Date.now() - new Date(t.lastUsedAt).getTime()) / 3600_000)}h zpět`
-                  : 'nepoužito'}
+              </Stack>
+              <Typography variant="caption" color="text.secondary">
+                {formatLastUsed(t.lastUsedAt)}
               </Typography>
               <IconButton size="small" disabled={readOnly}
                 onClick={() => tokens.replace(tokens.data.filter((_, j) => j !== i))}>
                 <CloseIcon/>
               </IconButton>
-            </Box>
+            </Stack>
           ))}
-        </Box>
+        </Stack>
         <Button
           size="small" variant="outlined" startIcon={<PlusIcon/>} disabled={readOnly}
           onClick={() => tokens.replace([...tokens.data, {
@@ -89,7 +97,7 @@ export function IntegrationsSection({ project, readOnly }: { project: ProjectDto
       </SettingsCard>
 
       <SettingsCard title="Webhooky" description="HTTP POST endpoint pro tyto eventy.">
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Stack spacing={1}>
           {webhooks.data.map((w, i) => (
             <WebhookRow
               key={w.id} webhook={w} readOnly={readOnly}
@@ -97,7 +105,7 @@ export function IntegrationsSection({ project, readOnly }: { project: ProjectDto
               onDelete={() => webhooks.replace(webhooks.data.filter((_, j) => j !== i))}
             />
           ))}
-        </Box>
+        </Stack>
         <Button
           size="small" variant="outlined" startIcon={<PlusIcon/>} disabled={readOnly} sx={{ mt: 1.5 }}
           onClick={() => webhooks.replace([...webhooks.data, {
@@ -107,29 +115,26 @@ export function IntegrationsSection({ project, readOnly }: { project: ProjectDto
       </SettingsCard>
 
       <SettingsCard title="Automatizace" description="Pravidla typu „pokud — tak”.">
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1.5 }}>
+        <Stack spacing={0.5} sx={{ mb: 1.5 }}>
           {automations.data.map((a, i) => (
-            <Box key={a.id} sx={{
-              display: 'flex', alignItems: 'center', gap: 1, p: 1,
-              border: 1, borderColor: 'divider', borderRadius: 1,
-            }}>
+            <Stack key={a.id} direction="row" spacing={1} sx={ROW_SX}>
               <Switch size="small" checked={a.enabled} disabled={readOnly}
                 onChange={(_, v) => automations.replace(
                   automations.data.map((x, j) => j === i ? { ...x, enabled: v } : x),
                 )}/>
-              <Box sx={{ flex: 1 }}>
-                <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{a.name}</Typography>
-                <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+              <Stack sx={{ flex: 1 }}>
+                <Typography variant="subtitle2">{a.name}</Typography>
+                <Typography variant="caption" color="text.secondary">
                   pokud {a.trigger} → {a.action}
                 </Typography>
-              </Box>
+              </Stack>
               <IconButton size="small" disabled={readOnly}
                 onClick={() => automations.replace(automations.data.filter((_, j) => j !== i))}>
                 <CloseIcon/>
               </IconButton>
-            </Box>
+            </Stack>
           ))}
-        </Box>
+        </Stack>
         <Button
           size="small" variant="outlined" startIcon={<PlusIcon/>} disabled={readOnly}
           onClick={() => automations.replace([...automations.data, {
@@ -141,28 +146,25 @@ export function IntegrationsSection({ project, readOnly }: { project: ProjectDto
       </SettingsCard>
 
       <SettingsCard title="Šablony tasků" description="Předvyplněné struktury pro běžně používané typy tasků.">
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Stack spacing={0.5}>
           {templates.data.map((t, i) => (
-            <Box key={t.id} sx={{
-              display: 'flex', alignItems: 'flex-start', gap: 1, p: 1,
-              border: 1, borderColor: 'divider', borderRadius: 1,
-            }}>
-              <Box sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ fontSize: 14, fontWeight: 700 }}>{t.name}</Typography>
+            <Stack key={t.id} direction="row" spacing={1} sx={{ ...ROW_SX, alignItems: 'flex-start' }}>
+              <Stack sx={{ flex: 1 }}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                  <Typography variant="label">{t.name}</Typography>
                   <Chip size="small" label={t.typeKey} variant="outlined"/>
-                </Box>
-                <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.25, whiteSpace: 'pre-line' }}>
+                </Stack>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.25, whiteSpace: 'pre-line' }}>
                   {t.description.split('\n').slice(0, 2).join(' · ')}
                 </Typography>
-              </Box>
+              </Stack>
               <IconButton size="small" disabled={readOnly}
                 onClick={() => templates.replace(templates.data.filter((_, j) => j !== i))}>
                 <CloseIcon/>
               </IconButton>
-            </Box>
+            </Stack>
           ))}
-        </Box>
+        </Stack>
         <Button
           size="small" variant="outlined" startIcon={<PlusIcon/>} disabled={readOnly} sx={{ mt: 1.5 }}
           onClick={() => templates.replace([...templates.data, {
@@ -182,11 +184,8 @@ function WebhookRow({ webhook, readOnly, onChange, onDelete }: {
   onDelete: () => void;
 }) {
   return (
-    <Box sx={{
-      display: 'flex', flexDirection: 'column', gap: 0.75, p: 1.25,
-      border: 1, borderColor: 'divider', borderRadius: 1,
-    }}>
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+    <Stack spacing={0.75} sx={{ p: 1.25, border: 1, borderColor: 'divider', borderRadius: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <Switch size="small" checked={webhook.enabled} disabled={readOnly}
           onChange={(_, v) => onChange({ ...webhook, enabled: v })}/>
         <TextField
@@ -198,8 +197,8 @@ function WebhookRow({ webhook, readOnly, onChange, onDelete }: {
         <IconButton size="small" disabled={readOnly} onClick={onDelete}>
           <CloseIcon/>
         </IconButton>
-      </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+      </Stack>
+      <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap' }}>
         {WEBHOOK_EVENTS.map(ev => {
           const on = webhook.events.includes(ev);
           return (
@@ -213,16 +212,16 @@ function WebhookRow({ webhook, readOnly, onChange, onDelete }: {
             />
           );
         })}
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 }
 
 function SlackLogo() {
   return (
-    <Box sx={{
+    <Stack sx={{
       width: 36, height: 36, borderRadius: 1, bgcolor: 'action.hover',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      alignItems: 'center', justifyContent: 'center',
     }}>
       <svg width={20} height={20} viewBox="0 0 24 24">
         <path fill="#E01E5A" d="M5.04 15.06a2.52 2.52 0 1 1-5.04 0 2.52 2.52 0 0 1 2.52-2.52h2.52v2.52zm1.26 0a2.52 2.52 0 1 1 5.04 0v6.42a2.52 2.52 0 1 1-5.04 0v-6.42z"/>
@@ -230,7 +229,7 @@ function SlackLogo() {
         <path fill="#2EB67D" d="M18.84 8.82a2.52 2.52 0 1 1 5.04 0 2.52 2.52 0 0 1-2.52 2.52h-2.52V8.82zm-1.26 0a2.52 2.52 0 1 1-5.04 0V2.4a2.52 2.52 0 1 1 5.04 0v6.42z"/>
         <path fill="#ECB22E" d="M15.06 18.84a2.52 2.52 0 1 1 0 5.04 2.52 2.52 0 0 1-2.52-2.52v-2.52h2.52zm0-1.26a2.52 2.52 0 1 1 0-5.04h6.42a2.52 2.52 0 1 1 0 5.04h-6.42z"/>
       </svg>
-    </Box>
+    </Stack>
   );
 }
 
@@ -264,16 +263,16 @@ function SlackCard({ projectKey, readOnly }: { projectKey: string; readOnly: boo
 
   return (
     <SettingsCard title="Slack" description="Posílej notifikace o eventech do vybraného Slack kanálu.">
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <SlackLogo/>
-        <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 700 }}>Slack workspace</Typography>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Stack sx={{ flex: 1 }}>
+          <Typography variant="label">Slack workspace</Typography>
+          <Typography variant="caption" color="text.secondary">
             {slack.isLoading ? 'Načítám…'
               : slack.isConnected ? `Připojeno k ${slack.integration?.teamName}`
               : 'Nepřipojeno'}
           </Typography>
-        </Box>
+        </Stack>
         {!slack.isConnected && (
           <Button size="small" variant="contained" disabled={readOnly || slack.isLoading} onClick={startInstall}>
             Připojit Slack
@@ -286,11 +285,11 @@ function SlackCard({ projectKey, readOnly }: { projectKey: string; readOnly: boo
             {slack.disconnecting ? 'Odpojuji…' : 'Odpojit'}
           </Button>
         )}
-      </Box>
+      </Stack>
 
       {slack.isConnected && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5 }}>
-          <Typography sx={{ fontSize: 14, color: 'text.secondary', minWidth: 130 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mt: 1.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ minWidth: 130 }}>
             Výchozí kanál
           </Typography>
           <TextField
@@ -314,7 +313,7 @@ function SlackCard({ projectKey, readOnly }: { projectKey: string; readOnly: boo
             ))}
           </TextField>
           {slack.settingChannel && <CircularProgress size={14} thickness={5}/>}
-        </Box>
+        </Stack>
       )}
     </SettingsCard>
   );
@@ -358,17 +357,17 @@ function GithubRow({ projectKey, readOnly }: { projectKey: string; readOnly: boo
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <ProviderLogo provider="github" size={28}/>
-        <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 700 }}>GitHub</Typography>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Stack sx={{ flex: 1 }}>
+          <Typography variant="label">GitHub</Typography>
+          <Typography variant="caption" color="text.secondary">
             {gh.isLoading ? 'Načítám…'
               : gh.isConnected
                 ? <>Přihlášen jako <strong>@{gh.integration?.accountLogin}</strong></>
                 : 'Nepřipojeno'}
           </Typography>
-        </Box>
+        </Stack>
         {gh.integration?.accountAvatarUrl && (
           <Avatar src={gh.integration.accountAvatarUrl} sx={{ width: 24, height: 24 }}/>
         )}
@@ -384,11 +383,11 @@ function GithubRow({ projectKey, readOnly }: { projectKey: string; readOnly: boo
             {gh.disconnecting ? 'Odpojuji…' : 'Odpojit'}
           </Button>
         )}
-      </Box>
+      </Stack>
 
       {gh.isConnected && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, ml: 4.5 }}>
-          <Typography sx={{ fontSize: 14, color: 'text.secondary', minWidth: 120 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mt: 1, ml: 4.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ minWidth: 120 }}>
             Výchozí repo
           </Typography>
           <TextField
@@ -413,7 +412,7 @@ function GithubRow({ projectKey, readOnly }: { projectKey: string; readOnly: boo
             ))}
           </TextField>
           {gh.settingRepo && <CircularProgress size={14} thickness={5}/>}
-        </Box>
+        </Stack>
       )}
     </Box>
   );
@@ -436,17 +435,17 @@ function GitlabRow({ projectKey, readOnly }: { projectKey: string; readOnly: boo
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <ProviderLogo provider="gitlab" size={28}/>
-        <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 700 }}>GitLab</Typography>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Stack sx={{ flex: 1 }}>
+          <Typography variant="label">GitLab</Typography>
+          <Typography variant="caption" color="text.secondary">
             {gl.isLoading ? 'Načítám…'
               : gl.isConnected
                 ? <>Přihlášen jako <strong>@{gl.integration?.accountUsername}</strong></>
                 : 'Nepřipojeno'}
           </Typography>
-        </Box>
+        </Stack>
         {gl.integration?.accountAvatarUrl && (
           <Avatar src={gl.integration.accountAvatarUrl} sx={{ width: 24, height: 24 }}/>
         )}
@@ -462,11 +461,11 @@ function GitlabRow({ projectKey, readOnly }: { projectKey: string; readOnly: boo
             {gl.disconnecting ? 'Odpojuji…' : 'Odpojit'}
           </Button>
         )}
-      </Box>
+      </Stack>
 
       {gl.isConnected && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, ml: 4.5 }}>
-          <Typography sx={{ fontSize: 14, color: 'text.secondary', minWidth: 120 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mt: 1, ml: 4.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ minWidth: 120 }}>
             Výchozí projekt
           </Typography>
           <TextField
@@ -491,7 +490,7 @@ function GitlabRow({ projectKey, readOnly }: { projectKey: string; readOnly: boo
             ))}
           </TextField>
           {gl.settingProject && <CircularProgress size={14} thickness={5}/>}
-        </Box>
+        </Stack>
       )}
     </Box>
   );
@@ -519,7 +518,7 @@ function BranchNamingCard({ projectKey, readOnly }: { projectKey: string; readOn
         />
       </FieldRow>
       <FieldRow label="Náhled">
-        <Typography sx={{ fontFamily: 'ui-monospace, monospace', fontSize: 14, color: 'text.secondary',
+        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'ui-monospace, monospace',
           bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 0.75 }}>
           {sample}
         </Typography>

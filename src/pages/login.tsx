@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Box, Button, TextField, Typography, Alert, InputAdornment, IconButton } from '@mui/material';
+import { Alert, Box, Button, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -41,7 +41,7 @@ export default function Login() {
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { email: 'tomas.knytl@gmail.com', password: 'stride123' },
+    defaultValues: { email: 'tomas.vesely@acme.cz', password: 'password' },
   });
 
   const onSubmit = async (data: FormData) => {
@@ -58,27 +58,25 @@ export default function Login() {
   };
 
   return (
-    <Box sx={{
-      minHeight: '100vh',
-      display: 'flex',
+    <Stack direction="row" sx={{
+        minHeight: '100vh',
       alignItems: 'center',
       justifyContent: 'center',
       bgcolor: 'background.default',
-      p: 2,
-    }}>
+      p: 2 }}>
       <Box sx={{ width: '100%', maxWidth: 400 }}>
         {/* Logo */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+        <Stack sx={{ alignItems: 'center', mb: 4 }}>
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 1 }}>
             <StrideLogoIcon size={36}/>
-            <Typography sx={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }}>
+            <Typography sx={{ fontSize: '24px', fontWeight: 800, letterSpacing: '-0.03em' }}>
               Stride
             </Typography>
-          </Box>
+          </Stack>
           <Typography sx={{ fontSize: 13.5, color: 'text.secondary' }}>
             {t('login.subtitle')}
           </Typography>
-        </Box>
+        </Stack>
 
         {/* Card */}
         <Box sx={{
@@ -88,20 +86,20 @@ export default function Login() {
           borderRadius: 2,
           p: 3.5,
         }}>
-          <Typography sx={{ fontSize: 17, fontWeight: 700, mb: 0.5, letterSpacing: '-0.02em' }}>
+          <Typography sx={{ fontSize: '17px', fontWeight: 700, mb: 0.5, letterSpacing: '-0.02em' }}>
             {t('login.title')}
           </Typography>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 3 }}>
+          <Typography sx={{ fontSize: '13px', color: 'text.secondary', mb: 3 }}>
             {t('login.description')}
           </Typography>
 
           {serverError && (
-            <Alert severity="error" sx={{ mb: 2, fontSize: 14 }}>{serverError}</Alert>
+            <Alert severity="error" sx={{ mb: 2, fontSize: '14px' }}>{serverError}</Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Stack spacing={2} component="form" onSubmit={handleSubmit(onSubmit)} >
             <Box>
-              <Typography sx={{ fontSize: 14, fontWeight: 600, mb: 0.75, color: 'text.primary' }}>
+              <Typography sx={{ fontSize: '14px', fontWeight: 600, mb: 0.75, color: 'text.primary' }}>
                 {t('login.email')}
               </Typography>
               <TextField
@@ -115,14 +113,14 @@ export default function Login() {
             </Box>
 
             <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
-                <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary' }}>
+              <Stack direction="row" sx={{ justifyContent: 'space-between', mb: 0.75 }}>
+                <Typography sx={{ fontSize: '14px', fontWeight: 600, color: 'text.primary' }}>
                   {t('login.password')}
                 </Typography>
-                <Typography sx={{ fontSize: 14, color: 'primary.main', cursor: 'default' }}>
+                <Typography sx={{ fontSize: '14px', color: 'primary.main', cursor: 'default' }}>
                   {t('login.forgotPassword')}
                 </Typography>
-              </Box>
+              </Stack>
               <TextField
                 fullWidth
                 size="small"
@@ -154,10 +152,10 @@ export default function Login() {
             >
               {loading ? t('login.submitting') : t('login.submit')}
             </Button>
-          </Box>
+          </Stack>
 
           <Box sx={{ mt: 2.5, pt: 2.5, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
-            <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: '14px', color: 'text.secondary' }}>
               {t('login.noAccount')}{' '}
               <Box component="span" sx={{ color: 'primary.main', cursor: 'default', fontWeight: 600 }}>
                 {t('login.register')}
@@ -166,10 +164,10 @@ export default function Login() {
           </Box>
         </Box>
 
-        <Typography sx={{ mt: 3, textAlign: 'center', fontSize: 13, color: 'text.disabled' }}>
+        <Typography sx={{ mt: 3, textAlign: 'center', fontSize: '13px', color: 'text.disabled' }}>
           {t('login.footer')}
         </Typography>
       </Box>
-    </Box>
+    </Stack>
   );
 }

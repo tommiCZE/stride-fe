@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Box, CircularProgress, useMediaQuery } from '@mui/material';
+import { Box, CircularProgress, Stack, useMediaQuery } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
 import { useSnackbar } from 'notistack';
 import { useTaskByKey, useUpdateTask } from '../../hooks/useTasks';
 import { useProjects } from '../../hooks/useProjects';
-import { useUiStore } from '../../store/ui-store';
 import QueryError from '../../components/query-error/QueryError';
 import TaskDetailHeader from './components/task-detail-header';
 import TaskDetailBody from './task-detail-body';
@@ -52,12 +51,16 @@ const ResizeHandle = styled(Box)(({ theme }) => ({
 
 export default function TaskDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { timer, startTimer } = useUiStore();
   const isMobile = useMediaQuery((t: Theme) => t.breakpoints.down('md'));
   const { enqueueSnackbar } = useSnackbar();
 
   const taskKey = searchParams.get('task');
   const closeTask = () => setSearchParams({});
+  const popOut = () => {
+    if (!taskKey) return;
+    window.open(`/task/${taskKey}`, '_blank', 'noopener,noreferrer');
+    closeTask();
+  };
 
   const [pinned, setPinned] = useState(() => localStorage.getItem('stride-detail-pinned') === '1');
   const [expanded, setExpanded] = useState(false);
@@ -66,6 +69,12 @@ export default function TaskDetail() {
     return saved ? Number(saved) : 900;
   });
   const [tab, setTab] = useState<TaskDetailTab>('activity');
+  const [prevTaskKey, setPrevTaskKey] = useState(taskKey);
+
+  if (prevTaskKey !== taskKey) {
+    setPrevTaskKey(taskKey);
+    setTab('activity');
+  }
 
   const { data: task, isLoading, isError: taskError, error: taskErrorObj, refetch: refetchTask } = useTaskByKey(taskKey ?? '');
   const { data: projects = [] } = useProjects();
@@ -80,8 +89,6 @@ export default function TaskDetail() {
         : undefined,
     );
   };
-
-  useEffect(() => { setTab('activity'); }, [taskKey]);
 
   useEffect(() => {
     localStorage.setItem('stride-detail-pinned', pinned ? '1' : '0');
@@ -135,21 +142,20 @@ export default function TaskDetail() {
         {taskError ? (
           <QueryError error={taskErrorObj} onRetry={() => { void refetchTask(); }} />
         ) : isLoading || !task ? (
-          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Stack direction="row" sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <CircularProgress/>
-          </Box>
+          </Stack>
         ) : (
           <>
             <TaskDetailHeader
               task={task}
               proj={proj}
-              timer={timer}
               pinned={pinned}
               expanded={expanded}
               onPin={() => setPinned(p => !p)}
               onExpand={() => setExpanded(e => !e)}
+              onPopOut={popOut}
               onClose={closeTask}
-              onStartTimer={startTimer}
             />
             <TaskDetailBody task={task} proj={proj} tab={tab} onTabChange={setTab} onPatch={patchTask}/>
           </>

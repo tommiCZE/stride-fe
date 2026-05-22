@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Box, Button, CircularProgress, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, Button, Card, CircularProgress, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
@@ -12,6 +12,7 @@ import { BOARD_STATUSES } from '../../constants/statuses';
 import { TASK_TYPES } from '../../constants/taskTypes';
 import { useTeamMembers } from '../../hooks/useTeam';
 import type { ReleaseStatus, TaskSummaryDto } from '../../api/types';
+import { taskLinkProps } from '../../utils/task-link';
 
 const STATUS_META: Record<ReleaseStatus, { label: string; color: string }> = {
   unreleased: { label: 'Plánováno', color: 'warning.main' },
@@ -22,16 +23,17 @@ const STATUS_META: Record<ReleaseStatus, { label: string; color: string }> = {
 function StatusChip({ status }: { status: ReleaseStatus }) {
   const m = STATUS_META[status];
   return (
-    <Box sx={{
+    <Stack direction="row" spacing={0.5} sx={{
       px: 0.75, py: 0.15, borderRadius: 0.75,
-      fontSize: 14, fontWeight: 700,
+      alignItems: 'center',
+      fontWeight: 700,
       color: m.color,
       border: 1, borderColor: m.color,
-      display: 'inline-flex', alignItems: 'center', gap: 0.5,
+      display: 'inline-flex',
     }}>
       <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: m.color }}/>
-      {m.label}
-    </Box>
+      <Typography variant="body2" sx={{ fontWeight: 700, color: 'inherit' }}>{m.label}</Typography>
+    </Stack>
   );
 }
 
@@ -68,6 +70,11 @@ export default function ReleaseDetailPage() {
   const navigate = useNavigate();
   const [, setSearchParams] = useSearchParams();
   const { enqueueSnackbar } = useSnackbar();
+  const openTask = (key: string) => setSearchParams(prev => {
+    const next = new URLSearchParams(prev);
+    next.set('task', key);
+    return next;
+  });
 
   const { data: projects = [] } = useProjects();
   const project = projects.find(p => p.key === projectKey);
@@ -85,9 +92,9 @@ export default function ReleaseDetailPage() {
   if (!project) return null;
   if (isLoading || !release) {
     return (
-      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Stack sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <CircularProgress size={20}/>
-      </Box>
+      </Stack>
     );
   }
 
@@ -126,22 +133,21 @@ export default function ReleaseDetailPage() {
         bgcolor: 'background.default',
         borderBottom: 1, borderColor: 'divider',
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.5 }}>
           <Typography
+            variant="caption"
+            color="text.secondary"
             onClick={() => navigate(`/projects/${project.key}/releases`)}
-            sx={{ fontSize: 13, color: 'text.secondary', cursor: 'default',
+            sx={{ cursor: 'default',
               '&:hover': { color: 'text.primary', textDecoration: 'underline' } }}
           >
             ← Releases
           </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Typography sx={{
-            fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em',
-            fontFamily: 'ui-monospace, monospace',
-          }}>{release.name}</Typography>
+        </Stack>
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+          <Typography variant="h3" sx={{ fontFamily: 'ui-monospace, monospace' }}>{release.name}</Typography>
           <StatusChip status={release.status}/>
-        </Box>
+        </Stack>
       </Box>
 
       <Box sx={{
@@ -150,20 +156,20 @@ export default function ReleaseDetailPage() {
         gap: 3, px: { xs: 2, md: 4 }, py: 3,
       }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 2 }}>
             <Box sx={{ flex: 1, height: 8, borderRadius: 4,
               bgcolor: 'action.hover', overflow: 'hidden' }}>
               <Box sx={{ height: '100%', width: `${progress}%`,
                 bgcolor: release.status === 'released' ? 'success.main' : 'primary.main',
                 transition: '0.3s' }}/>
             </Box>
-            <Typography sx={{ fontSize: 13, fontWeight: 600,
+            <Typography variant="caption" sx={{ fontWeight: 600,
               fontVariantNumeric: 'tabular-nums', minWidth: 120, textAlign: 'right' }}>
               {release.doneCount} / {release.taskCount} dokončeno
             </Typography>
-          </Box>
+          </Stack>
 
-          <Typography sx={{ fontSize: 14, fontWeight: 700,
+          <Typography variant="body2" sx={{ fontWeight: 700,
             letterSpacing: '0.06em', textTransform: 'uppercase',
             color: 'text.disabled', mb: 0.75 }}>
             Tasky v této verzi
@@ -174,37 +180,36 @@ export default function ReleaseDetailPage() {
               p: 3, textAlign: 'center', border: 1, borderStyle: 'dashed',
               borderColor: 'divider', borderRadius: 1.25, color: 'text.secondary',
             }}>
-              <Typography sx={{ fontSize: 14 }}>
+              <Typography variant="body2">
                 Žádné tasky. V detailu tasku nastavte „Fix version” na tuto verzi.
               </Typography>
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Stack>
               {tasks.map(t => {
                 const assignee = t.assigneeId ? members.find(m => m.id === t.assigneeId) : null;
                 const status = BOARD_STATUSES.find(s => s.id === t.status);
                 return (
-                  <Box
+                  <Stack
                     key={t.id}
-                    onClick={() => setSearchParams(prev => {
-                      const next = new URLSearchParams(prev);
-                      next.set('task', t.key);
-                      return next;
-                    })}
+                    direction="row"
+                    spacing={1.25}
+                    {...taskLinkProps(t.key, openTask)}
                     sx={{
-                      display: 'flex', alignItems: 'center', gap: 1.25,
+                      alignItems: 'center',
                       px: 1.25, py: 0.85,
                       borderBottom: 1, borderColor: 'divider',
                       cursor: 'default',
+                      textDecoration: 'none', color: 'text.primary',
                       '&:hover': { bgcolor: 'action.hover' },
                     }}
                   >
                     <TypeIcon type={t.type} size={14}/>
-                    <Typography sx={{
-                      fontFamily: 'ui-monospace, monospace', fontSize: 13,
+                    <Typography variant="caption" sx={{
+                      fontFamily: 'ui-monospace, monospace',
                       fontWeight: 600, color: 'text.disabled', width: 80,
                     }}>{t.key}</Typography>
-                    <Typography sx={{ fontSize: 13, flex: 1, minWidth: 0,
+                    <Typography variant="caption" sx={{ flex: 1, minWidth: 0,
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {t.title}
                     </Typography>
@@ -212,35 +217,35 @@ export default function ReleaseDetailPage() {
                     {status && (
                       <Box sx={{
                         px: 0.75, py: 0.1, borderRadius: 0.75,
-                        fontSize: 14, fontWeight: 700,
+                        fontWeight: 700,
                         color: status.color, bgcolor: alpha(status.color, 0.13),
                         border: 1, borderColor: alpha(status.color, 0.4),
                       }}>
-                        {status.name}
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'inherit' }}>{status.name}</Typography>
                       </Box>
                     )}
                     {assignee ? <FluxAvatar user={assignee} size={20}/>
                       : <Box sx={{ width: 20, height: 20 }}/>}
-                  </Box>
+                  </Stack>
                 );
               })}
-            </Box>
+            </Stack>
           )}
 
           <Box sx={{ mt: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 700,
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.75 }}>
+              <Typography variant="body2" sx={{ fontWeight: 700,
                 letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.disabled' }}>
                 Release notes
               </Typography>
               <Button size="small" variant="text" onClick={handleCopyNotes}>
                 Kopírovat markdown
               </Button>
-            </Box>
+            </Stack>
             <Box sx={{
               p: 2, border: 1, borderColor: 'divider', borderRadius: 1.25,
               bgcolor: 'background.paper',
-              fontFamily: 'ui-monospace, monospace', fontSize: 14,
+              fontFamily: 'ui-monospace, monospace', fontSize: '14px',
               whiteSpace: 'pre-wrap', maxHeight: 400, overflowY: 'auto',
             }}>
               {notesMarkdown}
@@ -248,51 +253,49 @@ export default function ReleaseDetailPage() {
           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Box sx={{
-            border: 1, borderColor: 'divider', borderRadius: 1.5, p: 2,
-            bgcolor: 'background.paper',
-            display: 'flex', flexDirection: 'column', gap: 1.25,
-          }}>
-            <TextField
-              size="small" label="Název" fullWidth value={release.name}
-              onChange={e => updateRelease.mutate({ id: release.id, body: { name: e.target.value } })}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <TextField
-              size="small" label="Status" fullWidth select value={release.status}
-              onChange={e => handleStatus(e.target.value as ReleaseStatus)}
-              slotProps={{ inputLabel: { shrink: true } }}
-            >
-              <MenuItem value="unreleased">Plánováno</MenuItem>
-              <MenuItem value="released">Vydáno</MenuItem>
-              <MenuItem value="archived">Archiv</MenuItem>
-            </TextField>
-            <TextField
-              size="small" label="Start" type="date" fullWidth
-              value={release.startDate ?? ''}
-              onChange={e => updateRelease.mutate({ id: release.id, body: { startDate: e.target.value || null } })}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <TextField
-              size="small" label="Release date" type="date" fullWidth
-              value={release.releaseDate ?? ''}
-              onChange={e => updateRelease.mutate({ id: release.id, body: { releaseDate: e.target.value || null } })}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <TextField
-              size="small" label="Goal" multiline minRows={2} fullWidth
-              value={release.goal ?? ''}
-              onChange={e => updateRelease.mutate({ id: release.id, body: { goal: e.target.value || null } })}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <TextField
-              size="small" label="Popis" multiline minRows={3} fullWidth
-              value={release.description ?? ''}
-              onChange={e => updateRelease.mutate({ id: release.id, body: { description: e.target.value || null } })}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-          </Box>
+        <Stack spacing={1.5}>
+          <Card variant="outlined" sx={{ p: 2, bgcolor: 'background.paper' }}>
+            <Stack spacing={1.25}>
+              <TextField
+                size="small" label="Název" fullWidth value={release.name}
+                onChange={e => updateRelease.mutate({ id: release.id, body: { name: e.target.value } })}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+              <TextField
+                size="small" label="Status" fullWidth select value={release.status}
+                onChange={e => handleStatus(e.target.value as ReleaseStatus)}
+                slotProps={{ inputLabel: { shrink: true } }}
+              >
+                <MenuItem value="unreleased">Plánováno</MenuItem>
+                <MenuItem value="released">Vydáno</MenuItem>
+                <MenuItem value="archived">Archiv</MenuItem>
+              </TextField>
+              <TextField
+                size="small" label="Start" type="date" fullWidth
+                value={release.startDate ?? ''}
+                onChange={e => updateRelease.mutate({ id: release.id, body: { startDate: e.target.value || null } })}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+              <TextField
+                size="small" label="Release date" type="date" fullWidth
+                value={release.releaseDate ?? ''}
+                onChange={e => updateRelease.mutate({ id: release.id, body: { releaseDate: e.target.value || null } })}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+              <TextField
+                size="small" label="Goal" multiline minRows={2} fullWidth
+                value={release.goal ?? ''}
+                onChange={e => updateRelease.mutate({ id: release.id, body: { goal: e.target.value || null } })}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+              <TextField
+                size="small" label="Popis" multiline minRows={3} fullWidth
+                value={release.description ?? ''}
+                onChange={e => updateRelease.mutate({ id: release.id, body: { description: e.target.value || null } })}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+            </Stack>
+          </Card>
 
           {release.status === 'unreleased' && (
             <Button variant="contained" color="success" onClick={() => handleStatus('released')}>
@@ -307,7 +310,7 @@ export default function ReleaseDetailPage() {
           <Button variant="outlined" color="error" onClick={handleDelete}>
             Smazat verzi
           </Button>
-        </Box>
+        </Stack>
       </Box>
     </Box>
   );

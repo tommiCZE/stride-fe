@@ -27,19 +27,17 @@ function FallbackUI({ error, resetErrorBoundary }: FallbackProps) {
   const message = getErrorMessage(error);
 
   return (
-    <Box
+    <Stack direction="row"
       role="alert"
       aria-live="assertive"
       aria-atomic="true"
       aria-labelledby="app-error-title"
       sx={{
         minHeight: '100vh',
-        display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         p: 3,
-        bgcolor: 'background.default',
-      }}
+        bgcolor: 'background.default' }}
     >
       <Card
         sx={{
@@ -53,21 +51,19 @@ function FallbackUI({ error, resetErrorBoundary }: FallbackProps) {
           gap: 2,
         }}
       >
-        <Box
+        <Stack direction="row"
           aria-hidden="true"
           sx={{
-            width: 72,
+        width: 72,
             height: 72,
             borderRadius: '50%',
-            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: 'error.main',
-            bgcolor: theme => alpha(theme.palette.error.main, 0.12),
-          }}
+            bgcolor: theme => alpha(theme.palette.error.main, 0.12) }}
         >
           <AlertIcon width={40} height={40} />
-        </Box>
+        </Stack>
 
         <Stack spacing={0.5} sx={{ alignItems: 'center' }}>
           <Typography id="app-error-title" variant="h5" component="h1">
@@ -87,7 +83,7 @@ function FallbackUI({ error, resetErrorBoundary }: FallbackProps) {
               bgcolor: theme => alpha(theme.palette.error.main, 0.08),
               color: 'error.main',
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-              fontSize: 14,
+              fontSize: '14px',
               textAlign: 'left',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
@@ -118,7 +114,7 @@ function FallbackUI({ error, resetErrorBoundary }: FallbackProps) {
           </Button>
         </Stack>
       </Card>
-    </Box>
+    </Stack>
   );
 }
 

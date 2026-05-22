@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  Box, Button, IconButton, Tooltip, Typography, useTheme,
+  Box, Button, IconButton, Stack, Tooltip, Typography,
   Menu, MenuItem, ListItemIcon, Divider,
   Dialog, DialogTitle, DialogContent, DialogActions,
 } from '@mui/material';
@@ -10,33 +10,51 @@ import TypeIcon from '../../../components/icons/type-icon';
 import {
   CaretRIcon, ClockIcon, PinIcon, PinFilledIcon,
   ExpandIcon, CollapseIcon, LinkIcon, MoreIcon, CloseIcon,
-  EyeIcon, EyeFilledIcon,
+  EyeIcon, EyeFilledIcon, OpenInNewIcon,
   DeleteIcon, DuplicateIcon, MoveIcon, ConvertIcon,
 } from '../../../components/icons/icons';
 import { useIsWatching, useToggleWatch } from '../../../hooks/useWatchers';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { useDeleteTask } from '../../../hooks/useTasks';
-import type { TaskDto, ProjectDto } from '../../../api/types';
+import { useRunningTimer, useStartTimer, useStopTimer } from '../../../hooks/useTimer';
+import { WorklogDialog } from '../../../components/worklog-dialog';
+import type { TaskDto, ProjectDto, StopTimerResponse } from '../../../api/types';
 
 interface Props {
   task: TaskDto;
   proj: ProjectDto | undefined;
-  timer: { taskKey: string | null; running: boolean };
   pinned?: boolean;
   expanded?: boolean;
   onPin?: () => void;
   onExpand?: () => void;
+  onPopOut?: () => void;
   onClose?: () => void;
-  onStartTimer: (key: string) => void;
 }
 
-export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, onPin, onExpand, onClose, onStartTimer }: Props) {
-  const theme = useTheme();
+export default function TaskDetailHeader({ task, proj, pinned, expanded, onPin, onExpand, onPopOut, onClose }: Props) {
   const { enqueueSnackbar } = useSnackbar();
   const isWatching = useIsWatching(task.id);
   const toggleWatch = useToggleWatch(task.id);
   const { canEdit } = usePermissions();
   const deleteTask = useDeleteTask(task.projectId);
+  const { data: runningTimer } = useRunningTimer();
+  const startTimerMutation = useStartTimer();
+  const stopTimerMutation = useStopTimer();
+  const [pendingWorklog, setPendingWorklog] = useState<StopTimerResponse | null>(null);
+
+  const isThisTaskRunning = runningTimer?.taskId === task.id;
+  const timerPending = startTimerMutation.isPending || stopTimerMutation.isPending;
+
+  const handleTimerClick = () => {
+    if (timerPending) return;
+    if (isThisTaskRunning) {
+      stopTimerMutation.mutate(undefined, {
+        onSuccess: (data) => setPendingWorklog(data),
+      });
+    } else {
+      startTimerMutation.mutate(task.id);
+    }
+  };
 
   const [moreAnchor, setMoreAnchor] = useState<null | HTMLElement>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -71,6 +89,7 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
 
   const handlePinClick = () => { closeMenu(); onPin?.(); };
   const handleExpandClick = () => { closeMenu(); onExpand?.(); };
+  const handlePopOutClick = () => { closeMenu(); onPopOut?.(); };
   const handleDeleteClick = () => { closeMenu(); setConfirmDelete(true); };
 
   const handleDeleteConfirm = () => {
@@ -87,38 +106,48 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
   };
 
   return (
-    <Box sx={{ px: { xs: 1.5, md: 2 }, py: 1, display: 'flex', alignItems: 'center', gap: 1,
+    <Stack direction="row" spacing={1} sx={{ px: { xs: 1.5, md: 2 }, py: 1, alignItems: 'center',
       borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexWrap: 'wrap' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-        <Box sx={{ width: 16, height: 16, borderRadius: 0.5, bgcolor: proj?.color ?? '#64748b',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#fff', fontSize: 13, fontWeight: 700 }}>{proj?.key[0]}</Box>
+      <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+        <Stack sx={{ width: 16, height: 16, borderRadius: 0.5, bgcolor: proj?.color ?? '#64748b',
+          alignItems: 'center', justifyContent: 'center',
+          color: '#fff', fontSize: '13px', fontWeight: 700 }}>{proj?.key[0]}</Stack>
         <Typography
+          variant="caption"
+          color="text.secondary"
           component={RouterLink}
           to={`/projects/${proj?.key ?? task.key.split('-')[0]}/board`}
-          sx={{ fontSize: 13, color: 'text.secondary', textDecoration: 'none',
+          sx={{ textDecoration: 'none',
             '&:hover': { color: 'text.primary', textDecoration: 'underline' } }}
         >
           {proj?.name}
         </Typography>
-        <CaretRIcon style={{ color: theme.palette.text.disabled }}/>
+        <Box component="span" sx={{ color: 'text.disabled', display: 'inline-flex' }}><CaretRIcon/></Box>
         <TypeIcon type={task.type} size={13}/>
         <Typography
+          variant="caption"
+          color="text.secondary"
           component={RouterLink}
           to={`/task/${task.key}`}
-          sx={{ fontSize: 13, color: 'text.secondary', fontFamily: 'ui-monospace, monospace',
+          sx={{ fontFamily: 'ui-monospace, monospace',
             textDecoration: 'none',
             '&:hover': { color: 'text.primary', textDecoration: 'underline' } }}
         >
           {task.key}
         </Typography>
-      </Box>
+      </Stack>
 
       <Box sx={{ flex: 1 }}/>
 
       {canEdit && (
-        <Button size="small" variant="outlined" startIcon={<ClockIcon/>} onClick={() => onStartTimer(task.key)}>
-          {timer.taskKey === task.key && timer.running ? 'Stopnout timer' : 'Spustit timer'}
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<ClockIcon/>}
+          onClick={handleTimerClick}
+          disabled={timerPending}
+        >
+          {isThisTaskRunning ? 'Stopnout timer' : 'Spustit timer'}
         </Button>
       )}
 
@@ -136,6 +165,14 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
           </IconButton>
         </span>
       </Tooltip>
+
+      {onPopOut && (
+        <Tooltip title="Otevřít v novém okně">
+          <IconButton size="small" onClick={onPopOut} aria-label="Otevřít v novém okně">
+            <OpenInNewIcon/>
+          </IconButton>
+        </Tooltip>
+      )}
 
       <Tooltip title="Více akcí">
         <IconButton
@@ -163,15 +200,21 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         slotProps={{ paper: { sx: { minWidth: 240 } } }}
       >
-        <MenuItem onClick={handleCopyLink} sx={{ fontSize: 13, gap: 1 }}>
+        <MenuItem onClick={handleCopyLink} sx={{ gap: 1 }}>
           <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><LinkIcon/></ListItemIcon>
           Kopírovat odkaz
-          <Box sx={{ ml: 'auto', pl: 2, fontSize: 11, fontFamily: 'ui-monospace, monospace', color: 'text.disabled' }}>
+          <Box sx={{ ml: 'auto', pl: 2, fontSize: '11px', fontFamily: 'ui-monospace, monospace', color: 'text.disabled' }}>
             ⌘⇧C
           </Box>
         </MenuItem>
+        {onPopOut && (
+          <MenuItem onClick={handlePopOutClick} sx={{ gap: 1 }}>
+            <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}><OpenInNewIcon/></ListItemIcon>
+            Otevřít v novém okně
+          </MenuItem>
+        )}
         {onPin && (
-          <MenuItem onClick={handlePinClick} sx={{ fontSize: 13, gap: 1 }}>
+          <MenuItem onClick={handlePinClick} sx={{ gap: 1 }}>
             <ListItemIcon sx={{ minWidth: 26, color: pinned ? 'primary.main' : 'text.secondary' }}>
               {pinned ? <PinFilledIcon/> : <PinIcon/>}
             </ListItemIcon>
@@ -179,7 +222,7 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
           </MenuItem>
         )}
         {onExpand && (
-          <MenuItem onClick={handleExpandClick} sx={{ fontSize: 13, gap: 1 }}>
+          <MenuItem onClick={handleExpandClick} sx={{ gap: 1 }}>
             <ListItemIcon sx={{ minWidth: 26, color: 'text.secondary' }}>
               {expanded ? <CollapseIcon/> : <ExpandIcon/>}
             </ListItemIcon>
@@ -189,7 +232,7 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
         <Divider sx={{ my: 0.5 }}/>
         <Tooltip title="Bude brzy" placement="left">
           <span>
-            <MenuItem disabled sx={{ fontSize: 13, gap: 1 }}>
+            <MenuItem disabled sx={{ gap: 1 }}>
               <ListItemIcon sx={{ minWidth: 26 }}><DuplicateIcon/></ListItemIcon>
               Duplikovat task
             </MenuItem>
@@ -197,7 +240,7 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
         </Tooltip>
         <Tooltip title="Bude brzy" placement="left">
           <span>
-            <MenuItem disabled sx={{ fontSize: 13, gap: 1 }}>
+            <MenuItem disabled sx={{ gap: 1 }}>
               <ListItemIcon sx={{ minWidth: 26 }}><MoveIcon/></ListItemIcon>
               Přesunout do…
             </MenuItem>
@@ -205,7 +248,7 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
         </Tooltip>
         <Tooltip title="Bude brzy" placement="left">
           <span>
-            <MenuItem disabled sx={{ fontSize: 13, gap: 1 }}>
+            <MenuItem disabled sx={{ gap: 1 }}>
               <ListItemIcon sx={{ minWidth: 26 }}><ConvertIcon/></ListItemIcon>
               Konvertovat na subtask
             </MenuItem>
@@ -216,7 +259,7 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
           <MenuItem
             key="del-item"
             onClick={handleDeleteClick}
-            sx={{ fontSize: 13, gap: 1, color: 'error.main' }}
+            sx={{ gap: 1, color: 'error.main' }}
           >
             <ListItemIcon sx={{ minWidth: 26, color: 'error.main' }}><DeleteIcon/></ListItemIcon>
             Smazat task
@@ -224,16 +267,26 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
         ]}
       </Menu>
 
+      {pendingWorklog && (
+        <WorklogDialog
+          open
+          taskId={pendingWorklog.taskId}
+          taskKey={pendingWorklog.taskKey}
+          defaultMinutes={Math.round(pendingWorklog.elapsedSeconds / 60)}
+          onClose={() => setPendingWorklog(null)}
+        />
+      )}
+
       <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontSize: 14, fontWeight: 600 }}>
+        <DialogTitle>
           Smazat úkol {task.key}?
         </DialogTitle>
         <DialogContent>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography variant="caption" color="text.secondary">
             Tato akce je nevratná. Úkol „{task.title}" bude trvale odstraněn.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions>
           <Button size="small" onClick={() => setConfirmDelete(false)} disabled={deleteTask.isPending}>
             Zrušit
           </Button>
@@ -248,6 +301,6 @@ export default function TaskDetailHeader({ task, proj, timer, pinned, expanded, 
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Stack>
   );
 }

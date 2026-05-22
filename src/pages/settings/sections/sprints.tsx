@@ -1,4 +1,4 @@
-import { Box, MenuItem, Slider, TextField, Typography } from '@mui/material';
+import { Box, MenuItem, Slider, Stack, TextField, Typography } from '@mui/material';
 import { SectionHeader, SettingsCard, FieldRow } from '../shared';
 import { useProjectSettings } from '../../../store/project-settings-store';
 import type { ProjectDto } from '../../../api/types';
@@ -48,7 +48,7 @@ export function SprintsSection({ project, readOnly }: { project: ProjectDto; rea
           </TextField>
         </FieldRow>
         <FieldRow label="Výchozí kapacita" hint={`Cílový součet odhadů za sprint (${settings.estimateUnit}).`}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: 320 }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: 320 }}>
             <Slider
               size="small" value={settings.sprintCapacity}
               min={5} max={120} step={1}
@@ -56,10 +56,10 @@ export function SprintsSection({ project, readOnly }: { project: ProjectDto; rea
               disabled={readOnly}
               sx={{ flex: 1 }}
             />
-            <Typography sx={{ fontSize: 13, fontWeight: 600, width: 40, textAlign: 'right' }}>
+            <Typography sx={{ fontSize: '13px', fontWeight: 600, width: 40, textAlign: 'right' }}>
               {settings.sprintCapacity}
             </Typography>
-          </Box>
+          </Stack>
         </FieldRow>
         <FieldRow label="Velocity baseline" hint="Historický průměr pro nápovědu při plánování.">
           <TextField

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Button, Chip, IconButton, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, Button, Chip, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { SectionHeader, SettingsCard, FieldRow } from '../shared';
 import { useProjectSettings, type ProjectRoleId, type TaskStatus } from '../../../store/project-settings-store';
 import {
@@ -43,13 +43,12 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
       />
 
       <SettingsCard title="Statusy / sloupce boardu" description="Drag & drop pro pořadí na boardu.">
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Stack spacing={0.5} >
           {statuses.data.map((s, i) => (
-            <Box key={s.id} sx={{
-              display: 'flex', alignItems: 'center', gap: 1, p: 1,
-              border: 1, borderColor: 'divider', borderRadius: 1,
-            }}>
-              <Box sx={{ color: 'text.disabled', fontSize: 14, userSelect: 'none', cursor: 'grab' }}>≡</Box>
+            <Stack direction="row" spacing={1} key={s.id} sx={{
+        alignItems: 'center', p: 1,
+              border: 1, borderColor: 'divider', borderRadius: 1 }}>
+              <Box sx={{ color: 'text.disabled', fontSize: '14px', userSelect: 'none', cursor: 'grab' }}>≡</Box>
               <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: s.color }}/>
               <TextField
                 size="small" value={s.name} disabled={readOnly}
@@ -63,8 +62,8 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
               >
                 {CATEGORIES.map(c => <MenuItem key={c.id} value={c.id}>{c.label}</MenuItem>)}
               </TextField>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>WIP</Typography>
+              <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+                <Typography sx={{ fontSize: '13px', color: 'text.secondary' }}>WIP</Typography>
                 <TextField
                   size="small" type="number" value={s.wipLimit ?? ''} disabled={readOnly}
                   placeholder="—"
@@ -73,15 +72,15 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
                   ))}
                   sx={{ width: 70 }}
                 />
-              </Box>
+              </Stack>
               <Box sx={{ flex: 1 }}/>
               <IconButton size="small" disabled={readOnly}
                 onClick={() => statuses.replace(statuses.data.filter((_, j) => j !== i))}>
                 <CloseIcon/>
               </IconButton>
-            </Box>
+            </Stack>
           ))}
-        </Box>
+        </Stack>
         <Button
           size="small" startIcon={<PlusIcon/>} disabled={readOnly} sx={{ mt: 1 }}
           onClick={() => statuses.replace([...statuses.data, {
@@ -97,12 +96,11 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
       </SettingsCard>
 
       <SettingsCard title="Přechody (transitions)" description="Které přechody mezi statusy jsou povolené, a které role je smí provést.">
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Stack spacing={0.5} >
           {transitions.data.map((t, i) => (
-            <Box key={t.id} sx={{
-              display: 'flex', alignItems: 'center', gap: 1, p: 1,
-              border: 1, borderColor: 'divider', borderRadius: 1,
-            }}>
+            <Stack direction="row" spacing={1} key={t.id} sx={{
+        alignItems: 'center', p: 1,
+              border: 1, borderColor: 'divider', borderRadius: 1 }}>
               <TextField
                 size="small" select value={t.fromStatusKey} disabled={readOnly}
                 onChange={e => transitions.replace(transitions.data.map((x, j) => j === i ? { ...x, fromStatusKey: e.target.value } : x))}
@@ -110,7 +108,7 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
               >
                 {statuses.data.map(s => <MenuItem key={s.id} value={s.key}>{s.name}</MenuItem>)}
               </TextField>
-              <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>→</Typography>
+              <Typography sx={{ fontSize: '14px', color: 'text.secondary' }}>→</Typography>
               <TextField
                 size="small" select value={t.toStatusKey} disabled={readOnly}
                 onChange={e => transitions.replace(transitions.data.map((x, j) => j === i ? { ...x, toStatusKey: e.target.value } : x))}
@@ -118,7 +116,7 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
               >
                 {statuses.data.map(s => <MenuItem key={s.id} value={s.key}>{s.name}</MenuItem>)}
               </TextField>
-              <Box sx={{ display: 'flex', gap: 0.5, flex: 1 }}>
+              <Stack direction="row" spacing={0.5} sx={{ flex: 1 }}>
                 {ROLES.map(r => {
                   const on = t.allowedRoles.includes(r.id);
                   return (
@@ -134,14 +132,14 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
                     />
                   );
                 })}
-              </Box>
+              </Stack>
               <IconButton size="small" disabled={readOnly}
                 onClick={() => transitions.replace(transitions.data.filter((_, j) => j !== i))}>
                 <CloseIcon/>
               </IconButton>
-            </Box>
+            </Stack>
           ))}
-        </Box>
+        </Stack>
         <Button
           size="small" startIcon={<PlusIcon/>} disabled={readOnly} sx={{ mt: 1 }}
           onClick={() => transitions.replace([...transitions.data, {
@@ -179,19 +177,17 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
       </SettingsCard>
 
       <SettingsCard title="Definition of Done" description="Checklist co musí splnit task před přesunem do Done.">
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1.5 }}>
+        <Stack spacing={0.5} sx={{ mb: 1.5 }}>
           {settings.definitionOfDone.map((dod, i) => (
-            <Box key={i} sx={{
-              display: 'flex', alignItems: 'center', gap: 1, p: 1,
-              border: 1, borderColor: 'divider', borderRadius: 1,
-            }}>
-              <Box sx={{
-                width: 18, height: 18, borderRadius: 0.5,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                bgcolor: 'success.main', color: '#fff',
-              }}>
+            <Stack direction="row" spacing={1} key={i} sx={{
+        alignItems: 'center', p: 1,
+              border: 1, borderColor: 'divider', borderRadius: 1 }}>
+              <Stack direction="row" sx={{
+        width: 18, height: 18, borderRadius: 0.5,
+                alignItems: 'center', justifyContent: 'center',
+                bgcolor: 'success.main', color: '#fff' }}>
                 <CheckIcon/>
-              </Box>
+              </Stack>
               <TextField
                 size="small" value={dod} disabled={readOnly}
                 onChange={e => update({
@@ -205,10 +201,10 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
                 })}>
                 <CloseIcon/>
               </IconButton>
-            </Box>
+            </Stack>
           ))}
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        </Stack>
+        <Stack direction="row" spacing={1} >
           <TextField
             size="small" fullWidth placeholder="Přidat položku do checklistu"
             value={newDoD} onChange={e => setNewDoD(e.target.value)}
@@ -221,7 +217,7 @@ export function WorkflowSection({ project, readOnly }: { project: ProjectDto; re
               setNewDoD('');
             }}
           >Přidat</Button>
-        </Box>
+        </Stack>
       </SettingsCard>
     </Box>
   );

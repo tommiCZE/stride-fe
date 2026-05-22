@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Box, Paper, Typography } from '@mui/material';
+import { Box, Paper, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import type { SlashMenuItem } from './slash-menu';
 
@@ -47,6 +47,7 @@ const SlashMenuList = forwardRef<SlashMenuListHandle, Props>(function SlashMenuL
 
   // Update anchor rect on every render — ProseMirror moves the trigger
   // as the user types into the query.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: rect must follow caret on every render
   useLayoutEffect(() => {
     if (!clientRect) return;
     const next = clientRect();
@@ -136,7 +137,7 @@ const SlashMenuList = forwardRef<SlashMenuListHandle, Props>(function SlashMenuL
       }}
     >
       {items.map((item, index) => (
-        <Box
+        <Stack direction="row" spacing={1.25}
           key={item.id}
           onMouseDown={e => {
             e.preventDefault();
@@ -144,22 +145,18 @@ const SlashMenuList = forwardRef<SlashMenuListHandle, Props>(function SlashMenuL
           }}
           onMouseEnter={() => setSelectedIndex(index)}
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.25,
+        alignItems: 'center',
             px: 1.25,
             py: 0.75,
             cursor: 'pointer',
             bgcolor: index === selectedIndex
               ? theme => alpha(theme.palette.primary.main, 0.12)
-              : 'transparent',
-          }}
+              : 'transparent' }}
         >
-          <Box
+          <Stack direction="row"
             sx={{
-              width: 32,
+        width: 32,
               height: 32,
-              display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 1,
@@ -167,11 +164,10 @@ const SlashMenuList = forwardRef<SlashMenuListHandle, Props>(function SlashMenuL
               borderColor: 'divider',
               bgcolor: 'background.paper',
               color: 'text.primary',
-              flexShrink: 0,
-            }}
+              flexShrink: 0 }}
           >
             {item.icon}
-          </Box>
+          </Stack>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
               {item.label}
@@ -189,7 +185,7 @@ const SlashMenuList = forwardRef<SlashMenuListHandle, Props>(function SlashMenuL
               {item.description}
             </Typography>
           </Box>
-        </Box>
+        </Stack>
       ))}
     </Paper>
   );

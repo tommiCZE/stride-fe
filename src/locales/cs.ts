@@ -56,7 +56,7 @@ const cs = {
     footer: '© 2025 Stride · Moderní projektový management',
     invalidEmail: 'Neplatná e-mailová adresa',
     passwordMin: 'Heslo musí mít alespoň 6 znaků',
-    loginFailed: 'Přihlášení selhalo. Zkus heslo "stride123" pro dev přístup.',
+    loginFailed: 'Přihlášení selhalo. Zkus heslo "password" pro dev přístup.',
     invalidCredentials: 'Neplatné přihlašovací údaje',
   },
   common: {

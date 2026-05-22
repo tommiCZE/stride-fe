@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  Box, Button, IconButton, MenuItem, Select, Tooltip, Typography, useTheme,
+  Box, Button, IconButton, MenuItem, Select, Stack, Tooltip, Typography,
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -14,14 +14,13 @@ import type { TaskSummaryDto } from '../api/types';
 import PriorityIcon from '../components/icons/priority-icon';
 import { CaretIcon } from '../components/icons/icons';
 import { ColorDot } from '../components/ui/ui';
+import { taskLinkProps } from '../utils/task-link';
 
 const ALL_PROJECTS = 'all';
 const WEEKDAYS_CS = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
 
-/** Returns an array of 6 weeks × 7 days (Mon–Sun) covering the visible month. */
 function buildMonthGrid(anchor: Dayjs): Dayjs[] {
   const firstOfMonth = anchor.startOf('month');
-  // dayjs: day() returns 0 = Sun, 1 = Mon … 6 = Sat. Shift so Monday = 0.
   const leading = (firstOfMonth.day() + 6) % 7;
   const gridStart = firstOfMonth.subtract(leading, 'day');
   return Array.from({ length: 42 }, (_, i) => gridStart.add(i, 'day'));
@@ -37,18 +36,18 @@ function TaskPill({ task, onOpen }: TaskPillProps) {
   const color = status?.color ?? '#64748b';
   return (
     <Tooltip title={`${task.key} — ${task.title}`} placement="top" disableInteractive>
-      <Box
-        onClick={() => onOpen(task.key)}
+      <Stack
+        direction="row"
+        spacing={0.5}
+        {...taskLinkProps(task.key, onOpen)}
         sx={{
-          display: 'flex',
           alignItems: 'center',
-          gap: 0.5,
           px: 0.5,
           py: 0.25,
           borderRadius: 0.75,
-          fontSize: 13,
           lineHeight: 1.3,
           cursor: 'pointer',
+          textDecoration: 'none',
           color: 'text.primary',
           bgcolor: alpha(color, 0.14),
           borderLeft: 2,
@@ -58,8 +57,9 @@ function TaskPill({ task, onOpen }: TaskPillProps) {
       >
         <ColorDot dotColor={color} dotSize={5} />
         <PriorityIcon priority={task.priority} />
-        <Box
+        <Typography
           component="span"
+          variant="caption"
           sx={{
             flex: 1,
             minWidth: 0,
@@ -70,8 +70,8 @@ function TaskPill({ task, onOpen }: TaskPillProps) {
           }}
         >
           {task.title}
-        </Box>
-      </Box>
+        </Typography>
+      </Stack>
     </Tooltip>
   );
 }
@@ -91,14 +91,12 @@ function DayCell({ day, isCurrentMonth, isToday, tasks, onOpen }: DayCellProps) 
   const weekend = day.day() === 0 || day.day() === 6;
 
   return (
-    <Box
+    <Stack
+      spacing={0.5}
       sx={{
         position: 'relative',
         minHeight: 110,
-        display: 'flex',
-        flexDirection: 'column',
         p: 0.75,
-        gap: 0.5,
         borderRight: 1,
         borderBottom: 1,
         borderColor: 'divider',
@@ -109,8 +107,8 @@ function DayCell({ day, isCurrentMonth, isToday, tasks, onOpen }: DayCellProps) 
         overflow: 'hidden',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box
+      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+        <Stack
           sx={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -119,7 +117,7 @@ function DayCell({ day, isCurrentMonth, isToday, tasks, onOpen }: DayCellProps) 
             height: 22,
             px: 0.75,
             borderRadius: '50%',
-            fontSize: 13,
+            fontSize: '13px',
             fontWeight: isToday ? 700 : 500,
             color: isToday ? 'primary.contrastText' : isCurrentMonth ? 'text.primary' : 'text.disabled',
             bgcolor: isToday ? 'primary.main' : 'transparent',
@@ -127,29 +125,28 @@ function DayCell({ day, isCurrentMonth, isToday, tasks, onOpen }: DayCellProps) 
           }}
         >
           {day.date()}
-        </Box>
+        </Stack>
         {tasks.length > 0 && (
-          <Typography sx={{ fontSize: 14, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
+          <Typography variant="body2" color="text.disabled" sx={{ fontVariantNumeric: 'tabular-nums' }}>
             {tasks.length}
           </Typography>
         )}
-      </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.4, minHeight: 0 }}>
+      </Stack>
+      <Stack spacing={0.4} sx={{ minHeight: 0 }}>
         {visible.map(t => (
           <TaskPill key={t.id} task={t} onOpen={onOpen} />
         ))}
         {extra > 0 && (
-          <Typography sx={{ fontSize: 14, color: 'text.secondary', px: 0.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
             +{extra} dalších
           </Typography>
         )}
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 }
 
 export default function Calendar() {
-  const theme = useTheme();
   const { t } = useTranslation();
   const [, setSearchParams] = useSearchParams();
   const [anchor, setAnchor] = useState<Dayjs>(() => dayjs());
@@ -189,16 +186,16 @@ export default function Calendar() {
   const project = projectId === ALL_PROJECTS ? null : projects.find(p => p.id === projectId);
 
   return (
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', bgcolor: 'background.default', minHeight: 0 }}>
-      <Box sx={{
-        display: 'flex', alignItems: 'center', gap: 1, px: 3, py: 1.75,
+    <Stack sx={{ flex: 1, height: '100%', bgcolor: 'background.default', minHeight: 0 }}>
+      <Stack direction="row" spacing={1} sx={{
+        alignItems: 'center', px: 3, py: 1.75,
         borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper',
       }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em', textTransform: 'capitalize' }}>
+          <Typography variant="h4" sx={{ textTransform: 'capitalize' }}>
             {monthLabel}
           </Typography>
-          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+          <Typography variant="body2" color="text.secondary">
             {project ? project.name : t('nav.calendar')}
           </Typography>
         </Box>
@@ -207,42 +204,42 @@ export default function Calendar() {
           size="small"
           value={projectId}
           onChange={handleProjectChange}
-          sx={{ minWidth: 180, fontSize: 13 }}
+          sx={{ minWidth: 180, fontSize: '13px' }}
         >
           <MenuItem value={ALL_PROJECTS}>{t('nav.projects')} — vše</MenuItem>
           {projects.map(p => (
             <MenuItem key={p.id} value={p.id}>
-              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+              <Stack direction="row" spacing={1} sx={{ display: 'inline-flex', alignItems: 'center' }}>
                 <ColorDot dotColor={p.color} dotSize={8} />
                 {p.name}
-              </Box>
+              </Stack>
             </MenuItem>
           ))}
         </Select>
 
         <Button variant="outlined" size="small" onClick={goToday}>Dnes</Button>
         <IconButton size="small" onClick={goPrev} aria-label="Předchozí měsíc"
-          sx={{ transform: 'rotate(90deg)' }}>
-          <CaretIcon style={{ color: theme.palette.text.secondary }} />
+          sx={{ transform: 'rotate(90deg)', color: 'text.secondary' }}>
+          <CaretIcon />
         </IconButton>
         <IconButton size="small" onClick={goNext} aria-label="Další měsíc"
-          sx={{ transform: 'rotate(-90deg)' }}>
-          <CaretIcon style={{ color: theme.palette.text.secondary }} />
+          sx={{ transform: 'rotate(-90deg)', color: 'text.secondary' }}>
+          <CaretIcon />
         </IconButton>
-      </Box>
+      </Stack>
 
       <Box sx={{
         display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
         bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider',
       }}>
         {WEEKDAYS_CS.map(d => (
-          <Box key={d} sx={{
-            px: 1.5, py: 1, fontSize: 13, fontWeight: 700, letterSpacing: '0.06em',
-            textTransform: 'uppercase', color: 'text.secondary', borderRight: 1, borderColor: 'divider',
+          <Typography key={d} variant="caption" color="text.secondary" sx={{
+            px: 1.5, py: 1, fontWeight: 700, letterSpacing: '0.06em',
+            textTransform: 'uppercase', borderRight: 1, borderColor: 'divider',
             '&:last-of-type': { borderRight: 0 },
           }}>
             {d}
-          </Box>
+          </Typography>
         ))}
       </Box>
 
@@ -264,6 +261,6 @@ export default function Calendar() {
           );
         })}
       </Box>
-    </Box>
+    </Stack>
   );
 }

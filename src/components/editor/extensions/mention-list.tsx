@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
-import { Box, Paper, Typography } from '@mui/material';
+import { Box, Paper, Stack, Typography } from '@mui/material';
 import type { UserDto as User } from '../../../api/types';
 import FluxAvatar from '../../flux-avatar';
 
@@ -58,7 +58,7 @@ const MentionList = forwardRef<MentionListHandle, Props>(function MentionList(
           borderColor: 'divider',
         }}
       >
-        <Typography sx={{ fontSize: 14, color: 'text.disabled' }}>
+        <Typography sx={{ fontSize: '14px', color: 'text.disabled' }}>
           Žádný člen týmu nenalezen
         </Typography>
       </Paper>
@@ -79,7 +79,7 @@ const MentionList = forwardRef<MentionListHandle, Props>(function MentionList(
       }}
     >
       {items.map((item, index) => (
-        <Box
+        <Stack direction="row" spacing={1}
           key={item.id}
           onMouseDown={(e) => {
             e.preventDefault();
@@ -87,28 +87,25 @@ const MentionList = forwardRef<MentionListHandle, Props>(function MentionList(
           }}
           onMouseEnter={() => setSelectedIndex(index)}
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
+        alignItems: 'center',
             px: 1.25,
             py: 0.75,
             cursor: 'default',
             bgcolor: index === selectedIndex ? 'action.selected' : 'transparent',
-            '&:hover': { bgcolor: 'action.hover' },
-          }}
+            '&:hover': { bgcolor: 'action.hover' } }}
         >
           <FluxAvatar user={item} size={24} />
           <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2 }} noWrap>
+            <Typography sx={{ fontSize: '13px', fontWeight: 600, lineHeight: 1.2 }} noWrap>
               {item.name}
             </Typography>
             {item.email && (
-              <Typography sx={{ fontSize: 13, color: 'text.secondary', lineHeight: 1.2 }} noWrap>
+              <Typography sx={{ fontSize: '13px', color: 'text.secondary', lineHeight: 1.2 }} noWrap>
                 {item.email}
               </Typography>
             )}
           </Box>
-        </Box>
+        </Stack>
       ))}
     </Paper>
   );

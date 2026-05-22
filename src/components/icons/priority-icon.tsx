@@ -15,6 +15,7 @@ export default function PriorityIcon({ priority, size = 14 }: Props) {
   };
 
   return (
+    // eslint-disable-next-line no-restricted-syntax -- SVG element needs flex-shrink as DOM style
     <svg width={size} height={size} viewBox="0 0 12 12" style={{ flexShrink: 0 }}>
       {priority === 'URGENT' && <path d="M6 1.5 L10.5 9 L1.5 9 Z" fill={p.color}/>}
       {priority !== 'URGENT' && (bars[priority] ?? [1, 1, 1]).map((opacity, i) => (

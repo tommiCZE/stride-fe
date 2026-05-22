@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Button, IconButton, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, Button, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useSnackbar } from 'notistack';
 import { SectionHeader, SettingsCard } from '../shared';
@@ -18,7 +18,7 @@ function StatusChip({ status }: { status: ReleaseStatus }) {
   return (
     <Box sx={{
       px: 0.75, py: 0.15, borderRadius: 0.75,
-      fontSize: 14, fontWeight: 700,
+      fontSize: '14px', fontWeight: 700,
       color: m.color, bgcolor: theme => alpha(theme.palette.primary.main, 0),
       border: 1, borderColor: m.color,
       display: 'inline-flex', alignItems: 'center', gap: 0.5,
@@ -68,9 +68,9 @@ export function ReleasesSection({ project, readOnly }: { project: ProjectDto; re
           </Button>
         }
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Stack spacing={0.5} >
           {releases.length === 0 && !isLoading && (
-            <Typography sx={{ fontSize: 14, color: 'text.disabled', textAlign: 'center', py: 2 }}>
+            <Typography sx={{ fontSize: '14px', color: 'text.disabled', textAlign: 'center', py: 2 }}>
               Žádné verze. Začni klikem na „Přidat verzi”.
             </Typography>
           )}
@@ -83,7 +83,7 @@ export function ReleasesSection({ project, readOnly }: { project: ProjectDto; re
               onDelete={() => deleteRelease.mutate(r.id)}
             />
           ))}
-        </Box>
+        </Stack>
       </SettingsCard>
     </Box>
   );
@@ -101,11 +101,9 @@ function ReleaseRow({ release, readOnly, onUpdate, onDelete }: {
     : 0;
 
   return (
-    <Box sx={{
-      border: 1, borderColor: 'divider', borderRadius: 1, p: 1.25,
-      display: 'flex', flexDirection: 'column', gap: 1,
-    }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Stack spacing={1} sx={{
+        border: 1, borderColor: 'divider', borderRadius: 1, p: 1.25 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <TextField
           size="small" value={release.name} disabled={readOnly}
           onChange={e => onUpdate({ name: e.target.value })}
@@ -122,7 +120,7 @@ function ReleaseRow({ release, readOnly, onUpdate, onDelete }: {
         </TextField>
         <StatusChip status={release.status}/>
         <Box sx={{ flex: 1 }}/>
-        <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
+        <Typography sx={{ fontSize: '13px', color: 'text.disabled' }}>
           {release.doneCount} / {release.taskCount} done · {progress}%
         </Typography>
         <Button
@@ -134,12 +132,12 @@ function ReleaseRow({ release, readOnly, onUpdate, onDelete }: {
         <IconButton size="small" disabled={readOnly} onClick={onDelete}>
           <CloseIcon/>
         </IconButton>
-      </Box>
+      </Stack>
 
       {expanded && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 0.5,
+        <Stack spacing={1} sx={{ mt: 0.5,
           pl: 1, borderLeft: 2, borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Stack direction="row" spacing={1} >
             <TextField
               size="small" label="Start" type="date" disabled={readOnly}
               value={release.startDate ?? ''}
@@ -154,7 +152,7 @@ function ReleaseRow({ release, readOnly, onUpdate, onDelete }: {
               slotProps={{ inputLabel: { shrink: true } }}
               sx={{ width: 180 }}
             />
-          </Box>
+          </Stack>
           <TextField
             size="small" fullWidth multiline minRows={2}
             label="Goal" placeholder="Co tato verze přináší"
@@ -169,8 +167,8 @@ function ReleaseRow({ release, readOnly, onUpdate, onDelete }: {
             onChange={e => onUpdate({ description: e.target.value || null })}
             slotProps={{ inputLabel: { shrink: true } }}
           />
-        </Box>
+        </Stack>
       )}
-    </Box>
+    </Stack>
   );
 }

@@ -14,6 +14,7 @@ export default function TypeIcon({ type, size = 14 }: Props) {
   }[type];
 
   return (
+    // eslint-disable-next-line no-restricted-syntax -- SVG element needs flex-shrink as DOM style
     <svg width={size} height={size} viewBox="0 0 20 20" style={{ flexShrink: 0 }}>
       <rect x="2" y="2" width="16" height="16" rx="3.5" fill={t.color}/>
       {glyph}

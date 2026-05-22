@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Box, CircularProgress, Tooltip, Typography } from '@mui/material';
+import { Box, CircularProgress, Stack, Tooltip, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import type { JSONContent } from '@tiptap/core';
 import { useComments, useCreateComment } from '../../../hooks/useComments';
@@ -11,6 +11,7 @@ import EditorBody from '../../../components/editor/editor-body';
 import { attachmentsApi } from '../../../api/attachments';
 import type { CommentDto } from '../../../api/types';
 
+// eslint-disable-next-line react-refresh/only-export-components -- utility colocated with comments components
 export function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
@@ -21,6 +22,7 @@ export function timeAgo(iso: string) {
   return `před ${Math.floor(h / 24)} d`;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- utility colocated with comments components
 export function exactDate(iso: string) {
   return new Date(iso).toLocaleString('cs-CZ', {
     day: 'numeric', month: 'long', year: 'numeric',
@@ -80,21 +82,18 @@ interface CommentItemProps {
 
 export function CommentItem({ comment, taskId, isReply, parentAuthorName, replyingTo, onReplyClick, onReplyCancel, onReplySubmit, showReply, highlighted }: CommentItemProps) {
   return (
-    <Box
+    <Stack direction="row" spacing={1.25}
       id={`comment-${comment.sequence}`}
       sx={{
-        display: 'flex',
-        gap: 1.25,
         scrollMarginTop: 80,
         borderRadius: 1.2,
         transition: 'background-color 0.6s ease-out',
-        bgcolor: highlighted ? 'action.selected' : 'transparent',
-      }}
+        bgcolor: highlighted ? 'action.selected' : 'transparent' }}
     >
       <FluxAvatar user={comment.user} size={isReply ? 24 : 28}/>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
-          <Typography component="span" sx={{ fontSize: 14, fontWeight: 600 }}>{comment.user.name}</Typography>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mb: 0.5, flexWrap: 'wrap' }}>
+          <Typography component="span" sx={{ fontSize: '14px', fontWeight: 600 }}>{comment.user.name}</Typography>
           {isReply && parentAuthorName && (
             <Typography component="span" sx={{ fontSize: 11.5, color: 'text.disabled' }}>
               odpověděl{' '}
@@ -111,19 +110,19 @@ export function CommentItem({ comment, taskId, isReply, parentAuthorName, replyi
               {timeAgo(comment.createdAt)}
             </Typography>
           </Tooltip>
-        </Box>
-        <Box sx={{ fontSize: 14, lineHeight: 1.55, color: 'text.primary' }}>
+        </Stack>
+        <Box sx={{ fontSize: '14px', lineHeight: 1.55, color: 'text.primary' }}>
           <RichContent blocks={comment.text}/>
         </Box>
         {showReply && (
-          <Box sx={{ display: 'flex', gap: 1.5, mt: 0.5, color: 'text.disabled', fontSize: 13 }}>
+          <Stack direction="row" spacing={1.5} sx={{ mt: 0.5, color: 'text.disabled', fontSize: '13px' }}>
             <Box
               onClick={() => onReplyClick(comment.id)}
               sx={{ cursor: 'pointer', '&:hover': { color: 'text.secondary' } }}
             >
               Odpovědět
             </Box>
-          </Box>
+          </Stack>
         )}
         {replyingTo === comment.id && (
           <CommentEditor
@@ -134,7 +133,7 @@ export function CommentItem({ comment, taskId, isReply, parentAuthorName, replyi
           />
         )}
       </Box>
-    </Box>
+    </Stack>
   );
 }
 
@@ -165,7 +164,7 @@ export function CommentThread({ taskId, comments, replyingTo, highlightedSequenc
       {comments.filter(c => !c.parentCommentId).map(c => {
         const childReplies = replies.get(c.id) ?? [];
         return (
-          <Box key={c.id} sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+          <Stack spacing={1.25} key={c.id} >
             <CommentItem
               comment={c}
               taskId={taskId}
@@ -178,7 +177,7 @@ export function CommentThread({ taskId, comments, replyingTo, highlightedSequenc
               highlighted={highlightedSequence === c.sequence}
             />
             {childReplies.length > 0 && (
-              <Box sx={{ ml: 3.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Stack spacing={1.5} sx={{ ml: 3.5 }}>
                 {childReplies.map((r, idx) => (
                   <CommentItem
                     key={r.id}
@@ -194,9 +193,9 @@ export function CommentThread({ taskId, comments, replyingTo, highlightedSequenc
                     highlighted={highlightedSequence === r.sequence}
                   />
                 ))}
-              </Box>
+              </Stack>
             )}
-          </Box>
+          </Stack>
         );
       })}
     </>
@@ -221,6 +220,7 @@ export function Comments({ taskId }: { taskId: string }) {
     const el = document.getElementById(`comment-${sequence}`);
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: hash-link highlight is a side-effect, not state sync
     setHighlightedSequence(sequence);
     const timeout = window.setTimeout(() => setHighlightedSequence(null), 2200);
     return () => window.clearTimeout(timeout);
@@ -245,8 +245,8 @@ export function Comments({ taskId }: { taskId: string }) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Typography sx={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' }}>
+    <Stack spacing={1.5} >
+      <Typography sx={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' }}>
         Komentáře · {comments.length}
       </Typography>
 
@@ -262,7 +262,7 @@ export function Comments({ taskId }: { taskId: string }) {
         onReplySubmit={submitReply}
       />
 
-      <Box sx={{ display: 'flex', gap: 1.25, mt: 1 }}>
+      <Stack direction="row" spacing={1.25} sx={{ mt: 1 }}>
         <FluxAvatar user={me} size={28}/>
         <Box sx={{ flex: 1 }}>
           {composing ? (
@@ -275,13 +275,13 @@ export function Comments({ taskId }: { taskId: string }) {
           ) : (
             <Box onClick={() => setComposing(true)}
               sx={{ p: 1.25, border: 1, borderColor: 'divider', borderRadius: 1.5,
-                bgcolor: 'background.paper', fontSize: 13, color: 'text.disabled',
+                bgcolor: 'background.paper', fontSize: '13px', color: 'text.disabled',
                 cursor: 'text', '&:hover': { borderColor: 'primary.main' } }}>
               Napiš komentář…
             </Box>
           )}
         </Box>
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 }

@@ -39,7 +39,7 @@ export default function FilterChip({
         height: 28,
         px: '10px',
         borderRadius: 1,
-        fontSize: 14,
+        fontSize: '14px',
         fontWeight: 500,
         cursor: onClick ? 'default' : undefined,
         userSelect: 'none',
@@ -86,7 +86,7 @@ export default function FilterChip({
             height: 18,
             px: 0.5,
             borderRadius: 0.6,
-            fontSize: 12,
+            fontSize: '12px',
             fontWeight: 600,
             bgcolor: active
               ? alpha(theme.palette.primary.main, 0.20)

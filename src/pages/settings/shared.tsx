@@ -1,15 +1,11 @@
 import type { ReactNode } from 'react';
-import { Box, Switch, Typography } from '@mui/material';
+import { Box, Card, Stack, Switch, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-/**
- * Krátký popis sekce zobrazený nad první kartou.
- * Titul sekce je už součástí sticky hlavičky v Settings shellu — nedubluj ho.
- */
 export function SectionHeader({ hint }: { title?: string; hint?: string }) {
   if (!hint) return null;
   return (
-    <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 2.5, maxWidth: 640, lineHeight: 1.5 }}>
+    <Typography variant="caption" color="text.secondary" sx={{ mb: 2.5, maxWidth: 640, lineHeight: 1.5, display: 'block' }}>
       {hint}
     </Typography>
   );
@@ -23,61 +19,34 @@ export function SettingsCard({ title, description, action, children, sx }: {
   sx?: object;
 }) {
   return (
-    <Box sx={{
-      border: 1, borderColor: 'divider', borderRadius: 1.5,
+    <Card sx={{
+      borderRadius: 1.5,
       p: 2.5, mb: 2,
       bgcolor: 'background.paper', ...sx,
     }}>
       {(title || action) && (
-        <Box sx={{
-          display: 'flex', alignItems: 'flex-start', gap: 1.5,
+        <Stack direction="row" spacing={1.5} sx={{
+          alignItems: 'flex-start',
           pb: 1.5, mb: 1.75,
           borderBottom: 1, borderColor: 'divider',
         }}>
           <Box sx={{ flex: 1 }}>
-            {title && <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{title}</Typography>}
+            {title && <Typography variant="subtitle2">{title}</Typography>}
             {description && (
-              <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: 0.4, lineHeight: 1.5 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.4, lineHeight: 1.5 }}>
                 {description}
               </Typography>
             )}
           </Box>
           {action}
-        </Box>
+        </Stack>
       )}
       {children}
-    </Box>
+    </Card>
   );
 }
 
-export function FieldRow({ label, hint, children, columns = '220px 1fr' }: {
-  label: string;
-  hint?: string;
-  children: ReactNode;
-  columns?: string;
-}) {
-  return (
-    <Box sx={{
-      display: 'grid', gridTemplateColumns: columns, gap: 3,
-      alignItems: 'flex-start', py: 1.25,
-      '&:not(:last-child)': { borderBottom: 1, borderColor: 'divider' },
-    }}>
-      <Box sx={{ pt: 0.75 }}>
-        <Typography sx={{ fontSize: 13, color: 'text.primary', fontWeight: 500 }}>
-          {label}
-        </Typography>
-        {hint && (
-          <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.4, lineHeight: 1.5 }}>
-            {hint}
-          </Typography>
-        )}
-      </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 32, gap: 1 }}>
-        {children}
-      </Box>
-    </Box>
-  );
-}
+export { FieldRow } from '../../components/field-row';
 
 export function ToggleRow({ label, hint, checked, onChange, disabled }: {
   label: string;
@@ -87,14 +56,14 @@ export function ToggleRow({ label, hint, checked, onChange, disabled }: {
   disabled?: boolean;
 }) {
   return (
-    <Box sx={{
-      display: 'flex', alignItems: 'center', gap: 2, py: 1,
+    <Stack direction="row" spacing={2} sx={{
+      alignItems: 'center', py: 1,
       '&:not(:last-child)': { borderBottom: 1, borderColor: 'divider' },
     }}>
       <Box sx={{ flex: 1 }}>
-        <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{label}</Typography>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>{label}</Typography>
         {hint && (
-          <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.25 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.25, display: 'block' }}>
             {hint}
           </Typography>
         )}
@@ -105,7 +74,7 @@ export function ToggleRow({ label, hint, checked, onChange, disabled }: {
         onChange={(_, v) => onChange(v)}
         disabled={disabled}
       />
-    </Box>
+    </Stack>
   );
 }
 
@@ -131,6 +100,7 @@ export function ColorSwatch({ color, selected, onClick, size = 22 }: {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const COLOR_PALETTE = [
   '#6366f1', '#0ea5e9', '#ec4899', '#10b981',
   '#f59e0b', '#a855f7', '#ef4444', '#14b8a6',
@@ -148,10 +118,10 @@ export function DangerCard({ title, description, children }: {
       borderColor: theme => alpha(theme.palette.error.main, 0.4),
       bgcolor: theme => alpha(theme.palette.error.main, 0.04),
     }}>
-      <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'error.main' }}>
+      <Typography variant="label" color="error.main" sx={{ fontWeight: 700 }}>
         {title}
       </Typography>
-      <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: 0.25, mb: 1.5 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, mb: 1.5, display: 'block' }}>
         {description}
       </Typography>
       {children}

@@ -23,20 +23,17 @@ export default function QueryError({ error, onRetry, compact }: Props) {
 
   if (compact) {
     return (
-      <Box
+      <Stack direction="row" spacing={1}
         role="alert"
         aria-live="polite"
         aria-atomic="true"
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
+        alignItems: 'center',
           px: 1.5,
           py: 1,
           borderRadius: 1,
           bgcolor: theme => alpha(theme.palette.error.main, 0.08),
-          color: 'error.main',
-        }}
+          color: 'error.main' }}
       >
         <Box
           aria-hidden="true"
@@ -49,13 +46,13 @@ export default function QueryError({ error, onRetry, compact }: Props) {
         >
           <AlertIcon />
         </Box>
-        <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary' }}>
+        <Typography sx={{ fontSize: '14px', fontWeight: 600, color: 'text.primary' }}>
           Nepodařilo se načíst data
         </Typography>
         {message && (
           <Typography
             sx={{
-              fontSize: 14,
+              fontSize: '14px',
               color: 'text.secondary',
               minWidth: 0,
               flex: 1,
@@ -78,12 +75,12 @@ export default function QueryError({ error, onRetry, compact }: Props) {
         >
           Zkusit znovu
         </Button>
-      </Box>
+      </Stack>
     );
   }
 
   return (
-    <Box
+    <Stack direction="row"
       role="alert"
       aria-live="polite"
       aria-atomic="true"
@@ -91,11 +88,9 @@ export default function QueryError({ error, onRetry, compact }: Props) {
       sx={{
         flex: 1,
         width: '100%',
-        display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        p: 3,
-      }}
+        p: 3 }}
     >
       <Card
         sx={{
@@ -109,22 +104,20 @@ export default function QueryError({ error, onRetry, compact }: Props) {
           gap: 2,
         }}
       >
-        <Box
+        <Stack direction="row"
           aria-hidden="true"
           sx={{
-            width: 72,
+        width: 72,
             height: 72,
             borderRadius: '50%',
-            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: 'error.main',
             bgcolor: theme => alpha(theme.palette.error.main, 0.12),
-            '& svg': { width: 40, height: 40 },
-          }}
+            '& svg': { width: 40, height: 40 } }}
         >
           <AlertIcon />
-        </Box>
+        </Stack>
 
         <Stack spacing={0.5} sx={{ alignItems: 'center' }}>
           <Typography id="query-error-title" variant="h6" component="h2" sx={{ fontWeight: 700 }}>
@@ -144,7 +137,7 @@ export default function QueryError({ error, onRetry, compact }: Props) {
               bgcolor: theme => alpha(theme.palette.error.main, 0.08),
               color: 'error.main',
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-              fontSize: 14,
+              fontSize: '14px',
               textAlign: 'left',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
@@ -165,6 +158,6 @@ export default function QueryError({ error, onRetry, compact }: Props) {
           Zkusit znovu
         </Button>
       </Card>
-    </Box>
+    </Stack>
   );
 }

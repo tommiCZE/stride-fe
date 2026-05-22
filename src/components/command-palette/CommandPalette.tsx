@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  Box, Dialog, InputBase, List, ListItemButton, Typography, useTheme,
-} from '@mui/material';
+import { Box, Dialog, InputBase, List, ListItemButton, Stack, Typography, useTheme } from '@mui/material';
 import { useProjects } from '../../hooks/useProjects';
 import { useAllProjectTasks } from '../../hooks/useTasks';
 import { useTeamMembers } from '../../hooks/useTeam';
@@ -114,13 +112,14 @@ export default function CommandPalette({ open, onClose }: Props) {
   const projectIds = useMemo(() => projects.map(p => p.id), [projects]);
   const { data: tasks = [] } = useAllProjectTasks(projectIds);
 
-  // Reset state every time the dialog re-opens so the user starts fresh.
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
     if (open) {
       setQuery('');
       setHighlight(0);
     }
-  }, [open]);
+  }
 
   const projectKeyById = useMemo(() => {
     const map = new Map<string, string>();
@@ -205,10 +204,11 @@ export default function CommandPalette({ open, onClose }: Props) {
     return out.slice(0, MAX_RESULTS);
   }, [query, tasks, projects, members, projectKeyById]);
 
-  // Clamp highlight whenever the result set shrinks/grows.
-  useEffect(() => {
-    if (highlight >= results.length) setHighlight(0);
-  }, [results.length, highlight]);
+  if (highlight >= results.length && results.length > 0) {
+    setHighlight(0);
+  } else if (highlight !== 0 && results.length === 0) {
+    setHighlight(0);
+  }
 
   // Scroll the highlighted row into view on arrow-key navigation.
   useEffect(() => {
@@ -286,16 +286,14 @@ export default function CommandPalette({ open, onClose }: Props) {
       aria-label="Rychlé hledání"
       slotProps={{ paper: { sx: { borderRadius: 1.5, overflow: 'hidden' } } }}
     >
-      <Box
+      <Stack direction="row" spacing={1}
         sx={{
-          display: 'flex', alignItems: 'center', gap: 1,
-          px: 2, py: 1.25,
-          borderBottom: 1, borderColor: 'divider',
-        }}
+        alignItems: 'center', px: 2, py: 1.25,
+          borderBottom: 1, borderColor: 'divider' }}
       >
-        <Box aria-hidden="true" sx={{ display: 'flex', color: 'text.secondary' }}>
+        <Stack direction="row" aria-hidden="true" sx={{ color: 'text.secondary' }}>
           <SearchIcon />
-        </Box>
+        </Stack>
         <InputBase
           inputRef={inputRef}
           autoFocus
@@ -312,11 +310,11 @@ export default function CommandPalette({ open, onClose }: Props) {
             'aria-activedescendant': activeId,
             'aria-label': 'Hledat úkoly, projekty, lidi',
           }}
-          sx={{ fontSize: 14, '& input': { py: 0.5 } }}
+          sx={{ fontSize: '14px', '& input': { py: 0.5 } }}
         />
         <Box
           sx={{
-            fontSize: 14, fontWeight: 600,
+            fontSize: '14px', fontWeight: 600,
             px: 0.75, py: 0.25,
             borderRadius: 0.75,
             border: 1, borderColor: 'divider',
@@ -326,7 +324,7 @@ export default function CommandPalette({ open, onClose }: Props) {
         >
           ESC
         </Box>
-      </Box>
+      </Stack>
 
       <Box sx={{ maxHeight: 400, overflowY: 'auto' }}>
         {results.length === 0 ? (
@@ -335,7 +333,7 @@ export default function CommandPalette({ open, onClose }: Props) {
             aria-live="polite"
             sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}
           >
-            <Typography sx={{ fontSize: 13 }}>Žádné výsledky</Typography>
+            <Typography sx={{ fontSize: '13px' }}>Žádné výsledky</Typography>
           </Box>
         ) : (
           <List
@@ -358,7 +356,7 @@ export default function CommandPalette({ open, onClose }: Props) {
                   aria-hidden="true"
                   sx={{
                     px: 2, pt: 1.25, pb: 0.5,
-                    fontSize: 14, fontWeight: 700,
+                    fontSize: '14px', fontWeight: 700,
                     letterSpacing: '0.06em', textTransform: 'uppercase',
                     color: 'text.disabled',
                   }}
@@ -389,7 +387,7 @@ export default function CommandPalette({ open, onClose }: Props) {
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography
                           sx={{
-                            fontSize: 13, fontWeight: 500,
+                            fontSize: '13px', fontWeight: 500,
                             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                           }}
                         >
@@ -398,7 +396,7 @@ export default function CommandPalette({ open, onClose }: Props) {
                         {r.sublabel && (
                           <Typography
                             sx={{
-                              fontSize: 13, color: 'text.secondary',
+                              fontSize: '13px', color: 'text.secondary',
                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                             }}
                           >
@@ -429,31 +427,29 @@ function renderSublabel(r: Result): string {
 function ResultIcon({ result }: { result: Result }) {
   if (result.kind === 'task') {
     return (
-      <Box
+      <Stack direction="row"
         sx={{
-          width: 22, height: 22, borderRadius: 0.75,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 22, height: 22, borderRadius: 0.75,
+          alignItems: 'center', justifyContent: 'center',
           bgcolor: 'action.hover', color: 'text.secondary',
-          fontSize: 14, fontWeight: 700,
-        }}
+          fontSize: '14px', fontWeight: 700 }}
       >
         T
-      </Box>
+      </Stack>
     );
   }
   if (result.kind === 'project') {
     const p = result.project;
     return (
-      <Box
+      <Stack direction="row"
         sx={{
-          width: 22, height: 22, borderRadius: 0.75,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 22, height: 22, borderRadius: 0.75,
+          alignItems: 'center', justifyContent: 'center',
           bgcolor: p.color, color: '#fff',
-          fontSize: 13, fontWeight: 700,
-        }}
+          fontSize: '13px', fontWeight: 700 }}
       >
         {p.key[0]}
-      </Box>
+      </Stack>
     );
   }
   if (result.kind === 'user') {
@@ -461,9 +457,9 @@ function ResultIcon({ result }: { result: Result }) {
   }
   // action
   return (
-    <Box sx={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.secondary' }}>
+    <Stack direction="row" sx={{ width: 22, height: 22, alignItems: 'center', justifyContent: 'center', color: 'text.secondary' }}>
       {result.action.icon}
-    </Box>
+    </Stack>
   );
 }
 
@@ -474,7 +470,7 @@ function ResultRightLabel({ result }: { result: Result }) {
     : result.kind === 'user' ? 'Osoba'
     : 'Navigace';
   return (
-    <Typography sx={{ fontSize: 14, color: 'text.disabled', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
+    <Typography sx={{ fontSize: '14px', color: 'text.disabled', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
       {text}
     </Typography>
   );

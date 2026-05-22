@@ -6,6 +6,8 @@ import { useNotificationsStore } from '../store/notifications-store';
 import { taskKeys } from './useTasks';
 import { commentKeys } from './useComments';
 import { sprintKeys } from './useSprints';
+import { timerKeys } from './useTimer';
+import type { RunningTimerDto } from '../api/types';
 
 /**
  * Backend SSE payload shapes. The server includes `actorId` whenever the event
@@ -43,6 +45,19 @@ interface SprintUpdatedPayload {
   actorId?: string;
 }
 
+interface TimerStartedPayload {
+  taskId: string;
+  taskKey: string;
+  startedAt: string;
+  actorId?: string;
+}
+
+interface TimerStoppedPayload {
+  taskId: string;
+  taskKey: string;
+  actorId?: string;
+}
+
 const RECONNECT_DELAY_MS = 5000;
 
 /**
@@ -60,7 +75,7 @@ export function useRealtimeEvents(): void {
   // Refs so the EventSource lifecycle isn't restarted on every render — only
   // when token actually changes.
   const userIdRef = useRef(userId);
-  userIdRef.current = userId;
+  useEffect(() => { userIdRef.current = userId; }, [userId]);
 
   useEffect(() => {
     if (!token) return;
@@ -87,6 +102,10 @@ export function useRealtimeEvents(): void {
       source = new EventSource(
         `http://localhost:8080/api/notifications/stream?token=${encodeURIComponent(token)}`,
       );
+
+      // Re-sync timer state on every (re)connect — events fired while we were
+      // disconnected aren't replayed by the SSE protocol.
+      queryClient.invalidateQueries({ queryKey: timerKeys.current });
 
       source.addEventListener('task:created', (e) => {
         const payload = parse<TaskCreatedPayload>((e as MessageEvent).data);
@@ -139,6 +158,24 @@ export function useRealtimeEvents(): void {
             actorId: payload.actorId,
           });
         }
+      });
+
+      source.addEventListener('timer:started', (e) => {
+        const payload = parse<TimerStartedPayload>((e as MessageEvent).data);
+        if (!payload) return;
+        if (isSelf(payload.actorId)) return;
+        queryClient.setQueryData<RunningTimerDto | null>(timerKeys.current, {
+          taskId: payload.taskId,
+          taskKey: payload.taskKey,
+          startedAt: payload.startedAt,
+        });
+      });
+
+      source.addEventListener('timer:stopped', (e) => {
+        const payload = parse<TimerStoppedPayload>((e as MessageEvent).data);
+        if (!payload) return;
+        if (isSelf(payload.actorId)) return;
+        queryClient.setQueryData<RunningTimerDto | null>(timerKeys.current, null);
       });
 
       source.addEventListener('sprint:updated', (e) => {

@@ -1,4 +1,4 @@
-import { Box, Skeleton } from '@mui/material';
+import { Box, Skeleton, Stack } from '@mui/material';
 
 const ROW_COUNT = 10;
 
@@ -29,7 +29,7 @@ function RowCell({ width, flex, variant = 'text' }: {
   variant?: 'text' | 'pill' | 'avatar';
 }) {
   return (
-    <Box sx={{ width, flex, px: 0.5, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+    <Stack direction="row" spacing={0.75} sx={{ width, flex, px: 0.5, alignItems: 'center' }}>
       {variant === 'avatar' ? (
         <>
           <Skeleton variant="circular" width={18} height={18} />
@@ -40,21 +40,19 @@ function RowCell({ width, flex, variant = 'text' }: {
       ) : (
         <Skeleton variant="text" width="80%" height={13} />
       )}
-    </Box>
+    </Stack>
   );
 }
 
 function TableRowSkeleton() {
   return (
-    <Box
+    <Stack direction="row"
       sx={{
-        display: 'flex',
         alignItems: 'center',
         px: 1.5,
         py: 0.75,
         borderBottom: 1,
-        borderColor: 'divider',
-      }}
+        borderColor: 'divider' }}
     >
       <Box sx={{ width: 84, px: 0.5 }}>
         <Skeleton variant="text" width={56} height={13} />
@@ -72,7 +70,7 @@ function TableRowSkeleton() {
       <RowCell width={50} />
       <RowCell width={70} />
       <RowCell width={80} />
-    </Box>
+    </Stack>
   );
 }
 
@@ -84,36 +82,31 @@ export default function ListViewSkeleton() {
       aria-label="Načítání seznamu úkolů"
     >
       {/* Toolbar */}
-      <Box
+      <Stack direction="row" spacing={1}
         sx={{
-          display: 'flex',
-          alignItems: 'center',
+        alignItems: 'center',
           px: 2,
           py: 1,
-          gap: 1,
           borderBottom: 1,
           borderColor: 'divider',
-          bgcolor: 'background.paper',
-        }}
+          bgcolor: 'background.paper' }}
       >
         <Skeleton variant="rectangular" width={200} height={26} sx={{ borderRadius: 1 }} />
         <Skeleton variant="rectangular" width={88} height={26} sx={{ borderRadius: 1 }} />
         <Box sx={{ flex: 1 }} />
         <Skeleton variant="text" width={60} height={12} />
-      </Box>
+      </Stack>
 
       <Box sx={{ minWidth: 1100 }}>
         {/* Header row */}
-        <Box
+        <Stack direction="row"
           sx={{
-            display: 'flex',
-            alignItems: 'center',
+        alignItems: 'center',
             px: 1.5,
             py: 0.75,
             borderBottom: 1,
             borderColor: 'divider',
-            bgcolor: 'background.paper',
-          }}
+            bgcolor: 'background.paper' }}
         >
           {COLS.map(c => (
             <HeaderCell
@@ -122,7 +115,7 @@ export default function ListViewSkeleton() {
               flex={'flex' in c ? c.flex : undefined}
             />
           ))}
-        </Box>
+        </Stack>
 
         {/* Rows */}
         {Array.from({ length: ROW_COUNT }).map((_, i) => (

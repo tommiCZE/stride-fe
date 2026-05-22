@@ -1,4 +1,4 @@
-import { Box, Divider, Tooltip, useTheme } from '@mui/material';
+import { Divider, Stack, Tooltip, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
 interface TBtnProps {
@@ -12,15 +12,14 @@ export function TBtn({ title, active, onMouseDown, children }: TBtnProps) {
   const theme = useTheme();
   return (
     <Tooltip title={title} enterDelay={600} placement="top">
-      <Box onMouseDown={onMouseDown} sx={{
-        width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        borderRadius: 0.75, cursor: 'default', fontSize: 14, fontWeight: 700, userSelect: 'none',
+      <Stack direction="row" onMouseDown={onMouseDown} sx={{
+        width: 26, height: 26, alignItems: 'center', justifyContent: 'center',
+        borderRadius: 0.75, cursor: 'default', fontSize: '14px', fontWeight: 700, userSelect: 'none',
         color: active ? 'primary.main' : 'text.secondary',
         bgcolor: active ? alpha(theme.palette.primary.main, 0.12) : 'transparent',
-        '&:hover': { bgcolor: active ? alpha(theme.palette.primary.main, 0.2) : 'action.hover' },
-      }}>
+        '&:hover': { bgcolor: active ? alpha(theme.palette.primary.main, 0.2) : 'action.hover' } }}>
         {children}
-      </Box>
+      </Stack>
     </Tooltip>
   );
 }

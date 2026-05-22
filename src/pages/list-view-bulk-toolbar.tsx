@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Button, IconButton, Menu, MenuItem, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Menu, MenuItem, Stack, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useUpdateTask, useDeleteTask } from '../hooks/useTasks';
 import { useTeamMembers } from '../hooks/useTeam';
@@ -67,11 +67,9 @@ export default function ListViewBulkToolbar({ projectId, selectedIds, onClear }:
 
   return (
     <>
-      <Box
+      <Stack direction="row" spacing={1}
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
+        alignItems: 'center',
           px: 2,
           py: 1,
           position: 'sticky',
@@ -80,10 +78,9 @@ export default function ListViewBulkToolbar({ projectId, selectedIds, onClear }:
           color: 'primary.contrastText',
           zIndex: 2,
           borderBottom: 1,
-          borderColor: 'divider',
-        }}
+          borderColor: 'divider' }}
       >
-        <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
+        <Typography sx={{ fontSize: '14px', fontWeight: 600 }}>
           {count} vybráno
         </Typography>
 
@@ -132,7 +129,7 @@ export default function ListViewBulkToolbar({ projectId, selectedIds, onClear }:
         >
           <CloseIcon />
         </IconButton>
-      </Box>
+      </Stack>
 
       <Menu
         anchorEl={statusAnchor}
@@ -142,7 +139,7 @@ export default function ListViewBulkToolbar({ projectId, selectedIds, onClear }:
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
         {BOARD_STATUSES.map(s => (
-          <MenuItem key={s.id} onClick={() => handleStatus(s.id)} sx={{ fontSize: 13, gap: 1 }}>
+          <MenuItem key={s.id} onClick={() => handleStatus(s.id)} sx={{ fontSize: '13px', gap: 1 }}>
             <ColorDot dotColor={s.color} dotSize={7} />
             {s.name}
           </MenuItem>
@@ -157,11 +154,11 @@ export default function ListViewBulkToolbar({ projectId, selectedIds, onClear }:
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         slotProps={{ paper: { sx: { maxHeight: 320 } } }}
       >
-        <MenuItem onClick={() => handleAssign(null)} sx={{ fontSize: 13, gap: 1, color: 'text.secondary' }}>
+        <MenuItem onClick={() => handleAssign(null)} sx={{ fontSize: '13px', gap: 1, color: 'text.secondary' }}>
           Nepřiřazeno
         </MenuItem>
         {team.map(u => (
-          <MenuItem key={u.id} onClick={() => handleAssign(u.id)} sx={{ fontSize: 13, gap: 1 }}>
+          <MenuItem key={u.id} onClick={() => handleAssign(u.id)} sx={{ fontSize: '13px', gap: 1 }}>
             <FluxAvatar user={{ color: u.color, initials: u.initials }} size={18} />
             {u.name}
           </MenuItem>
@@ -169,11 +166,11 @@ export default function ListViewBulkToolbar({ projectId, selectedIds, onClear }:
       </Menu>
 
       <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontSize: 14, fontWeight: 600 }}>
+        <DialogTitle sx={{ fontSize: '14px', fontWeight: 600 }}>
           Smazat {count} úkol{count === 1 ? '' : count < 5 ? 'y' : 'ů'}?
         </DialogTitle>
         <DialogContent>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: '13px', color: 'text.secondary' }}>
             Tato akce je nevratná. Vybrané úkoly budou trvale odstraněny.
           </Typography>
         </DialogContent>

@@ -32,10 +32,12 @@ function iconForType(type: NotificationType) {
 
 function InboxRow({ item, onSelect }: { item: NotificationItem; onSelect: (it: NotificationItem) => void }) {
   return (
-    <Box
+    <Stack
+      direction="row"
+      spacing={1.25}
       onClick={() => onSelect(item)}
       sx={{
-        display: 'flex', alignItems: 'center', gap: 1.25,
+        alignItems: 'center',
         px: 1.5, py: 1.1,
         borderRadius: 1.2, border: 1, borderColor: 'divider',
         bgcolor: item.read ? 'background.paper' : (theme) => alpha(theme.palette.primary.main, 0.05),
@@ -43,32 +45,32 @@ function InboxRow({ item, onSelect }: { item: NotificationItem; onSelect: (it: N
         '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
       }}
     >
-      <Box sx={{
-        width: 26, height: 26, borderRadius: 1, display: 'flex',
+      <Stack sx={{
+        width: 26, height: 26, borderRadius: 1,
         alignItems: 'center', justifyContent: 'center',
         bgcolor: 'action.hover', color: 'text.secondary', flexShrink: 0,
       }}>
         {iconForType(item.type)}
-      </Box>
+      </Stack>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{
-          fontSize: 13,
+        <Typography variant="caption" sx={{
           fontWeight: item.read ? 400 : 600,
           color: 'text.primary',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          display: 'block',
         }}>
           {item.message}
         </Typography>
       </Box>
-      <Typography sx={{ fontSize: 13, color: 'text.disabled', minWidth: 60, textAlign: 'right' }}>
+      <Typography variant="caption" color="text.disabled" sx={{ minWidth: 60, textAlign: 'right' }}>
         {relativeTime(item.createdAt)}
       </Typography>
       {!item.read && (
         <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: 'primary.main', flexShrink: 0 }}/>
       )}
-    </Box>
+    </Stack>
   );
 }
 
@@ -95,28 +97,28 @@ export default function Inbox() {
 
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%' }}>
-      <Stack direction="row" alignItems="flex-end" justifyContent="space-between" sx={{ mb: 3 }}>
+      <Stack direction="row" sx={{ alignItems: 'flex-end', justifyContent: 'space-between', mb: 3 }}>
         <Box>
-          <Typography sx={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', mb: 0.5 }}>
+          <Typography variant="h3" sx={{ mb: 0.5 }}>
             {t('inbox.title')}
           </Typography>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography variant="caption" color="text.secondary">
             {unreadCount > 0
               ? t('inbox.unreadCount', { count: unreadCount })
               : t('inbox.noUnread')}
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
           <ToggleButtonGroup
             size="small"
             value={filter}
             exclusive
             onChange={(_, v: Filter | null) => v && setFilter(v)}
           >
-            <ToggleButton value="all" sx={{ fontSize: 13, px: 1.5, py: 0.5 }}>
+            <ToggleButton value="all" sx={{ px: 1.5, py: 0.5 }}>
               {t('inbox.showAll')}
             </ToggleButton>
-            <ToggleButton value="unread" sx={{ fontSize: 13, px: 1.5, py: 0.5 }}>
+            <ToggleButton value="unread" sx={{ px: 1.5, py: 0.5 }}>
               {t('inbox.showUnread')}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -124,7 +126,6 @@ export default function Inbox() {
             size="small"
             onClick={markAllRead}
             disabled={unreadCount === 0}
-            sx={{ fontSize: 13 }}
           >
             {t('notifications.markAllRead')}
           </Button>
@@ -133,7 +134,6 @@ export default function Inbox() {
             color="error"
             onClick={clearAll}
             disabled={items.length === 0}
-            sx={{ fontSize: 13 }}
           >
             {t('inbox.clearAll')}
           </Button>
@@ -151,11 +151,11 @@ export default function Inbox() {
           }
         />
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Stack spacing={0.5}>
           {visible.map((item) => (
             <InboxRow key={item.id} item={item} onSelect={handleSelect} />
           ))}
-        </Box>
+        </Stack>
       )}
     </Box>
   );

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 
 interface Props {
   icon: ReactNode;
@@ -10,41 +10,36 @@ interface Props {
 
 export default function EmptyState({ icon, title, description, action }: Props) {
   return (
-    <Box
+    <Stack
       role="status"
       aria-label={title}
       aria-live="polite"
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
         p: 6,
         color: 'text.secondary',
-        width: '100%',
-      }}
+        width: '100%' }}
     >
-      <Box
+      <Stack direction="row"
         aria-hidden="true"
         sx={{
-          width: 80,
+        width: 80,
           height: 80,
-          display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           borderRadius: '50%',
           bgcolor: 'action.hover',
           color: 'text.disabled',
           mb: 2,
-          '& svg': { width: 40, height: 40 },
-        }}
+          '& svg': { width: 40, height: 40 } }}
       >
         {icon}
-      </Box>
+      </Stack>
       <Typography
         sx={{
-          fontSize: 15,
+          fontSize: '15px',
           fontWeight: 600,
           color: 'text.primary',
           letterSpacing: '-0.01em',
@@ -56,7 +51,7 @@ export default function EmptyState({ icon, title, description, action }: Props) 
       {description && (
         <Typography
           sx={{
-            fontSize: 13,
+            fontSize: '13px',
             color: 'text.secondary',
             maxWidth: 360,
             lineHeight: 1.5,
@@ -66,6 +61,6 @@ export default function EmptyState({ icon, title, description, action }: Props) 
         </Typography>
       )}
       {action && <Box sx={{ mt: 2.5 }}>{action}</Box>}
-    </Box>
+    </Stack>
   );
 }

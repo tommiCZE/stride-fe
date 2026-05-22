@@ -1,15 +1,5 @@
-import { useEffect, useState } from 'react';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { useState } from 'react';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { CloseIcon } from '../../components/icons/icons';
 
 interface SaveFilterDialogProps {
@@ -21,13 +11,15 @@ interface SaveFilterDialogProps {
 export default function SaveFilterDialog({ open, onClose, onSave }: SaveFilterDialogProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [prevOpen, setPrevOpen] = useState(open);
 
-  useEffect(() => {
+  if (prevOpen !== open) {
+    setPrevOpen(open);
     if (open) {
       setName('');
       setError(null);
     }
-  }, [open]);
+  }
 
   const handleSave = () => {
     const trimmed = name.trim();
@@ -41,7 +33,7 @@ export default function SaveFilterDialog({ open, onClose, onSave }: SaveFilterDi
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1.5 }}>
-        <Typography sx={{ fontSize: 14, fontWeight: 600, flex: 1 }}>
+        <Typography sx={{ fontSize: '14px', fontWeight: 600, flex: 1 }}>
           Uložit aktuální filtr
         </Typography>
         <IconButton size="small" onClick={onClose}>
@@ -50,7 +42,7 @@ export default function SaveFilterDialog({ open, onClose, onSave }: SaveFilterDi
       </DialogTitle>
 
       <DialogContent sx={{ pt: 1 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 0.5 }}>
+        <Stack spacing={1.5} sx={{ pt: 0.5 }}>
           <TextField
             autoFocus
             fullWidth
@@ -70,7 +62,7 @@ export default function SaveFilterDialog({ open, onClose, onSave }: SaveFilterDi
             error={!!error}
             helperText={error ?? ' '}
           />
-        </Box>
+        </Stack>
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>

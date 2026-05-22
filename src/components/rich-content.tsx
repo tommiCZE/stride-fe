@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import type { JSONContent, RichBlock } from '../types';
 import TipTapContent from './editor/tiptap-content';
@@ -64,27 +64,27 @@ function highlightLine(line: string) {
   const colors: Record<string, string> = { kw: '#a855f7', str: '#10b981', num: '#f59e0b', com: '#94a3b8', fn: '#0ea5e9' };
   return out.map((p, i) =>
     p.cls
-      ? <span key={i} style={{ color: colors[p.cls], fontStyle: p.cls === 'com' ? 'italic' : 'normal' }}>{p.text}</span>
+      ? <Box component="span" key={i} sx={{ color: colors[p.cls], fontStyle: p.cls === 'com' ? 'italic' : 'normal' }}>{p.text}</Box>
       : <span key={i}>{p.text}</span>
   );
 }
 
 function RenderBlock({ block: b }: { block: RichBlock }) {
-  if (b.type === 'h2') return <Typography variant="h5" sx={{ fontSize: 17, fontWeight: 700, mt: 0.5 }}>{b.text}</Typography>;
+  if (b.type === 'h2') return <Typography variant="h5" sx={{ fontSize: '17px', fontWeight: 700, mt: 0.5 }}>{b.text}</Typography>;
   if (b.type === 'h3') return <Typography variant="h6" sx={{ fontSize: 14.5, fontWeight: 700, mt: 0.5 }}>{b.text}</Typography>;
   if (b.type === 'p')  return <Typography sx={{ fontSize: 13.5, lineHeight: 1.6 }}>{renderInline(b.text)}</Typography>;
   if (b.type === 'ul') return (
-    <Box component="ul" sx={{ m: 0, pl: 2.5, display: 'flex', flexDirection: 'column', gap: 0.4 }}>
+    <Stack spacing={0.4} component="ul" sx={{ m: 0, pl: 2.5 }}>
       {b.items.map((it, i) => <Box component="li" key={i} sx={{ fontSize: 13.5, lineHeight: 1.55 }}>{renderInline(it)}</Box>)}
-    </Box>
+    </Stack>
   );
   if (b.type === 'callout') {
     const tone = { info: '#0ea5e9', warn: '#f59e0b', error: '#ef4444' }[b.tone];
     return (
-      <Box sx={{ display: 'flex', gap: 1, p: 1.25, borderRadius: 1.2, bgcolor: alpha(tone, 0.08), border: 1, borderColor: alpha(tone, 0.25) }}>
-        <Box sx={{ color: tone, fontSize: 14, fontWeight: 700 }}>ℹ</Box>
-        <Typography sx={{ fontSize: 13, lineHeight: 1.55 }}>{b.text}</Typography>
-      </Box>
+      <Stack direction="row" spacing={1} sx={{ p: 1.25, borderRadius: 1.2, bgcolor: alpha(tone, 0.08), border: 1, borderColor: alpha(tone, 0.25) }}>
+        <Box sx={{ color: tone, fontSize: '14px', fontWeight: 700 }}>ℹ</Box>
+        <Typography sx={{ fontSize: '13px', lineHeight: 1.55 }}>{b.text}</Typography>
+      </Stack>
     );
   }
   if (b.type === 'code') {
@@ -92,23 +92,31 @@ function RenderBlock({ block: b }: { block: RichBlock }) {
     return (
       <Box sx={{ borderRadius: 1.2, overflow: 'hidden', border: 1, borderColor: 'divider',
         bgcolor: 'background.default', fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between',
           px: 1.25, py: 0.5, borderBottom: 1, borderColor: 'divider', bgcolor: 'action.hover' }}>
-          <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.secondary' }}>{b.lang || 'text'}</Typography>
-          <Typography sx={{ fontSize: 14, color: 'text.disabled', cursor: 'default' }}>Copy</Typography>
-        </Box>
-        <Box sx={{ p: 1.25, fontSize: 14, lineHeight: 1.55, overflowX: 'auto', whiteSpace: 'pre' }}>
+          <Typography sx={{ fontSize: '14px', fontWeight: 600, color: 'text.secondary' }}>{b.lang || 'text'}</Typography>
+          <Typography sx={{ fontSize: '14px', color: 'text.disabled', cursor: 'default' }}>Copy</Typography>
+        </Stack>
+        <Box sx={{ p: 1.25, fontSize: '14px', lineHeight: 1.55, overflowX: 'auto', whiteSpace: 'pre' }}>
           {lines.map((l, i) => (
-            <Box key={i} sx={{ display: 'flex' }}>
+            <Stack direction="row" key={i} >
               <Box sx={{ width: 22, color: 'text.disabled', userSelect: 'none', pr: 1, textAlign: 'right' }}>{i + 1}</Box>
               <Box sx={{ flex: 1 }}>{highlightLine(l)}</Box>
-            </Box>
+            </Stack>
           ))}
         </Box>
       </Box>
     );
   }
   return null;
+}
+
+function tryParseJson(raw: string): JSONContent | null {
+  try {
+    return JSON.parse(raw) as JSONContent;
+  } catch {
+    return null;
+  }
 }
 
 interface Props {
@@ -121,13 +129,9 @@ export default function RichContent({ blocks }: Props) {
   }
 
   if (typeof blocks === 'string' && blocks.trimStart().startsWith('{')) {
-    try {
-      const parsed = JSON.parse(blocks) as JSONContent;
-      if (parsed && typeof parsed === 'object') {
-        return <TipTapContent json={parsed} />;
-      }
-    } catch {
-      // not valid JSON, fall through to plain text
+    const parsed = tryParseJson(blocks);
+    if (parsed && typeof parsed === 'object') {
+      return <TipTapContent json={parsed} />;
     }
   }
 
@@ -136,8 +140,8 @@ export default function RichContent({ blocks }: Props) {
     : blocks;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, '& p': { m: 0 } }}>
+    <Stack spacing={1.25} sx={{ '& p': { m: 0 } }}>
       {items.map((b, i) => <RenderBlock key={i} block={b}/>)}
-    </Box>
+    </Stack>
   );
 }

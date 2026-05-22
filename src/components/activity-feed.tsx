@@ -1,4 +1,4 @@
-import { Box, Skeleton, Typography } from '@mui/material';
+import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { useGlobalActivity } from '../hooks/useActivity';
 import ActivityFeedItem from './activity-feed-item';
@@ -19,33 +19,33 @@ export default function ActivityFeed({ limit = 20 }: Props) {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+      <Stack spacing={1.25} >
         {Array.from({ length: 6 }).map((_, i) => (
-          <Box key={i} sx={{ display: 'flex', gap: 1 }}>
+          <Stack direction="row" spacing={1} key={i} >
             <Skeleton variant="circular" width={22} height={22} />
             <Box sx={{ flex: 1 }}>
-              <Skeleton variant="text" sx={{ fontSize: 14 }} width="80%" />
-              <Skeleton variant="text" sx={{ fontSize: 14 }} width="40%" />
+              <Skeleton variant="text" sx={{ fontSize: '14px' }} width="80%" />
+              <Skeleton variant="text" sx={{ fontSize: '14px' }} width="40%" />
             </Box>
-          </Box>
+          </Stack>
         ))}
-      </Box>
+      </Stack>
     );
   }
 
   if (data.length === 0) {
     return (
-      <Typography sx={{ fontSize: 14, color: 'text.disabled', textAlign: 'center', py: 2 }}>
+      <Typography sx={{ fontSize: '14px', color: 'text.disabled', textAlign: 'center', py: 2 }}>
         Žádná aktivita.
       </Typography>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+    <Stack spacing={1.25} >
       {data.slice(0, limit).map(item => (
         <ActivityFeedItem key={item.id} item={item} onOpen={openTask} />
       ))}
-    </Box>
+    </Stack>
   );
 }

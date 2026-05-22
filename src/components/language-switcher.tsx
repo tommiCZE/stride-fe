@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 export default function LanguageSwitcher() {
@@ -10,20 +10,18 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <Box
+    <Stack direction="row" spacing={0.5}
       component="button"
       onClick={toggle}
       sx={{
-        display: 'flex', alignItems: 'center', gap: 0.5,
-        px: 0.75, py: 0.35, borderRadius: 0.75,
+        alignItems: 'center', px: 0.75, py: 0.35, borderRadius: 0.75,
         border: 1, borderColor: 'divider',
         bgcolor: 'transparent', cursor: 'pointer',
-        '&:hover': { bgcolor: 'action.hover' },
-      }}
+        '&:hover': { bgcolor: 'action.hover' } }}
     >
-      <Typography sx={{ fontSize: 13, fontWeight: 700, color: current === 'cs' ? 'primary.main' : 'text.disabled' }}>CS</Typography>
-      <Typography sx={{ fontSize: 14, color: 'text.disabled' }}>/</Typography>
-      <Typography sx={{ fontSize: 13, fontWeight: 700, color: current === 'en' ? 'primary.main' : 'text.disabled' }}>EN</Typography>
-    </Box>
+      <Typography sx={{ fontSize: '13px', fontWeight: 700, color: current === 'cs' ? 'primary.main' : 'text.disabled' }}>CS</Typography>
+      <Typography sx={{ fontSize: '14px', color: 'text.disabled' }}>/</Typography>
+      <Typography sx={{ fontSize: '13px', fontWeight: 700, color: current === 'en' ? 'primary.main' : 'text.disabled' }}>EN</Typography>
+    </Stack>
   );
 }

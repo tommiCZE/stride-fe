@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Box, Drawer, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Drawer, Stack, useMediaQuery, useTheme } from '@mui/material';
 import { useUiStore } from '../store/ui-store';
 import Sidebar from './sidebar';
 import GlobalHeader from './global-header';
@@ -12,7 +12,7 @@ export default function AppLayout({ children }: { children?: ReactNode }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', bgcolor: 'background.default' }}>
+    <Stack direction="row" sx={{ height: '100vh', overflow: 'hidden', bgcolor: 'background.default' }}>
       {isMobile ? (
         <Drawer open={mobileMenuOpen} onClose={() => setMobileMenu(false)}
           slotProps={{ paper: { sx: { width: 232, bgcolor: 'background.paper', borderRight: 1, borderColor: 'divider' } } }}>
@@ -24,13 +24,13 @@ export default function AppLayout({ children }: { children?: ReactNode }) {
         </Box>
       )}
 
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
+      <Stack sx={{ flex: 1, minWidth: 0, height: '100%' }}>
         <GlobalHeader/>
         <ProjectTopbar/>
         <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {children ?? <Outlet />}
         </Box>
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 }

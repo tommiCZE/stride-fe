@@ -1,4 +1,4 @@
-import { Box, Card, Skeleton } from '@mui/material';
+import { Box, Card, Skeleton, Stack } from '@mui/material';
 
 function StatCardSkeleton() {
   return (
@@ -12,13 +12,13 @@ function StatCardSkeleton() {
 
 function TaskListItemSkeleton({ isLast }: { isLast?: boolean }) {
   return (
-    <Box
+    <Stack
+      direction="row"
+      spacing={1}
       sx={{
         px: 1.5,
         py: 1,
-        display: 'flex',
         alignItems: 'center',
-        gap: 1,
         borderBottom: isLast ? 0 : 1,
         borderColor: 'divider',
       }}
@@ -28,20 +28,20 @@ function TaskListItemSkeleton({ isLast }: { isLast?: boolean }) {
       <Skeleton variant="text" width={56} height={12} />
       <Skeleton variant="text" sx={{ flex: 1 }} height={14} />
       <Skeleton variant="rectangular" width={70} height={16} sx={{ borderRadius: 0.6 }} />
-    </Box>
+    </Stack>
   );
 }
 
 function ActivityItemSkeleton() {
   return (
-    <Box sx={{ display: 'flex', gap: 1 }}>
+    <Stack direction="row" spacing={1}>
       <Skeleton variant="circular" width={22} height={22} />
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.4 }}>
+      <Stack spacing={0.4} sx={{ flex: 1 }}>
         <Skeleton variant="text" width="80%" height={13} />
         <Skeleton variant="text" width="56%" height={12} />
         <Skeleton variant="text" width={40} height={10} />
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 }
 
@@ -55,17 +55,17 @@ function ProjectCardSkeleton() {
         borderColor: 'divider',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
         <Skeleton variant="rectangular" width={28} height={28} sx={{ borderRadius: 1 }} />
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.3 }}>
+        <Stack spacing={0.3} sx={{ flex: 1 }}>
           <Skeleton variant="text" width="70%" height={14} />
           <Skeleton variant="text" width="55%" height={11} />
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        </Stack>
+      </Stack>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <Skeleton variant="rectangular" sx={{ flex: 1, borderRadius: 2 }} height={4} />
         <Skeleton variant="text" width={32} height={11} />
-      </Box>
+      </Stack>
     </Box>
   );
 }
@@ -77,14 +77,12 @@ export default function DashboardSkeleton() {
       role="status"
       aria-label="Načítání přehledu"
     >
-      {/* Greeting */}
-      <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Stack spacing={0.5} sx={{ mb: 3 }}>
         <Skeleton variant="text" width={170} height={14} />
         <Skeleton variant="text" width={320} height={34} />
         <Skeleton variant="text" width="55%" height={14} />
-      </Box>
+      </Stack>
 
-      {/* Stat cards */}
       <Box
         sx={{
           display: 'grid',
@@ -98,7 +96,6 @@ export default function DashboardSkeleton() {
         ))}
       </Box>
 
-      {/* Two cards row + projects */}
       <Box
         sx={{
           display: 'grid',
@@ -106,12 +103,11 @@ export default function DashboardSkeleton() {
           gap: 2,
         }}
       >
-        {/* My work */}
         <Card sx={{ borderRadius: 1.5 }}>
-          <Box
+          <Stack
+            direction="row"
             sx={{
               p: 1.5,
-              display: 'flex',
               alignItems: 'center',
               borderBottom: 1,
               borderColor: 'divider',
@@ -120,38 +116,36 @@ export default function DashboardSkeleton() {
             <Skeleton variant="text" width={90} height={14} />
             <Box sx={{ flex: 1 }} />
             <Skeleton variant="text" width={40} height={12} />
-          </Box>
+          </Stack>
           {Array.from({ length: 5 }).map((_, i) => (
             <TaskListItemSkeleton key={i} isLast={i === 4} />
           ))}
         </Card>
 
-        {/* Activity */}
         <Card sx={{ borderRadius: 1.5 }}>
-          <Box
+          <Stack
+            direction="row"
             sx={{
               p: 1.5,
-              display: 'flex',
               alignItems: 'center',
               borderBottom: 1,
               borderColor: 'divider',
             }}
           >
             <Skeleton variant="text" width={110} height={14} />
-          </Box>
-          <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+          </Stack>
+          <Stack spacing={1.25} sx={{ p: 1.5 }}>
             {Array.from({ length: 4 }).map((_, i) => (
               <ActivityItemSkeleton key={i} />
             ))}
-          </Box>
+          </Stack>
         </Card>
 
-        {/* Projects */}
         <Card sx={{ borderRadius: 1.5, gridColumn: '1 / -1' }}>
-          <Box
+          <Stack
+            direction="row"
             sx={{
               p: 1.5,
-              display: 'flex',
               alignItems: 'center',
               borderBottom: 1,
               borderColor: 'divider',
@@ -160,7 +154,7 @@ export default function DashboardSkeleton() {
             <Skeleton variant="text" width={80} height={14} />
             <Box sx={{ flex: 1 }} />
             <Skeleton variant="rectangular" width={110} height={26} sx={{ borderRadius: 1 }} />
-          </Box>
+          </Stack>
           <Box
             sx={{
               display: 'grid',

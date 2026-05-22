@@ -1,4 +1,4 @@
-import { Box, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { SectionHeader, SettingsCard, FieldRow, ToggleRow } from '../shared';
 import { useProjectSettings, type DefaultView } from '../../../store/project-settings-store';
 import type { ProjectDto } from '../../../api/types';
@@ -96,34 +96,34 @@ export function AppearanceSection({ project, readOnly }: { project: ProjectDto; 
             : appearance.cardColorBy === 'type' ? 'info.main'
             : appearance.cardColorBy === 'label' ? 'primary.main' : 'divider',
         }}>
-          <Typography sx={{ fontSize: 13, color: 'text.disabled', fontFamily: 'ui-monospace, monospace' }}>
+          <Typography sx={{ fontSize: '13px', color: 'text.disabled', fontFamily: 'ui-monospace, monospace' }}>
             {project.key}-142
           </Typography>
-          <Typography sx={{ fontSize: 13, fontWeight: 600, mb: 1 }}>
+          <Typography sx={{ fontSize: '13px', fontWeight: 600, mb: 1 }}>
             Implement settings layout
           </Typography>
           {appearance.cardShowLabels && (
-            <Box sx={{ display: 'flex', gap: 0.5, mb: 1 }}>
-              <Box sx={{ px: 0.75, py: 0.15, borderRadius: 0.6, fontSize: 14, fontWeight: 600,
+            <Stack direction="row" spacing={0.5} sx={{ mb: 1 }}>
+              <Box sx={{ px: 0.75, py: 0.15, borderRadius: 0.6, fontSize: '14px', fontWeight: 600,
                 bgcolor: '#3b82f622', color: '#3b82f6' }}>frontend</Box>
-              <Box sx={{ px: 0.75, py: 0.15, borderRadius: 0.6, fontSize: 14, fontWeight: 600,
+              <Box sx={{ px: 0.75, py: 0.15, borderRadius: 0.6, fontSize: '14px', fontWeight: 600,
                 bgcolor: '#10b98122', color: '#10b981' }}>tech-debt</Box>
-            </Box>
+            </Stack>
           )}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mt: 0.5 }}>
             {appearance.cardShowEstimate && (
-              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>5 pt</Typography>
+              <Typography sx={{ fontSize: '13px', color: 'text.secondary' }}>5 pt</Typography>
             )}
             {appearance.cardShowDue && (
-              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>· za 3 dny</Typography>
+              <Typography sx={{ fontSize: '13px', color: 'text.secondary' }}>· za 3 dny</Typography>
             )}
             <Box sx={{ flex: 1 }}/>
             {appearance.cardShowAssignee && (
-              <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: 'primary.main',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: 14, fontWeight: 700 }}>TK</Box>
+              <Stack direction="row" sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: 'primary.main',
+                alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: '14px', fontWeight: 700 }}>TK</Stack>
             )}
-          </Box>
+          </Stack>
         </Box>
       </SettingsCard>
     </Box>

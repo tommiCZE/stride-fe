@@ -56,7 +56,7 @@ const en = {
     footer: '© 2025 Stride · Modern project management',
     invalidEmail: 'Invalid email address',
     passwordMin: 'Password must be at least 6 characters',
-    loginFailed: 'Login failed. Try password "stride123" for dev access.',
+    loginFailed: 'Login failed. Try password "password" for dev access.',
     invalidCredentials: 'Invalid credentials',
   },
   common: {

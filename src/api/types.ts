@@ -346,6 +346,24 @@ export interface CreateWorklogRequest {
   comment?: string;
 }
 
+export interface RunningTimerDto {
+  taskId: string;
+  taskKey: string;
+  startedAt: string;
+}
+
+export interface StartTimerRequest {
+  taskId: string;
+}
+
+export interface StopTimerResponse {
+  taskId: string;
+  taskKey: string;
+  startedAt: string;
+  stoppedAt: string;
+  elapsedSeconds: number;
+}
+
 export interface ActivityItemDto {
   id: string;
   taskId: string;

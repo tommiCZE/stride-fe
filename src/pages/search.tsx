@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Box, Chip, IconButton, InputBase, Menu, MenuItem, Typography } from '@mui/material';
+import { useMemo, useState } from 'react';
+import { Box, Chip, IconButton, InputBase, Menu, MenuItem, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProjects } from '../hooks/useProjects';
@@ -11,9 +11,9 @@ import PriorityIcon from '../components/icons/priority-icon';
 import { SearchIcon, CloseIcon } from '../components/icons/icons';
 import { BOARD_STATUSES } from '../constants/statuses';
 import { TASK_TYPES } from '../constants/taskTypes';
-import { PRIORITIES } from '../constants/priorities';
 import type { ProjectDto, TaskSummaryDto, UserDto } from '../api/types';
 import type { SearchFilters } from '../api/search';
+import { taskLinkProps } from '../utils/task-link';
 
 function Highlight({ text, query }: { text: string; query: string }) {
   if (!query.trim()) return <>{text}</>;
@@ -72,7 +72,7 @@ function MultiSelectChip({ label, options, selected, onChange }: {
             key={o.id}
             onClick={() => toggle(o.id)}
             selected={selected.includes(o.id)}
-            sx={{ fontSize: 14, gap: 1 }}
+            sx={{ gap: 1 }}
           >
             {o.color && (
               <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: o.color }}/>
@@ -96,57 +96,60 @@ function TaskRow({ task, projects, members, query }: {
   const assignee = task.assigneeId ? members.find(m => m.id === task.assigneeId) : null;
   const status = BOARD_STATUSES.find(s => s.id === task.status);
 
-  const open = () => {
+  const openTask = (key: string) => {
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
-      next.set('task', task.key);
+      next.set('task', key);
       return next;
     });
   };
 
   return (
-    <Box
-      onClick={open}
+    <Stack
+      direction="row"
+      spacing={1.5}
+      {...taskLinkProps(task.key, openTask)}
       sx={{
-        display: 'flex', alignItems: 'center', gap: 1.5,
+        alignItems: 'center',
         px: 1.5, py: 1, borderRadius: 1,
         cursor: 'default',
+        textDecoration: 'none', color: 'text.primary',
         '&:hover': { bgcolor: 'action.hover' },
       }}
     >
       <TypeIcon type={task.type} size={14}/>
-      <Typography sx={{
-        fontFamily: 'ui-monospace, monospace', fontSize: 13, fontWeight: 600,
+      <Typography variant="caption" sx={{
+        fontFamily: 'ui-monospace, monospace', fontWeight: 600,
         color: 'text.disabled', width: 80, flexShrink: 0,
       }}>
         {task.key}
       </Typography>
-      <Typography sx={{ fontSize: 13, flex: 1, minWidth: 0,
+      <Typography variant="caption" sx={{ flex: 1, minWidth: 0,
         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
         <Highlight text={task.title} query={query}/>
       </Typography>
       <PriorityIcon priority={task.priority}/>
       {status && (
-        <Box sx={{
+        <Typography variant="body2" sx={{
           px: 0.75, py: 0.1, borderRadius: 0.75,
-          fontSize: 14, fontWeight: 700,
+          fontWeight: 700,
           color: status.color, bgcolor: alpha(status.color, 0.13),
           border: 1, borderColor: alpha(status.color, 0.4),
           flexShrink: 0,
         }}>
           {status.name}
-        </Box>
+        </Typography>
       )}
       {project && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0,
-          color: 'text.disabled', fontSize: 13 }}>
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', flexShrink: 0,
+          color: 'text.disabled' }}>
           <Box sx={{ width: 12, height: 12, borderRadius: 0.4, bgcolor: project.color }}/>
-          {project.key}
-        </Box>
+          <Typography variant="caption" color="text.disabled">{project.key}</Typography>
+        </Stack>
       )}
       {assignee ? <FluxAvatar user={assignee} size={20}/>
         : <Box sx={{ width: 20, height: 20 }}/>}
-    </Box>
+    </Stack>
   );
 }
 
@@ -156,6 +159,7 @@ export default function Search() {
   const initialQ = searchParams.get('q') ?? '';
 
   const [draft, setDraft] = useState(initialQ);
+  const [prevInitialQ, setPrevInitialQ] = useState(initialQ);
   const [projectIds, setProjectIds] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);
@@ -163,7 +167,10 @@ export default function Search() {
   const [dueFrom, setDueFrom] = useState('');
   const [dueTo, setDueTo] = useState('');
 
-  useEffect(() => { setDraft(initialQ); }, [initialQ]);
+  if (prevInitialQ !== initialQ) {
+    setPrevInitialQ(initialQ);
+    setDraft(initialQ);
+  }
 
   const filters: SearchFilters = useMemo(() => ({
     q: initialQ,
@@ -194,7 +201,7 @@ export default function Search() {
   };
 
   return (
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    <Stack sx={{ flex: 1, overflow: 'hidden',
       bgcolor: 'background.default' }}>
       <Box sx={{
         position: 'sticky', top: 0, zIndex: 1,
@@ -202,8 +209,8 @@ export default function Search() {
         bgcolor: 'background.default',
         borderBottom: 1, borderColor: 'divider',
       }}>
-        <Box sx={{
-          display: 'flex', alignItems: 'center', gap: 1,
+        <Stack direction="row" spacing={1} sx={{
+          alignItems: 'center',
           px: 1.5, py: 1, borderRadius: 1.5,
           bgcolor: 'background.paper', border: 1, borderColor: 'divider',
           maxWidth: 720,
@@ -219,16 +226,16 @@ export default function Search() {
               if (e.key === 'Enter') commitQuery(draft);
               if (e.key === 'Escape') { setDraft(''); commitQuery(''); }
             }}
-            sx={{ fontSize: 14 }}
+            sx={{ fontSize: '14px' }}
           />
           {draft && (
             <IconButton size="small" onClick={() => { setDraft(''); commitQuery(''); }}>
               <CloseIcon/>
             </IconButton>
           )}
-        </Box>
+        </Stack>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1.5, flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', mt: 1.5, flexWrap: 'wrap' }}>
           <MultiSelectChip
             label="Projekt"
             options={projects.map(p => ({ id: p.id, name: p.name, color: p.color }))}
@@ -268,22 +275,22 @@ export default function Search() {
             />
           )}
           <Box sx={{ flex: 1 }}/>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          <Typography variant="caption" color="text.secondary">
             {isLoading ? 'Hledám…' : `${total} ${total === 1 ? 'výsledek' : total < 5 ? 'výsledky' : 'výsledků'}`}
           </Typography>
-        </Box>
+        </Stack>
       </Box>
 
       <Box sx={{ flex: 1, overflowY: 'auto', px: { xs: 1.5, md: 3 }, py: 2 }}>
         {!initialQ && !hasAnyFilter && (
-          <EmptyState
+          <SearchEmptyState
             title="Začni hledat"
             hint="Zadej slovo nebo klíč tasku (např. 'login' nebo 'WEB-142') a stiskni Enter."
           />
         )}
 
         {(initialQ || hasAnyFilter) && total === 0 && !isLoading && (
-          <EmptyState
+          <SearchEmptyState
             title="Nic jsme nenašli"
             hint="Zkus jiné slovo nebo méně filtrů."
           />
@@ -300,29 +307,30 @@ export default function Search() {
         {results.projects.length > 0 && (
           <ResultGroup label="Projekty" count={results.projects.length}>
             {results.projects.map(p => (
-              <Box
+              <Stack
                 key={p.id}
+                direction="row"
+                spacing={1.5}
                 onClick={() => navigate(`/projects/${p.key}/board`)}
-                sx={{ display: 'flex', alignItems: 'center', gap: 1.5,
+                sx={{ alignItems: 'center',
                   px: 1.5, py: 1, borderRadius: 1, cursor: 'default',
                   '&:hover': { bgcolor: 'action.hover' } }}
               >
-                <Box sx={{ width: 22, height: 22, borderRadius: 0.7, bgcolor: p.color,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'common.white', fontSize: 13, fontWeight: 700 }}>
+                <Stack sx={{ width: 22, height: 22, borderRadius: 0.7, bgcolor: p.color,
+                  alignItems: 'center', justifyContent: 'center',
+                  color: 'common.white', fontSize: '13px', fontWeight: 700 }}>
                   {p.key[0]}
-                </Box>
-                <Typography sx={{ fontSize: 13, flex: 1 }}>
+                </Stack>
+                <Typography variant="caption" sx={{ flex: 1 }}>
                   <Highlight text={p.name} query={initialQ}/>
                 </Typography>
-                <Typography sx={{ fontSize: 13, color: 'text.disabled',
-                  fontFamily: 'ui-monospace, monospace' }}>
+                <Typography variant="caption" color="text.disabled" sx={{ fontFamily: 'ui-monospace, monospace' }}>
                   {p.key}
                 </Typography>
-                <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
+                <Typography variant="caption" color="text.disabled">
                   {p.taskCount} tasků · {p.openCount} otevřených
                 </Typography>
-              </Box>
+              </Stack>
             ))}
           </ResultGroup>
         )}
@@ -330,39 +338,41 @@ export default function Search() {
         {results.people.length > 0 && (
           <ResultGroup label="Lidé" count={results.people.length}>
             {results.people.map(u => (
-              <Box
+              <Stack
                 key={u.id}
+                direction="row"
+                spacing={1.5}
                 onClick={() => navigate('/team')}
-                sx={{ display: 'flex', alignItems: 'center', gap: 1.5,
+                sx={{ alignItems: 'center',
                   px: 1.5, py: 1, borderRadius: 1, cursor: 'default',
                   '&:hover': { bgcolor: 'action.hover' } }}
               >
                 <FluxAvatar user={u} size={26}/>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
+                  <Typography variant="label">
                     <Highlight text={u.name} query={initialQ}/>
                   </Typography>
-                  <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                     {u.email}
                   </Typography>
                 </Box>
-                <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
+                <Typography variant="caption" color="text.disabled">
                   {u.workspaceRole}
                 </Typography>
-              </Box>
+              </Stack>
             ))}
           </ResultGroup>
         )}
       </Box>
-    </Box>
+    </Stack>
   );
 }
 
 function ResultGroup({ label, count, children }: { label: string; count: number; children: React.ReactNode }) {
   return (
     <Box sx={{ mb: 2.5 }}>
-      <Typography sx={{
-        fontSize: 14, fontWeight: 700, letterSpacing: '0.06em',
+      <Typography variant="body2" sx={{
+        fontWeight: 700, letterSpacing: '0.06em',
         textTransform: 'uppercase', color: 'text.disabled',
         px: 1.5, mb: 0.5,
       }}>
@@ -373,20 +383,20 @@ function ResultGroup({ label, count, children }: { label: string; count: number;
   );
 }
 
-function EmptyState({ title, hint }: { title: string; hint: string }) {
+function SearchEmptyState({ title, hint }: { title: string; hint: string }) {
   return (
     <Box sx={{
       maxWidth: 480, mx: 'auto', mt: 8, textAlign: 'center',
       color: 'text.secondary',
     }}>
-      <Box sx={{ display: 'inline-flex', mb: 1.5, p: 1.5, borderRadius: '50%',
+      <Stack sx={{ display: 'inline-flex', mb: 1.5, p: 1.5, borderRadius: '50%',
         bgcolor: 'action.hover', color: 'text.disabled' }}>
         <SearchIcon/>
-      </Box>
-      <Typography sx={{ fontSize: 14, fontWeight: 600, mb: 0.5, color: 'text.primary' }}>
+      </Stack>
+      <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, color: 'text.primary' }}>
         {title}
       </Typography>
-      <Typography sx={{ fontSize: 14 }}>{hint}</Typography>
+      <Typography variant="body2">{hint}</Typography>
     </Box>
   );
 }

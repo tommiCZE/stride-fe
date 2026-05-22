@@ -47,7 +47,7 @@ export function InviteDialog({ open, onClose }: InviteDialogProps) {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth onKeyDown={handleSubmitShortcut}>
-      <DialogTitle sx={{ fontSize: 15, fontWeight: 700, pb: 1 }}>Pozvat člena</DialogTitle>
+      <DialogTitle sx={{ fontSize: '15px', fontWeight: 700, pb: 1 }}>Pozvat člena</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '12px !important' }}>
         <Controller name="name" control={control} render={({ field }) => (
           <TextField {...field} label="Jméno" size="small" fullWidth
@@ -58,12 +58,12 @@ export function InviteDialog({ open, onClose }: InviteDialogProps) {
             error={!!errors.email} helperText={errors.email?.message}/>
         )}/>
         <Box>
-          <Typography sx={{ fontSize: 14, color: 'text.secondary', mb: 0.5 }}>Oprávnění</Typography>
+          <Typography sx={{ fontSize: '14px', color: 'text.secondary', mb: 0.5 }}>Oprávnění</Typography>
           <Controller name="workspaceRole" control={control} render={({ field }) => (
-            <Select {...field} size="small" fullWidth sx={{ fontSize: 13 }}>
-              <MenuItem value="ADMIN" sx={{ fontSize: 13 }}>Admin — plný přístup</MenuItem>
-              <MenuItem value="MEMBER" sx={{ fontSize: 13 }}>Member — standard</MenuItem>
-              <MenuItem value="VIEWER" sx={{ fontSize: 13 }}>Viewer — jen čtení</MenuItem>
+            <Select {...field} size="small" fullWidth sx={{ fontSize: '13px' }}>
+              <MenuItem value="ADMIN" sx={{ fontSize: '13px' }}>Admin — plný přístup</MenuItem>
+              <MenuItem value="MEMBER" sx={{ fontSize: '13px' }}>Member — standard</MenuItem>
+              <MenuItem value="VIEWER" sx={{ fontSize: '13px' }}>Viewer — jen čtení</MenuItem>
             </Select>
           )}/>
         </Box>

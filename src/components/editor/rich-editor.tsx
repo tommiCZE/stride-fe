@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Tooltip } from '@mui/material';
+import { Box, Stack, Tooltip } from '@mui/material';
 import type { JSONContent } from '@tiptap/core';
 import RichContent from '../rich-content';
 import type { RichBlock } from '../../types';
@@ -59,15 +59,15 @@ export default function RichEditor({
       )}
       {showToggle && (
         <Tooltip title="Upravit">
-          <Box className="flux-edit-pencil" onClick={() => setEditing(true)}
+          <Stack direction="row" className="flux-edit-pencil" onClick={() => setEditing(true)}
             sx={{ position: 'absolute', top: 0, right: 0, width: 26, height: 26,
-              borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 1, alignItems: 'center', justifyContent: 'center',
               bgcolor: 'background.paper', border: 1, borderColor: 'divider',
               color: 'text.secondary', cursor: 'default',
               opacity: 0, transition: 'opacity 0.15s',
               '&:hover': { color: 'primary.main', borderColor: 'primary.main' } }}>
             <PencilIcon />
-          </Box>
+          </Stack>
         </Tooltip>
       )}
     </Box>

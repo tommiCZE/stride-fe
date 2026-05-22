@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { SectionHeader, SettingsCard } from '../shared';
 import { useProjectSettings } from '../../../store/project-settings-store';
 import { useProjectAuditLog } from '../../../hooks/useProjectSettingsResources';
@@ -29,73 +29,73 @@ export function AdvancedSection({ project, readOnly }: { project: ProjectDto; re
       />
 
       <SettingsCard title="Import & Export">
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Export projektu</Typography>
-              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Stack spacing={1.25}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+            <Stack sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">Export projektu</Typography>
+              <Typography variant="caption" color="text.secondary">
                 Stáhne JSON se všemi tasky, sprinty, komentáři a nastavením.
               </Typography>
-            </Box>
+            </Stack>
             <Button size="small" variant="outlined" startIcon={<DownloadIcon/>} disabled={readOnly}>
               Export JSON
             </Button>
             <Button size="small" variant="outlined" startIcon={<DownloadIcon/>} disabled={readOnly}>
               Export CSV
             </Button>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Import z Jiry</Typography>
-              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          </Stack>
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+            <Stack sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">Import z Jiry</Typography>
+              <Typography variant="caption" color="text.secondary">
                 Načte tasky z exportovaného CSV. Mapování polí v dalším kroku.
               </Typography>
-            </Box>
+            </Stack>
             <Button size="small" variant="outlined" disabled={readOnly}>Načíst CSV</Button>
-          </Box>
-        </Box>
+          </Stack>
+        </Stack>
       </SettingsCard>
 
       <SettingsCard title="Audit log" description="Posledních 30 dní změn v nastavení projektu.">
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+        <Stack spacing={0.25}>
           {audit.data.length === 0 && (
-            <Typography sx={{ fontSize: 14, color: 'text.secondary', py: 1.5, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ py: 1.5, textAlign: 'center' }}>
               Zatím žádné záznamy.
             </Typography>
           )}
           {audit.data.map(e => {
             const actor = e.actorId ? userById.get(e.actorId) : null;
             return (
-              <Box key={e.id} sx={{
-                display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 0.5,
+              <Stack key={e.id} direction="row" spacing={1} sx={{
+                alignItems: 'center', py: 0.75, px: 0.5,
                 borderBottom: 1, borderColor: 'divider',
                 '&:last-child': { borderBottom: 0 },
               }}>
                 <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: 'primary.main' }}/>
-                <Typography sx={{ fontSize: 14, flex: 1 }}>
+                <Typography variant="body2" sx={{ flex: 1 }}>
                   <Box component="span" sx={{ fontWeight: 600 }}>{actor?.name ?? 'System'}</Box>
                   {' · '}
                   <Box component="span" sx={{ color: 'text.secondary' }}>{e.section}</Box>
                   {' — '}
                   {e.summary}
                 </Typography>
-                <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{formatTimeAgo(e.occurredAt)}</Typography>
-              </Box>
+                <Typography variant="caption" color="text.disabled">{formatTimeAgo(e.occurredAt)}</Typography>
+              </Stack>
             );
           })}
-        </Box>
+        </Stack>
       </SettingsCard>
 
       <SettingsCard title="Týdenní insights" description="Souhrnný e-mail se statistikami.">
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ flex: 1 }}>
-            <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Weekly insights pro project leady</Typography>
-            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+          <Stack sx={{ flex: 1 }}>
+            <Typography variant="subtitle2">Weekly insights pro project leady</Typography>
+            <Typography variant="caption" color="text.secondary">
               Velocity, blockery, top contributors, plánovaný vs. dodaný scope.
             </Typography>
-          </Box>
+          </Stack>
           <Button size="small" variant="contained" disabled={readOnly}>Aktivovat</Button>
-        </Box>
+        </Stack>
       </SettingsCard>
 
       <SettingsCard title="Obnova nastavení" description="Vrátí všechna nastavení projektu na výchozí hodnoty. Tasky a sprinty zůstávají.">

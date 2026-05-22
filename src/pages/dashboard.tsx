@@ -1,4 +1,5 @@
-import { Box, Button, Card, Typography } from '@mui/material';
+import type { ReactNode } from 'react';
+import { Box, Button, Card, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProjects } from '../hooks/useProjects';
@@ -11,6 +12,25 @@ import { PlusIcon, DashboardIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
 import QueryError from '../components/query-error/QueryError';
 import ActivityFeed from '../components/activity-feed';
+import { taskLinkProps } from '../utils/task-link';
+
+function DashboardCard({ title, action, gridColumn, children }: {
+  title: string;
+  action?: ReactNode;
+  gridColumn?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Card sx={{ borderRadius: 1.5, gridColumn }}>
+      <Stack direction="row" spacing={1} sx={{ p: 1.5, alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+        <Typography variant="label">{title}</Typography>
+        <Box sx={{ flex: 1 }}/>
+        {action}
+      </Stack>
+      {children}
+    </Card>
+  );
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -39,13 +59,13 @@ export default function Dashboard() {
   return (
     <Box sx={{ p: 3, overflowY: 'auto', bgcolor: 'background.default', height: '100%' }}>
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'text.secondary' }}>
+        <Typography variant="overline" color="text.secondary">
           {dateLabel}
         </Typography>
-        <Typography sx={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em' }}>
+        <Typography variant="h2">
           Dobré ráno, {me?.name.split(' ')[0] ?? '…'}
         </Typography>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.25 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.25, display: 'block' }}>
           Máš {myTasks.length} přiřazených tasků.
         </Typography>
       </Box>
@@ -58,21 +78,19 @@ export default function Dashboard() {
           { label: 'Po termínu',    value: myTasks.filter(t => t.dueDate && new Date(t.dueDate) < today && t.status !== 'DONE').length,         sub: 'přiřazeno mně',       signal: true  },
         ].map((s, i) => (
           <Card key={i} sx={{ p: 1.75, borderRadius: 1.5 }}>
-            <Typography sx={{ fontSize: 13, color: 'text.secondary', fontWeight: 500 }}>{s.label}</Typography>
-            <Typography sx={{ fontSize: 30, fontWeight: 700, letterSpacing: '-0.02em',
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>{s.label}</Typography>
+            <Typography sx={{ fontSize: '30px', fontWeight: 700, letterSpacing: '-0.02em',
               color: s.signal ? 'error.main' : 'text.primary', mt: 0.25 }}>{s.value}</Typography>
-            <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>{s.sub}</Typography>
+            <Typography variant="caption" color="text.disabled">{s.sub}</Typography>
           </Card>
         ))}
       </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-        <Card sx={{ borderRadius: 1.5 }}>
-          <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 700 }}>Moje práce</Typography>
-            <Box sx={{ flex: 1 }}/>
-            <Typography sx={{ fontSize: 13, color: 'primary.main', cursor: 'default' }}>Vše →</Typography>
-          </Box>
+        <DashboardCard
+          title="Moje práce"
+          action={<Typography variant="caption" color="primary.main" sx={{ cursor: 'default' }}>Vše →</Typography>}
+        >
           {tasksError && (
             <Box sx={{ p: 1.5 }}>
               <QueryError
@@ -85,56 +103,49 @@ export default function Dashboard() {
           {!tasksError && myTasks.slice(0, 6).map(t => {
             const status = BOARD_STATUSES.find(s => s.id === t.status);
             return (
-              <Box key={t.id} onClick={() => openTask(t.key)}
-                sx={{ px: 1.5, py: 1, display: 'flex', alignItems: 'center', gap: 1,
+              <Stack key={t.id} direction="row" spacing={1} {...taskLinkProps(t.key, openTask)}
+                sx={{ px: 1.5, py: 1, alignItems: 'center',
                   borderBottom: 1, borderColor: 'divider', cursor: 'default',
+                  textDecoration: 'none', color: 'text.primary',
                   '&:hover': { bgcolor: 'action.hover' },
                   '&:last-child': { borderBottom: 0 } }}>
                 <PriorityIcon priority={t.priority}/>
                 <TypeIcon type={t.type} size={13}/>
-                <Typography sx={{ fontSize: 13, color: 'text.disabled', fontFamily: 'ui-monospace, monospace', minWidth: 60 }}>{t.key}</Typography>
-                <Typography sx={{ fontSize: 14, flex: 1, minWidth: 0,
+                <Typography variant="caption" color="text.disabled" sx={{ fontFamily: 'ui-monospace, monospace', minWidth: 60 }}>{t.key}</Typography>
+                <Typography variant="body2" sx={{ flex: 1, minWidth: 0,
                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</Typography>
                 {status && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, px: 0.6, py: 0.2,
+                  <Stack direction="row" spacing={0.4} sx={{ alignItems: 'center', px: 0.6, py: 0.2,
                     borderRadius: 0.6, bgcolor: alpha(status.color, 0.15),
-                    color: status.color, fontSize: 14, fontWeight: 600 }}>
-                    {status.name}
-                  </Box>
+                    color: status.color }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: 'inherit' }}>{status.name}</Typography>
+                  </Stack>
                 )}
-              </Box>
+              </Stack>
             );
           })}
           {!tasksError && myTasks.length === 0 && (
-            <Box sx={{ px: 1.5, py: 2, color: 'text.disabled', fontSize: 14, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.disabled" sx={{ px: 1.5, py: 2, textAlign: 'center' }}>
               Žádné přiřazené tasky
-            </Box>
+            </Typography>
           )}
-        </Card>
+        </DashboardCard>
 
-        <Card sx={{ borderRadius: 1.5 }}>
-          <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 700 }}>Aktivita týmu</Typography>
-          </Box>
+        <DashboardCard title="Aktivita týmu">
           <Box sx={{ p: 1.5, maxHeight: 480, overflowY: 'auto' }}>
             <ActivityFeed limit={20} />
           </Box>
-        </Card>
+        </DashboardCard>
 
-        <Card sx={{ borderRadius: 1.5, gridColumn: '1 / -1' }}>
-          <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 700 }}>Projekty</Typography>
-            <Box sx={{ flex: 1 }}/>
-            <Box
-              component="button"
-              sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5,
-                px: 1, py: 0.4, borderRadius: 1, fontSize: 14, fontWeight: 500,
-                bgcolor: 'transparent', border: '1px solid', borderColor: 'divider',
-                color: 'text.secondary', cursor: 'pointer',
-                '&:hover': { bgcolor: 'action.hover' } }}>
-              <PlusIcon style={{ width: 12, height: 12 }}/> Nový projekt
-            </Box>
-          </Box>
+        <DashboardCard
+          title="Projekty"
+          gridColumn="1 / -1"
+          action={
+            <Button size="small" variant="outlined" startIcon={<PlusIcon/>}>
+              Nový projekt
+            </Button>
+          }
+        >
           {projectsError ? (
             <Box sx={{ p: 1.5 }}>
               <QueryError
@@ -154,39 +165,39 @@ export default function Dashboard() {
               }
             />
           ) : (
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', md: 'repeat(3,1fr)' }, gap: 1.5, p: 1.5 }}>
-            {projects.map(p => {
-              const done = p.taskCount - p.openCount;
-              const pct = p.taskCount > 0 ? done / p.taskCount : 0;
-              return (
-                <Box key={p.id} onClick={() => navigate(`/projects/${p.key}/board`)}
-                  sx={{ p: 1.5, borderRadius: 1.2, border: 1, borderColor: 'divider', cursor: 'default',
-                    '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' } }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Box sx={{ width: 28, height: 28, borderRadius: 1, bgcolor: p.color,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#fff', fontSize: 13, fontWeight: 700 }}>{p.key[0]}</Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.1 }}>{p.name}</Typography>
-                      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-                        {p.key}{p.lead ? ` · ${p.lead.name}` : ''}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', md: 'repeat(3,1fr)' }, gap: 1.5, p: 1.5 }}>
+              {projects.map(p => {
+                const done = p.taskCount - p.openCount;
+                const pct = p.taskCount > 0 ? done / p.taskCount : 0;
+                return (
+                  <Box key={p.id} onClick={() => navigate(`/projects/${p.key}/board`)}
+                    sx={{ p: 1.5, borderRadius: 1.2, border: 1, borderColor: 'divider', cursor: 'default',
+                      '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' } }}>
+                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
+                      <Stack sx={{ width: 28, height: 28, borderRadius: 1, bgcolor: p.color,
+                        alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontSize: '13px', fontWeight: 700 }}>{p.key[0]}</Stack>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="label" sx={{ display: 'block', lineHeight: 1.1 }}>{p.name}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {p.key}{p.lead ? ` · ${p.lead.name}` : ''}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                      <Box sx={{ flex: 1, height: 4, borderRadius: 2, bgcolor: 'action.hover', overflow: 'hidden' }}>
+                        <Box sx={{ height: '100%', width: `${pct * 100}%`, bgcolor: p.color }}/>
+                      </Box>
+                      <Typography variant="body2" color="text.disabled" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                        {done}/{p.taskCount}
                       </Typography>
-                    </Box>
+                    </Stack>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ flex: 1, height: 4, borderRadius: 2, bgcolor: 'action.hover', overflow: 'hidden' }}>
-                      <Box sx={{ height: '100%', width: `${pct * 100}%`, bgcolor: p.color }}/>
-                    </Box>
-                    <Typography sx={{ fontSize: 14, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
-                      {done}/{p.taskCount}
-                    </Typography>
-                  </Box>
-                </Box>
-              );
-            })}
-          </Box>
+                );
+              })}
+            </Box>
           )}
-        </Card>
+        </DashboardCard>
       </Box>
     </Box>
   );

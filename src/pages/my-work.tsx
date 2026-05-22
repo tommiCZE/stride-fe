@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { useProjects } from '../hooks/useProjects';
 import { useAllProjectTasks } from '../hooks/useTasks';
@@ -9,6 +9,7 @@ import PriorityIcon from '../components/icons/priority-icon';
 import { MonoKey, StatusBadge, ColorDot } from '../components/ui/ui';
 import { CheckIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
+import { taskLinkProps } from '../utils/task-link';
 
 export default function MyWork() {
   const [, setSearchParams] = useSearchParams();
@@ -21,8 +22,8 @@ export default function MyWork() {
 
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: 3, bgcolor: 'background.default', height: '100%' }}>
-      <Typography sx={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', mb: 0.5 }}>Moje práce</Typography>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 3 }}>{myTasks.length} přiřazených tasků</Typography>
+      <Typography sx={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.02em', mb: 0.5 }}>Moje práce</Typography>
+      <Typography sx={{ fontSize: '13px', color: 'text.secondary', mb: 3 }}>{myTasks.length} přiřazených tasků</Typography>
 
       {myTasks.length === 0 ? (
         <EmptyState
@@ -31,18 +32,19 @@ export default function MyWork() {
           description="Aktuálně nemáš přiřazené žádné úkoly. Užij si volnou chvíli nebo se podívej na nástěnku týmu."
         />
       ) : (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Stack spacing={0.5} >
         {myTasks.map(t => {
           const status = BOARD_STATUSES.find(s => s.id === t.status);
           return (
-            <Box key={t.id} onClick={() => openTask(t.key)}
-              sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1,
+            <Stack direction="row" spacing={1} key={t.id} {...taskLinkProps(t.key, openTask)}
+              sx={{ alignItems: 'center', px: 1.5, py: 1,
                 borderRadius: 1.2, border: 1, borderColor: 'divider', bgcolor: 'background.paper',
+                textDecoration: 'none', color: 'text.primary',
                 cursor: 'default', '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' } }}>
               <PriorityIcon priority={t.priority}/>
               <TypeIcon type={t.type} size={13}/>
               <MonoKey sx={{ minWidth: 72 }}>{t.key}</MonoKey>
-              <Typography sx={{ fontSize: 13, flex: 1, minWidth: 0,
+              <Typography sx={{ fontSize: '13px', flex: 1, minWidth: 0,
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</Typography>
               {status && (
                 <StatusBadge badgeColor={status.color}>
@@ -51,19 +53,19 @@ export default function MyWork() {
                 </StatusBadge>
               )}
               {t.dueDate && (
-                <Typography sx={{ fontSize: 13, color: 'text.disabled', minWidth: 60, textAlign: 'right' }}>
+                <Typography sx={{ fontSize: '13px', color: 'text.disabled', minWidth: 60, textAlign: 'right' }}>
                   {new Date(t.dueDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
                 </Typography>
               )}
-            </Box>
+            </Stack>
           );
         })}
         {myTasks.length === 0 && (
-          <Box sx={{ p: 3, color: 'text.disabled', fontSize: 14, textAlign: 'center' }}>
+          <Box sx={{ p: 3, color: 'text.disabled', fontSize: '14px', textAlign: 'center' }}>
             Žádné přiřazené tasky
           </Box>
         )}
-      </Box>
+      </Stack>
       )}
     </Box>
   );

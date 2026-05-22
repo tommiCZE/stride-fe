@@ -62,7 +62,7 @@ export default function SprintVelocityChart({ projectId, lastN = 6, height = 260
             <CartesianGrid stroke={gridColor} strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="label"
-              tick={{ fill: axisColor, fontSize: 13 }}
+              tick={{ fill: axisColor, fontSize: '13px' }}
               tickLine={false}
               axisLine={{ stroke: gridColor }}
               angle={-30}
@@ -71,7 +71,7 @@ export default function SprintVelocityChart({ projectId, lastN = 6, height = 260
               height={50}
             />
             <YAxis
-              tick={{ fill: axisColor, fontSize: 13 }}
+              tick={{ fill: axisColor, fontSize: '13px' }}
               tickLine={false}
               axisLine={{ stroke: gridColor }}
               width={36}
@@ -83,17 +83,17 @@ export default function SprintVelocityChart({ projectId, lastN = 6, height = 260
                 background: theme.palette.background.paper,
                 border: `1px solid ${theme.palette.divider}`,
                 borderRadius: 8,
-                fontSize: 14,
+                fontSize: '14px',
                 color: theme.palette.text.primary,
               }}
-              labelStyle={{ color: theme.palette.text.secondary, fontSize: 13 }}
+              labelStyle={{ color: theme.palette.text.secondary, fontSize: '13px' }}
               formatter={(value, name) => {
                 const label = name === 'planned' ? 'Planned' : 'Completed';
                 return [`${value} SP`, label] as [string, string];
               }}
             />
             <Legend
-              wrapperStyle={{ fontSize: 13, color: axisColor, paddingTop: 8 }}
+              wrapperStyle={{ fontSize: '13px', color: axisColor, paddingTop: 8 }}
               formatter={(value: string) => (value === 'planned' ? 'Planned' : 'Completed')}
             />
             <Bar

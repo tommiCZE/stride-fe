@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import type { DragEvent, ChangeEvent } from 'react';
-import { Alert, Box, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, CircularProgress, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { alpha, styled } from '@mui/material/styles';
 import { AttachIcon, CloseIcon } from '../../../components/icons/icons';
 import { SectionLabel } from '../../../components/ui/ui';
@@ -156,7 +156,7 @@ export function Attachments({ taskId }: Props) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    <Stack spacing={1.5} >
       <SectionLabel>Přílohy · {attachments.length}</SectionLabel>
 
       <DropZone
@@ -178,15 +178,15 @@ export function Attachments({ taskId }: Props) {
         {isBusy ? (
           <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
             <CircularProgress size={16} />
-            <Typography sx={{ fontSize: 13 }}>Nahrávám…</Typography>
+            <Typography sx={{ fontSize: '13px' }}>Nahrávám…</Typography>
           </Box>
         ) : (
           <Box sx={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
             <AttachIcon />
-            <Typography sx={{ fontSize: 13, fontWeight: 500 }}>
+            <Typography sx={{ fontSize: '13px', fontWeight: 500 }}>
               {dragOver ? 'Pusť soubory sem' : 'Přetáhni soubory sem nebo klikni pro výběr'}
             </Typography>
-            <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
+            <Typography sx={{ fontSize: '13px', color: 'text.disabled' }}>
               Max. 25 MB na soubor
             </Typography>
           </Box>
@@ -200,9 +200,9 @@ export function Attachments({ taskId }: Props) {
       )}
 
       {isPending && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+        <Stack direction="row" sx={{ justifyContent: 'center', py: 2 }}>
           <CircularProgress size={20} />
-        </Box>
+        </Stack>
       )}
 
       {isError && !isPending && (
@@ -210,33 +210,31 @@ export function Attachments({ taskId }: Props) {
       )}
 
       {!isPending && !isError && attachments.length === 0 && (
-        <Typography sx={{ fontSize: 14, color: 'text.disabled', textAlign: 'center', py: 1 }}>
+        <Typography sx={{ fontSize: '14px', color: 'text.disabled', textAlign: 'center', py: 1 }}>
           Žádné přílohy
         </Typography>
       )}
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+      <Stack spacing={0.75} >
         {attachments.map(a => {
           const canDelete = !a.createdBy || a.createdBy === currentUserId;
           return (
             <FileRow key={a.id}>
-              <Box
+              <Stack direction="row"
                 sx={{
-                  width: 36,
+        width: 36,
                   height: 36,
                   borderRadius: 1,
                   bgcolor: 'action.hover',
-                  display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 14,
+                  fontSize: '14px',
                   fontWeight: 700,
                   color: 'text.secondary',
-                  flexShrink: 0,
-                }}
+                  flexShrink: 0 }}
               >
                 {fileEmoji(a.contentType, a.fileName)}
-              </Box>
+              </Stack>
 
               <Box
                 component="a"
@@ -254,7 +252,7 @@ export function Attachments({ taskId }: Props) {
                 <Typography
                   className="file-name"
                   sx={{
-                    fontSize: 13,
+                    fontSize: '13px',
                     fontWeight: 500,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -263,7 +261,7 @@ export function Attachments({ taskId }: Props) {
                 >
                   {a.fileName}
                 </Typography>
-                <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
+                <Typography sx={{ fontSize: '13px', color: 'text.disabled' }}>
                   {formatBytes(a.sizeBytes)} · {formatDate(a.createdAt)}
                 </Typography>
               </Box>
@@ -285,7 +283,7 @@ export function Attachments({ taskId }: Props) {
             </FileRow>
           );
         })}
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 }

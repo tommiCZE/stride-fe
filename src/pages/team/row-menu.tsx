@@ -32,13 +32,13 @@ export function RowMenu({ userId, currentRole, onRoleChange, onRemove }: RowMenu
         {(['admin', 'member', 'viewer'] as WorkspaceRole[]).map(r => (
           <MenuItem key={r} selected={r === currentRole}
             onClick={() => { onRoleChange(r); setAnchor(null); }}
-            sx={{ fontSize: 13 }}>
+            sx={{ fontSize: '13px' }}>
             {roleLabel[r]}
           </MenuItem>
         ))}
         <Box sx={{ my: 0.5, borderTop: 1, borderColor: 'divider' }}/>
         <MenuItem onClick={() => { onRemove(); setAnchor(null); }}
-          sx={{ fontSize: 13, color: 'error.main' }}>
+          sx={{ fontSize: '13px', color: 'error.main' }}>
           Odebrat z týmu
         </MenuItem>
       </Menu>

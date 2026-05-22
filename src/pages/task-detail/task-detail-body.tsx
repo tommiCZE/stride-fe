@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import RichEditor from '../../components/editor/rich-editor';
 import { SectionLabel } from '../../components/ui/ui';
 import PriorityIcon from '../../components/icons/priority-icon';
@@ -33,7 +33,7 @@ export default function TaskDetailBody({ task, proj, tab, onTabChange, onPatch }
 
       <Box sx={{ overflowY: 'auto', p: 3 }}>
         <TitleEditor title={task.title} onChange={title => onPatch({ title })}/>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 2, flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', mb: 2, flexWrap: 'wrap' }}>
           <StatusPicker
             statusId={task.status}
             onChange={status => {
@@ -46,7 +46,7 @@ export default function TaskDetailBody({ task, proj, tab, onTabChange, onPatch }
               display: 'inline-flex', alignItems: 'center', gap: 0.5,
               px: 1, py: 0.4, borderRadius: 999,
               border: 1, borderColor: 'divider',
-              fontSize: 12, color: 'text.secondary',
+              fontSize: '12px', color: 'text.secondary',
             }}>
               <PriorityIcon priority={task.priority}/> {prio.name}
             </Box>
@@ -56,12 +56,12 @@ export default function TaskDetailBody({ task, proj, tab, onTabChange, onPatch }
               display: 'inline-flex', alignItems: 'center',
               px: 1, py: 0.4, borderRadius: 999,
               border: 1, borderColor: 'divider',
-              fontSize: 12, fontFamily: 'ui-monospace, monospace', color: 'text.secondary',
+              fontSize: '12px', fontFamily: 'ui-monospace, monospace', color: 'text.secondary',
             }}>
               {task.epicId}
             </Box>
           )}
-        </Box>
+        </Stack>
         <SectionLabel sx={{ mb: 0.75 }}>Popis</SectionLabel>
         <RichEditor
           blocks={task.description ?? ''}

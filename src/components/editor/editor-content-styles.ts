@@ -50,7 +50,7 @@ export function editorContentSx(theme: Theme, compact?: boolean) {
       outline: 'none', padding: '16px',
       minHeight: compact ? 80 : 160, fontSize: 13.5, lineHeight: 1.6,
     },
-    '& .tiptap h2': { fontSize: 17, fontWeight: 700, margin: '8px 0 4px' },
+    '& .tiptap h2': { fontSize: '17px', fontWeight: 700, margin: '8px 0 4px' },
     '& .tiptap h3': { fontSize: 14.5, fontWeight: 700, margin: '6px 0 2px' },
     '& .tiptap p':  { margin: '4px 0' },
     '& .tiptap ul, & .tiptap ol': { paddingLeft: '24px', margin: '4px 0' },

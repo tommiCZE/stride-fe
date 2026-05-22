@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
@@ -18,7 +18,7 @@ function StatusChip({ status }: { status: ReleaseStatus }) {
   return (
     <Box sx={{
       px: 0.75, py: 0.15, borderRadius: 0.75,
-      fontSize: 14, fontWeight: 700,
+      fontSize: '14px', fontWeight: 700,
       color: m.color,
       border: 1, borderColor: m.color,
       display: 'inline-flex', alignItems: 'center', gap: 0.5,
@@ -42,48 +42,46 @@ function ReleaseCard({ release, onClick }: { release: ReleaseDto; onClick: () =>
     : null;
 
   return (
-    <Box
+    <Stack spacing={1.25}
       onClick={onClick}
       sx={{
         border: 1, borderColor: 'divider', borderRadius: 1.5, p: 2,
-        display: 'flex', flexDirection: 'column', gap: 1.25,
         cursor: 'default',
-        '&:hover': { borderColor: 'primary.main', bgcolor: theme => alpha(theme.palette.primary.main, 0.02) },
-      }}
+        '&:hover': { borderColor: 'primary.main', bgcolor: theme => alpha(theme.palette.primary.main, 0.02) } }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <Typography sx={{
-          fontSize: 16, fontWeight: 700,
+          fontSize: '16px', fontWeight: 700,
           fontFamily: 'ui-monospace, monospace',
         }}>{release.name}</Typography>
         <StatusChip status={release.status}/>
         <Box sx={{ flex: 1 }}/>
         {dateRange && (
-          <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
+          <Typography sx={{ fontSize: '13px', color: 'text.disabled' }}>
             {dateRange}
           </Typography>
         )}
-      </Box>
+      </Stack>
 
       {truncatedGoal && (
-        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+        <Typography sx={{ fontSize: '14px', color: 'text.secondary' }}>
           {truncatedGoal}
         </Typography>
       )}
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
         <Box sx={{ flex: 1, height: 6, borderRadius: 3,
           bgcolor: 'action.hover', overflow: 'hidden' }}>
           <Box sx={{ height: '100%', width: `${progress}%`,
             bgcolor: release.status === 'released' ? 'success.main' : 'primary.main',
             transition: '0.3s' }}/>
         </Box>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary',
+        <Typography sx={{ fontSize: '13px', color: 'text.secondary',
           fontVariantNumeric: 'tabular-nums', minWidth: 96, textAlign: 'right' }}>
           {release.doneCount} / {release.taskCount} ({Math.round(progress)}%)
         </Typography>
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 }
 
@@ -113,20 +111,19 @@ export default function ReleasesPage() {
 
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', bgcolor: 'background.default' }}>
-      <Box sx={{
+      <Stack direction="row" spacing={1.5} sx={{
         position: 'sticky', top: 0, zIndex: 1,
         px: { xs: 2, md: 4 }, pt: 2.5, pb: 2,
         bgcolor: 'background.default',
         borderBottom: 1, borderColor: 'divider',
-        display: 'flex', alignItems: 'center', gap: 1.5,
-      }}>
+        alignItems: 'center' }}>
         <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 600,
+          <Typography sx={{ fontSize: '13px', fontWeight: 600,
             letterSpacing: '0.04em', textTransform: 'uppercase',
             color: 'text.secondary', mb: 0.25 }}>
             {project.name}
           </Typography>
-          <Typography sx={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>
+          <Typography sx={{ fontSize: '20px', fontWeight: 700, letterSpacing: '-0.02em' }}>
             Releases
           </Typography>
         </Box>
@@ -137,13 +134,13 @@ export default function ReleasesPage() {
         >
           Nová verze
         </Button>
-      </Box>
+      </Stack>
 
       <Box sx={{ px: { xs: 2, md: 4 }, py: 3, maxWidth: 960 }}>
         {isLoading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+          <Stack direction="row" sx={{ justifyContent: 'center', py: 6 }}>
             <CircularProgress size={20}/>
-          </Box>
+          </Stack>
         )}
 
         {!isLoading && releases.length === 0 && (
@@ -151,10 +148,10 @@ export default function ReleasesPage() {
             p: 4, textAlign: 'center', border: 1, borderStyle: 'dashed',
             borderColor: 'divider', borderRadius: 1.5, color: 'text.secondary',
           }}>
-            <Typography sx={{ fontSize: 14, fontWeight: 600, mb: 0.5, color: 'text.primary' }}>
+            <Typography sx={{ fontSize: '14px', fontWeight: 600, mb: 0.5, color: 'text.primary' }}>
               Zatím žádné verze
             </Typography>
-            <Typography sx={{ fontSize: 14, mb: 2 }}>
+            <Typography sx={{ fontSize: '14px', mb: 2 }}>
               Verze (např. „v1.2.0”) slouží pro plánování releases a release notes.
             </Typography>
             <Button size="small" variant="outlined" startIcon={<PlusIcon/>} onClick={handleCreate}>
@@ -163,7 +160,7 @@ export default function ReleasesPage() {
           </Box>
         )}
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+        <Stack spacing={1.25} >
           {releases.map(r => (
             <ReleaseCard
               key={r.id}
@@ -171,7 +168,7 @@ export default function ReleasesPage() {
               onClick={() => navigate(`/projects/${project.key}/releases/${r.id}`)}
             />
           ))}
-        </Box>
+        </Stack>
       </Box>
     </Box>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Checkbox, Skeleton, TextField, Typography } from '@mui/material';
+import { Box, Button, Checkbox, Skeleton, Stack, TextField, Typography } from '@mui/material';
 import { useParams, useSearchParams } from 'react-router-dom';
 import Papa from 'papaparse';
 import { useSnackbar } from 'notistack';
@@ -15,6 +15,7 @@ import { FilterIcon, ListIcon, PlusIcon, DownloadIcon } from '../components/icon
 import EmptyState from '../components/empty-state/EmptyState';
 import QueryError from '../components/query-error/QueryError';
 import { useUiStore } from '../store/ui-store';
+import { taskLinkProps } from '../utils/task-link';
 import ListViewBulkToolbar from './list-view-bulk-toolbar';
 
 const SELECT_COL_W = 32;
@@ -95,15 +96,15 @@ export default function ListView() {
 
   if (tasksError) {
     return (
-      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.paper', height: '100%' }}>
+      <Stack sx={{ flex: 1, alignItems: 'center', justifyContent: 'center', bgcolor: 'background.paper', height: '100%' }}>
         <QueryError error={tasksErrorObj} onRetry={() => { void refetchTasks(); }} />
-      </Box>
+      </Stack>
     );
   }
 
   if (data && tasks.length === 0) {
     return (
-      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.paper', height: '100%' }}>
+      <Stack sx={{ flex: 1, alignItems: 'center', justifyContent: 'center', bgcolor: 'background.paper', height: '100%' }}>
         <EmptyState
           icon={<ListIcon />}
           title="Žádné úkoly"
@@ -119,7 +120,7 @@ export default function ListView() {
             </Button>
           }
         />
-      </Box>
+      </Stack>
     );
   }
 
@@ -153,16 +154,16 @@ export default function ListView() {
 
   return (
     <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'background.paper', height: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1, gap: 1, borderBottom: 1, borderColor: 'divider',
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', px: 2, py: 1, borderBottom: 1, borderColor: 'divider',
         position: 'sticky', top: 0, bgcolor: 'background.paper', zIndex: 1 }}>
         <TextField placeholder="Filtr…" size="small"
-          sx={{ width: 200, '& .MuiOutlinedInput-root': { height: 26, fontSize: 14 } }}/>
+          sx={{ width: 200, '& .MuiOutlinedInput-root': { height: 26, fontSize: '14px' } }}/>
         <FilterChip label="Filtry" icon={<FilterIcon/>} onClick={() => {}}/>
         <Button size="small" variant="outlined" startIcon={<DownloadIcon/>}
           onClick={handleExportCsv} disabled={tasks.length === 0}>Export</Button>
         <Box sx={{ flex: 1 }}/>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{tasks.length} tasků</Typography>
-      </Box>
+        <Typography variant="caption" color="text.secondary">{tasks.length} tasků</Typography>
+      </Stack>
 
       {projectId && (
         <ListViewBulkToolbar
@@ -173,12 +174,12 @@ export default function ListView() {
       )}
 
       <Box sx={{ minWidth: 900 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, fontSize: 14, fontWeight: 700,
+        <Stack direction="row" sx={{ alignItems: 'center', px: 1.5, py: 0.75, fontWeight: 700,
           letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary',
           borderBottom: 1, borderColor: 'divider', position: 'sticky',
           top: selectedIds.size > 0 ? 86 : 43,
           bgcolor: 'background.paper', zIndex: 1 }}>
-          <Box sx={{ width: SELECT_COL_W, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Stack sx={{ width: SELECT_COL_W, alignItems: 'center', justifyContent: 'center' }}>
             <Checkbox
               size="small"
               checked={allSelected}
@@ -187,11 +188,11 @@ export default function ListView() {
               aria-label="Vybrat všechny úkoly"
               sx={{ p: 0 }}
             />
-          </Box>
+          </Stack>
           {COLS.map(c => (
             <Box key={c.key} sx={{ width: 'w' in c ? c.w : undefined, flex: 'flex' in c ? c.flex : undefined, px: 0.5 }}>{c.label}</Box>
           ))}
-        </Box>
+        </Stack>
 
         {tasks.map(t => {
           const status   = BOARD_STATUSES.find(s => s.id === t.status);
@@ -200,13 +201,14 @@ export default function ListView() {
             : null;
           const isSelected = selectedIds.has(t.id);
           return (
-            <Box key={t.id} onClick={() => openTask(t.key)}
-              sx={{ display: 'flex', alignItems: 'center', px: 1.5, py: 0.75, fontSize: 14,
+            <Stack key={t.id} direction="row" {...taskLinkProps(t.key, openTask)}
+              sx={{ alignItems: 'center', px: 1.5, py: 0.75,
                 borderBottom: 1, borderColor: 'divider', cursor: 'default',
+                textDecoration: 'none', color: 'text.primary',
                 bgcolor: isSelected ? 'action.selected' : 'transparent',
                 '&:hover': { bgcolor: isSelected ? 'action.selected' : 'action.hover' } }}>
-              <Box
-                sx={{ width: SELECT_COL_W, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              <Stack
+                sx={{ width: SELECT_COL_W, alignItems: 'center', justifyContent: 'center' }}
                 onClick={e => e.stopPropagation()}
               >
                 <Checkbox
@@ -216,17 +218,17 @@ export default function ListView() {
                   aria-label={`Vybrat ${t.key}`}
                   sx={{ p: 0 }}
                 />
-              </Box>
+              </Stack>
               <Box sx={{ width: 84, px: 0.5 }}>
-                <MonoKey sx={{ fontSize: 13 }}>{t.key}</MonoKey>
+                <MonoKey sx={{ fontSize: '13px' }}>{t.key}</MonoKey>
               </Box>
               <Box sx={{ width: 28, px: 0.5 }}><TypeIcon type={t.type} size={13}/></Box>
               <Box sx={{ width: 28, px: 0.5 }}><PriorityIcon priority={t.priority}/></Box>
               <Box sx={{ flex: 1, px: 0.5, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</Box>
-              <Box sx={{ width: 130, px: 0.5, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Stack direction="row" spacing={0.75} sx={{ width: 130, px: 0.5, alignItems: 'center' }}>
                 <FluxAvatar user={assignee} size={18}/>
-                {t.assigneeName && <Box sx={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.assigneeName.split(' ')[0]}</Box>}
-              </Box>
+                {t.assigneeName && <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.assigneeName.split(' ')[0]}</Box>}
+              </Stack>
               <Box sx={{ width: 110, px: 0.5 }}>
                 {status && (
                   <StatusBadge badgeColor={status.color}>
@@ -235,28 +237,28 @@ export default function ListView() {
                   </StatusBadge>
                 )}
               </Box>
-              <Box sx={{ width: 50, px: 0.5, fontVariantNumeric: 'tabular-nums', fontSize: 13, color: 'text.secondary' }}>{t.estimate ?? '—'}</Box>
-              <Box sx={{ width: 70, px: 0.5, fontVariantNumeric: 'tabular-nums', fontSize: 13, color: 'text.secondary' }}>{t.logged}h</Box>
-              <Box sx={{ width: 80, px: 0.5, fontSize: 13, color: 'text.secondary' }}>
+              <Typography variant="caption" color="text.secondary" sx={{ width: 50, px: 0.5, fontVariantNumeric: 'tabular-nums' }}>{t.estimate ?? '—'}</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ width: 70, px: 0.5, fontVariantNumeric: 'tabular-nums' }}>{t.logged}h</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ width: 80, px: 0.5 }}>
                 {t.dueDate ? new Date(t.dueDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' }) : '—'}
-              </Box>
-            </Box>
+              </Typography>
+            </Stack>
           );
         })}
 
         {isFetchingNextPage && (
-          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Stack>
             {Array.from({ length: 3 }).map((_, i) => (
-              <Box
+              <Stack
                 key={`loading-${i}`}
+                direction="row"
+                spacing={1}
                 sx={{
-                  display: 'flex',
                   alignItems: 'center',
                   px: 1.5,
                   py: 0.75,
                   borderBottom: 1,
                   borderColor: 'divider',
-                  gap: 1,
                 }}
               >
                 <Skeleton variant="text" width={56} height={13} />
@@ -265,9 +267,9 @@ export default function ListView() {
                 <Skeleton variant="text" sx={{ flex: 1 }} height={13} />
                 <Skeleton variant="text" width={110} height={13} />
                 <Skeleton variant="text" width={90} height={13} />
-              </Box>
+              </Stack>
             ))}
-          </Box>
+          </Stack>
         )}
 
         <Box ref={sentinelRef} sx={{ height: 1 }} aria-hidden />

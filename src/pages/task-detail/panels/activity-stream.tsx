@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Box, Button, CircularProgress, InputBase, Tooltip, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Stack, Tooltip, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import FluxAvatar from '../../../components/flux-avatar';
 import FilterChip from '../../../components/ui/filter-chip';
+import { WorklogComposer } from '../../../components/worklog-composer';
 import { useComments, useCreateComment } from '../../../hooks/useComments';
 import { useActivity } from '../../../hooks/useActivity';
-import { useWorklogs, useCreateWorklog } from '../../../hooks/useWorklogs';
+import { useWorklogs } from '../../../hooks/useWorklogs';
 import { useAuthStore } from '../../../store/auth-store';
 import { CommentEditor, CommentItem, timeAgo, exactDate } from './comments';
 import type { ActivityItemDto, CommentDto, WorklogDto } from '../../../api/types';
@@ -26,7 +27,7 @@ function renderEventText(event: ActivityItemDto): React.ReactNode {
   const { action, target, fromValue, toValue } = event;
 
   const mono = (v: string) => (
-    <Box component="code" sx={{ fontFamily: 'ui-monospace, monospace', fontSize: 12, color: 'text.primary' }}>
+    <Box component="code" sx={{ fontFamily: 'ui-monospace, monospace', fontSize: '12px', color: 'text.primary' }}>
       {v}
     </Box>
   );
@@ -48,9 +49,9 @@ function renderEventText(event: ActivityItemDto): React.ReactNode {
 
 function SystemEventItem({ event }: { event: ActivityItemDto }) {
   return (
-    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', py: 0.25 }}>
+    <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start', py: 0.25 }}>
       <FluxAvatar user={event.user} size={20}/>
-      <Box sx={{ flex: 1, fontSize: 13, color: 'text.secondary', lineHeight: 1.6 }}>
+      <Typography variant="caption" color="text.secondary" sx={{ flex: 1, lineHeight: 1.6 }}>
         <Box component="strong" sx={{ color: 'text.primary', fontWeight: 600 }}>
           {event.user.name.split(' ')[0]}
         </Box>{' '}
@@ -60,93 +61,39 @@ function SystemEventItem({ event }: { event: ActivityItemDto }) {
             · {timeAgo(event.createdAt)}
           </Box>
         </Tooltip>
-      </Box>
-    </Box>
+      </Typography>
+    </Stack>
   );
 }
 
 function WorklogItem({ worklog }: { worklog: WorklogDto }) {
   return (
-    <Box sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
+    <Stack direction="row" spacing={1.25} sx={{ alignItems: 'flex-start' }}>
       <FluxAvatar user={worklog.user} size={24}/>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.25, flexWrap: 'wrap' }}>
-          <Typography component="span" sx={{ fontSize: 13.5, fontWeight: 600 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mb: 0.25, flexWrap: 'wrap' }}>
+          <Typography component="span" sx={{ fontSize: '13.5px', fontWeight: 600 }}>
             {worklog.user.name}
           </Typography>
-          <Typography component="span" sx={{ fontSize: 11.5, color: 'text.disabled' }}>
+          <Typography component="span" sx={{ fontSize: '11.5px', color: 'text.disabled' }}>
             zalogoval{' '}
             <Box component="strong" sx={{ color: 'primary.main', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
               {(worklog.minutes / 60).toFixed(1)}h
             </Box>
           </Typography>
           <Tooltip title={worklog.loggedAt} placement="top">
-            <Typography component="span" sx={{ fontSize: 11.5, color: 'text.disabled', cursor: 'help' }}>
+            <Typography component="span" sx={{ fontSize: '11.5px', color: 'text.disabled', cursor: 'help' }}>
               · {worklog.loggedAt}
             </Typography>
           </Tooltip>
-        </Box>
+        </Stack>
         {worklog.comment && (
-          <Typography sx={{ fontSize: 13.5, color: 'text.primary' }}>
+          <Typography sx={{ fontSize: '13.5px', color: 'text.primary' }}>
             {worklog.comment}
           </Typography>
         )}
       </Box>
-    </Box>
-  );
-}
-
-interface WorklogComposerProps {
-  taskId: string;
-  onClose: () => void;
-}
-
-function WorklogComposer({ taskId, onClose }: WorklogComposerProps) {
-  const { enqueueSnackbar } = useSnackbar();
-  const createWorklog = useCreateWorklog(taskId);
-  const [hours, setHours] = useState('');
-  const [comment, setComment] = useState('');
-
-  const submit = () => {
-    const mins = Math.round(parseFloat(hours) * 60);
-    if (isNaN(mins) || mins <= 0) return;
-    createWorklog.mutate(
-      { minutes: mins, loggedAt: new Date().toISOString().slice(0, 10), comment: comment || undefined },
-      {
-        onSuccess: () => {
-          enqueueSnackbar('Worklog uložen', { variant: 'success' });
-          onClose();
-        },
-      },
-    );
-  };
-
-  return (
-    <Box sx={{
-      p: 1.5, border: 1, borderColor: 'primary.main', borderRadius: 1.5,
-      display: 'flex', flexDirection: 'column', gap: 1, bgcolor: 'background.paper',
-    }}>
-      <InputBase
-        placeholder="Hodiny (např. 1.5)"
-        value={hours}
-        onChange={e => setHours(e.target.value)}
-        autoFocus
-        sx={{ border: 1, borderColor: 'divider', borderRadius: 0.5, px: 1, fontSize: 14, width: 160 }}
-      />
-      <InputBase
-        placeholder="Poznámka (volitelné)"
-        value={comment}
-        onChange={e => setComment(e.target.value)}
-        fullWidth
-        sx={{ border: 1, borderColor: 'divider', borderRadius: 0.5, px: 1, fontSize: 14 }}
-      />
-      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-        <Button size="small" onClick={onClose} disabled={createWorklog.isPending}>Zrušit</Button>
-        <Button size="small" variant="contained" onClick={submit} disabled={createWorklog.isPending}>
-          Uložit záznam
-        </Button>
-      </Box>
-    </Box>
+    </Stack>
   );
 }
 
@@ -228,8 +175,8 @@ export function ActivityStream({ taskId }: { taskId: string }) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+    <Stack spacing={2}>
+      <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
         <FilterChip label="Vše"
           active={filter === 'all'} onClick={() => setFilter('all')}/>
         <FilterChip label="Komentáře" count={topLevelComments.length}
@@ -247,7 +194,7 @@ export function ActivityStream({ taskId }: { taskId: string }) {
         >
           + Záznam práce
         </Button>
-      </Box>
+      </Stack>
 
       {isLoading && <CircularProgress size={16}/>}
 
@@ -255,9 +202,9 @@ export function ActivityStream({ taskId }: { taskId: string }) {
         <WorklogComposer taskId={taskId} onClose={() => setComposingWorklog(false)}/>
       )}
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+      <Stack spacing={1.75}>
         {filtered.length === 0 && !isLoading && (
-          <Typography sx={{ fontSize: 14, color: 'text.disabled', py: 2, textAlign: 'center' }}>
+          <Typography variant="body2" color="text.disabled" sx={{ py: 2, textAlign: 'center' }}>
             Žádná aktivita pro tento filtr
           </Typography>
         )}
@@ -268,7 +215,7 @@ export function ActivityStream({ taskId }: { taskId: string }) {
 
           const { comment, replies } = item.data;
           return (
-            <Box key={`c-${comment.id}`} sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+            <Stack key={`c-${comment.id}`} spacing={1.25}>
               <CommentItem
                 comment={comment}
                 taskId={taskId}
@@ -280,7 +227,7 @@ export function ActivityStream({ taskId }: { taskId: string }) {
                 showReply={replies.length === 0}
               />
               {replies.length > 0 && (
-                <Box sx={{ ml: 3.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Stack spacing={1.5} sx={{ ml: 3.5 }}>
                   {replies.map((r, idx) => (
                     <CommentItem
                       key={r.id}
@@ -295,14 +242,14 @@ export function ActivityStream({ taskId }: { taskId: string }) {
                       showReply={idx === replies.length - 1}
                     />
                   ))}
-                </Box>
+                </Stack>
               )}
-            </Box>
+            </Stack>
           );
         })}
-      </Box>
+      </Stack>
 
-      <Box sx={{ display: 'flex', gap: 1.25, mt: 1 }}>
+      <Stack direction="row" spacing={1.25} sx={{ mt: 1 }}>
         <FluxAvatar user={me} size={28}/>
         <Box sx={{ flex: 1 }}>
           {composingComment ? (
@@ -315,13 +262,13 @@ export function ActivityStream({ taskId }: { taskId: string }) {
           ) : (
             <Box onClick={() => setComposingComment(true)}
               sx={{ p: 1.25, border: 1, borderColor: 'divider', borderRadius: 1.5,
-                bgcolor: 'background.paper', fontSize: 13, color: 'text.disabled',
+                bgcolor: 'background.paper', color: 'text.disabled',
                 cursor: 'text', '&:hover': { borderColor: 'primary.main' } }}>
-              Napiš komentář…
+              <Typography variant="caption" color="text.disabled">Napiš komentář…</Typography>
             </Box>
           )}
         </Box>
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
 }

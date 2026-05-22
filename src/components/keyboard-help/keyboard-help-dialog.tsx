@@ -19,7 +19,7 @@ const Kbd = styled('kbd')(({ theme }) => ({
   background: theme.palette.background.default,
   color: theme.palette.text.primary,
   fontFamily: '"JetBrains Mono", ui-monospace, monospace',
-  fontSize: 13,
+  fontSize: '13px',
   fontWeight: 600,
   lineHeight: 1,
   boxShadow: theme.shadows[1],
@@ -53,7 +53,7 @@ function KeyCombo({ combo }: { combo: string[] }) {
       {combo.map((key, idx) => (
         <Box key={idx} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
           {idx > 0 && (
-            <Typography component="span" sx={{ fontSize: 13, color: 'text.disabled' }}>+</Typography>
+            <Typography component="span" sx={{ fontSize: '13px', color: 'text.disabled' }}>+</Typography>
           )}
           <Kbd>{key}</Kbd>
         </Box>
@@ -68,7 +68,7 @@ function KeyGroup({ groups }: { groups: string[][] }) {
       {groups.map((combo, idx) => (
         <Box key={idx} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
           {idx > 0 && (
-            <Typography component="span" sx={{ fontSize: 13, color: 'text.disabled' }}>/</Typography>
+            <Typography component="span" sx={{ fontSize: '13px', color: 'text.disabled' }}>/</Typography>
           )}
           <KeyCombo combo={combo} />
         </Box>
@@ -94,7 +94,7 @@ export default function KeyboardHelpDialog({ open, onClose }: Props) {
           alignItems: 'center',
           gap: 1,
           py: 1.5,
-          fontSize: 14,
+          fontSize: '14px',
           fontWeight: 600,
           borderBottom: 1,
           borderColor: 'divider',
@@ -112,7 +112,7 @@ export default function KeyboardHelpDialog({ open, onClose }: Props) {
             <Box sx={{ minWidth: 140 }}>
               <KeyGroup groups={shortcut.keys} />
             </Box>
-            <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: '14px', color: 'text.secondary' }}>
               {shortcut.description}
             </Typography>
           </ShortcutRow>

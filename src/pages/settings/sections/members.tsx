@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Box, Button, Chip, IconButton, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, Button, Chip, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import FluxAvatar from '../../../components/flux-avatar';
 import { SectionHeader, SettingsCard, FieldRow } from '../shared';
 import { useProjectSettings, type ProjectRoleId } from '../../../store/project-settings-store';
@@ -57,9 +57,9 @@ export function MembersSection({ project, readOnly }: { project: ProjectDto; rea
         title="Členové"
         description={`${members.data.length} z ${workspaceMembers.length} členů workspace má přístup k projektu.`}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 2 }}>
+        <Stack spacing={0.5} sx={{ mb: 2 }}>
           {members.data.length === 0 && (
-            <Typography sx={{ fontSize: 14, color: 'text.secondary', py: 1.5, textAlign: 'center' }}>
+            <Typography sx={{ fontSize: '14px', color: 'text.secondary', py: 1.5, textAlign: 'center' }}>
               Zatím nikdo. Přidej členy z dropdownu níže.
             </Typography>
           )}
@@ -67,14 +67,13 @@ export function MembersSection({ project, readOnly }: { project: ProjectDto; rea
             const user = byId.get(m.userId);
             if (!user) return null;
             return (
-              <Box key={m.userId} sx={{
-                display: 'flex', alignItems: 'center', gap: 1.25, px: 1, py: 0.75,
-                borderRadius: 1, '&:hover': { bgcolor: 'action.hover' },
-              }}>
+              <Stack direction="row" spacing={1.25} key={m.userId} sx={{
+        alignItems: 'center', px: 1, py: 0.75,
+                borderRadius: 1, '&:hover': { bgcolor: 'action.hover' } }}>
                 <FluxAvatar user={user} size={26}/>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 13, fontWeight: 500 }}>{user.name}</Typography>
-                  <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{user.email}</Typography>
+                  <Typography sx={{ fontSize: '13px', fontWeight: 500 }}>{user.name}</Typography>
+                  <Typography sx={{ fontSize: '13px', color: 'text.secondary' }}>{user.email}</Typography>
                 </Box>
                 <TextField
                   size="small" select value={m.role}
@@ -89,15 +88,14 @@ export function MembersSection({ project, readOnly }: { project: ProjectDto; rea
                 <IconButton size="small" disabled={readOnly} onClick={() => removeMember(m.userId)}>
                   <CloseIcon/>
                 </IconButton>
-              </Box>
+              </Stack>
             );
           })}
-        </Box>
+        </Stack>
 
-        <Box sx={{
-          display: 'flex', gap: 1, p: 1.25, borderRadius: 1,
-          border: 1, borderColor: 'divider', borderStyle: 'dashed',
-        }}>
+        <Stack direction="row" spacing={1} sx={{
+        p: 1.25, borderRadius: 1,
+          border: 1, borderColor: 'divider', borderStyle: 'dashed' }}>
           <TextField
             size="small" select value={pickerUserId}
             onChange={e => setPickerUserId(e.target.value)}
@@ -129,7 +127,7 @@ export function MembersSection({ project, readOnly }: { project: ProjectDto; rea
           >
             Přidat
           </Button>
-        </Box>
+        </Stack>
       </SettingsCard>
 
       <SettingsCard title="Výchozí přiřazení" description="Komu se přiřadí task, který nemá ručně zvoleného assignee.">
@@ -155,7 +153,7 @@ export function MembersSection({ project, readOnly }: { project: ProjectDto; rea
         title="Hosté"
         description="Externí lidi s přístupem ke konkrétním taskům či sprintům. Účet se vytvoří jako pending."
       >
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
           <TextField
             size="small" fullWidth placeholder="e-mail@externi.firma"
             value={guestEmail} onChange={e => setGuestEmail(e.target.value)}
@@ -165,11 +163,11 @@ export function MembersSection({ project, readOnly }: { project: ProjectDto; rea
             onClick={() => setGuestEmail('')}>
             Pozvat
           </Button>
-        </Box>
-        <Box sx={{ mt: 1.5, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        </Stack>
+        <Stack direction="row" spacing={0.5} sx={{ mt: 1.5, flexWrap: 'wrap' }}>
           <Chip size="small" label="anna@klient.cz · pending" variant="outlined"/>
           <Chip size="small" label="petr@dodavatel.io · pending" variant="outlined"/>
-        </Box>
+        </Stack>
       </SettingsCard>
     </Box>
   );

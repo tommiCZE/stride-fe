@@ -1,15 +1,14 @@
-import { Alert, Box, Typography } from '@mui/material';
+import { Alert, Box, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { useAuthStore } from '../../store/auth-store';
+import { usePermissions } from '../../hooks/usePermissions';
 import { WorkspaceGeneralSection } from './sections/general';
 import { WorkspaceMembersSection } from './sections/members';
-import { WorkspaceBillingSection } from './sections/billing';
 import { WorkspaceIntegrationsSection } from './sections/integrations';
 import { WorkspaceSecuritySection } from './sections/security';
 import { WorkspaceAuditSection } from './sections/audit';
 
-type SectionId = 'general' | 'members' | 'billing' | 'integrations' | 'security' | 'audit';
+type SectionId = 'general' | 'members' | 'integrations' | 'security' | 'audit';
 
 interface SectionEntry {
   id: SectionId;
@@ -20,7 +19,6 @@ interface SectionEntry {
 const SECTIONS: SectionEntry[] = [
   { id: 'general',      group: 'Workspace', label: 'Obecné' },
   { id: 'members',      group: 'Workspace', label: 'Členové & týmy' },
-  { id: 'billing',      group: 'Workspace', label: 'Billing' },
 
   { id: 'integrations', group: 'Bezpečnost', label: 'Integrace' },
   { id: 'security',     group: 'Bezpečnost', label: 'Zabezpečení' },
@@ -33,7 +31,7 @@ const isSectionId = (s: string | undefined): s is SectionId =>
 export default function WorkspaceSettings() {
   const navigate = useNavigate();
   const { section: sectionParam } = useParams<{ section?: string }>();
-  const isAdmin = useAuthStore(s => s.user?.workspaceRole === 'admin');
+  const { isAdmin } = usePermissions();
 
   if (!isAdmin) return <Navigate to="/dashboard" replace />;
 
@@ -50,7 +48,7 @@ export default function WorkspaceSettings() {
   const readOnly = false;
 
   return (
-    <Box sx={{ flex: 1, display: 'flex', height: '100%', overflow: 'hidden', bgcolor: 'background.default' }}>
+    <Stack direction="row" sx={{ flex: 1, height: '100%', overflow: 'hidden', bgcolor: 'background.default' }}>
       <Box sx={{
         width: 220, flexShrink: 0,
         borderRight: 1, borderColor: 'divider',
@@ -61,7 +59,7 @@ export default function WorkspaceSettings() {
           <Box key={group} sx={{ mb: gi === groups.length - 1 ? 0 : 0.5 }}>
             <Typography sx={{
               px: 2, pt: gi === 0 ? 0.25 : 1.5, pb: 0.5,
-              fontSize: 12, fontWeight: 700,
+              fontSize: '12px', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.08em',
               color: 'text.disabled',
             }}>{group}</Typography>
@@ -74,7 +72,7 @@ export default function WorkspaceSettings() {
                   sx={{
                     mx: 1, px: 1.25, py: 0.65,
                     cursor: 'pointer', borderRadius: 1,
-                    fontSize: 14,
+                    fontSize: '14px',
                     fontWeight: active ? 600 : 500,
                     color: active ? 'primary.main' : 'text.primary',
                     bgcolor: active ? (theme => alpha(theme.palette.primary.main, 0.10)) : 'transparent',
@@ -94,28 +92,27 @@ export default function WorkspaceSettings() {
           bgcolor: 'background.default',
           borderBottom: 1, borderColor: 'divider',
         }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'text.secondary', mb: 0.5 }}>
+          <Typography sx={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'text.secondary', mb: 0.5 }}>
             {current.group} · Acme s.r.o.
           </Typography>
-          <Typography sx={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em' }}>
+          <Typography sx={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.02em' }}>
             {current.label}
           </Typography>
         </Box>
 
         <Box sx={{ px: 4, py: 3, maxWidth: 960 }}>
-          <Alert severity="info" sx={{ mb: 2, fontSize: 14 }}>
+          <Alert severity="info" sx={{ mb: 2, fontSize: '14px' }}>
             Workspace settings se chovají jako default pro nové projekty (Jira-like
             inheritance). Per-projektový override najdeš v Project settings.
           </Alert>
 
           {section === 'general'      && <WorkspaceGeneralSection      readOnly={readOnly}/>}
           {section === 'members'      && <WorkspaceMembersSection      readOnly={readOnly}/>}
-          {section === 'billing'      && <WorkspaceBillingSection/>}
           {section === 'integrations' && <WorkspaceIntegrationsSection readOnly={readOnly}/>}
           {section === 'security'     && <WorkspaceSecuritySection     readOnly={readOnly}/>}
           {section === 'audit'        && <WorkspaceAuditSection/>}
         </Box>
       </Box>
-    </Box>
+    </Stack>
   );
 }

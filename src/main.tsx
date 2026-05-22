@@ -17,6 +17,7 @@ const queryClient = new QueryClient({
   },
 });
 
+// eslint-disable-next-line react-refresh/only-export-components -- main.tsx entry point, not HMR-target
 function ThemedApp() {
   const themeMode = useUiStore(s => s.themeMode);
   const theme = buildTheme(themeMode);

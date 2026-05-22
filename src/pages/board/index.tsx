@@ -1,9 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import {
-  Box, Button, Divider, InputAdornment, ListItemIcon, ListItemText,
-  Menu, MenuItem, TextField, Tooltip, Typography,
-} from '@mui/material';
+import { Box, Button, Divider, InputAdornment, ListItemIcon, ListItemText, Menu, MenuItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import {
   DndContext, DragOverlay, MeasuringStrategy,
@@ -90,11 +87,12 @@ export default function Board() {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [advancedFilter, setAdvancedFilter] = useState<FilterGroup>(() => loadAdvancedFilter(projectId));
   const [advancedDialogOpen, setAdvancedDialogOpen] = useState(false);
+  const [prevProjectId, setPrevProjectId] = useState(projectId);
 
-  // Reload from storage when project changes.
-  useEffect(() => {
+  if (prevProjectId !== projectId) {
+    setPrevProjectId(projectId);
     setAdvancedFilter(loadAdvancedFilter(projectId));
-  }, [projectId]);
+  }
 
   // Persist advanced filter to localStorage per project.
   useEffect(() => {
@@ -230,24 +228,24 @@ export default function Board() {
   };
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <Box sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap',
+    <Stack sx={{ height: '100%', overflow: 'hidden' }}>
+      <Stack direction="row" spacing={1} sx={{ px: 2, py: 1, alignItems: 'center', flexWrap: 'wrap',
         borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper', flexShrink: 0 }}>
         {sprint && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'success.main' }}>● {sprint.name}</Typography>
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+            <Typography sx={{ fontSize: '14px', fontWeight: 600, color: 'success.main' }}>● {sprint.name}</Typography>
             {sprint.endDate && (
-              <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
+              <Typography sx={{ fontSize: '13px', color: 'text.disabled' }}>
                 · {new Date(sprint.endDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
               </Typography>
             )}
-          </Box>
+          </Stack>
         )}
         <Box sx={{ flex: 1 }}/>
         <TextField placeholder="Hledat…" value={search} onChange={e => setSearch(e.target.value)}
-          sx={{ width: 160, '& .MuiOutlinedInput-root': { height: 26, fontSize: 14 } }}
+          sx={{ width: 160, '& .MuiOutlinedInput-root': { height: 26, fontSize: '14px' } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start" sx={{ mr: 0.5 }}><SearchIcon/></InputAdornment> } }}/>
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <Stack direction="row" spacing={0.5} >
           {teamMembers.map(u => (
             <Tooltip key={u.id} title={u.name}>
               <Box onClick={() => setFilterAssignee(filterAssignee === u.id ? null : u.id)}
@@ -256,7 +254,7 @@ export default function Board() {
               </Box>
             </Tooltip>
           ))}
-        </Box>
+        </Stack>
         <FilterChip
           label="Moje úkoly"
           active={filterMine}
@@ -296,7 +294,7 @@ export default function Board() {
             </ListItemIcon>
             <ListItemText
               primary="Bez filtru"
-              slotProps={{ primary: { sx: { fontSize: 13 } } }}
+              slotProps={{ primary: { sx: { fontSize: '13px' } } }}
             />
           </MenuItem>
 
@@ -313,7 +311,7 @@ export default function Board() {
               </ListItemIcon>
               <ListItemText
                 primary={f.name}
-                slotProps={{ primary: { sx: { fontSize: 13 } } }}
+                slotProps={{ primary: { sx: { fontSize: '13px' } } }}
               />
             </MenuItem>
           ))}
@@ -324,7 +322,7 @@ export default function Board() {
             <ListItemIcon sx={{ minWidth: 28 }}><PlusIcon/></ListItemIcon>
             <ListItemText
               primary="Uložit aktuální filtr…"
-              slotProps={{ primary: { sx: { fontSize: 13 } } }}
+              slotProps={{ primary: { sx: { fontSize: '13px' } } }}
             />
           </MenuItem>
 
@@ -333,12 +331,12 @@ export default function Board() {
               <ListItemIcon sx={{ minWidth: 28, color: 'error.main' }}><CloseIcon/></ListItemIcon>
               <ListItemText
                 primary="Smazat tento filtr"
-                slotProps={{ primary: { sx: { fontSize: 13 } } }}
+                slotProps={{ primary: { sx: { fontSize: '13px' } } }}
               />
             </MenuItem>
           )}
         </Menu>
-      </Box>
+      </Stack>
 
       <SaveFilterDialog
         open={saveDialogOpen}
@@ -359,7 +357,7 @@ export default function Board() {
       {tasksError ? (
         <QueryError error={tasksErrorObj} onRetry={() => { void refetchTasks(); }} />
       ) : tasks.length === 0 ? (
-        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Stack direction="row" sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <EmptyState
             icon={<BoardIcon />}
             title="Žádné úkoly v tomto sprintu"
@@ -375,10 +373,10 @@ export default function Board() {
               </Button>
             }
           />
-        </Box>
+        </Stack>
       ) : (
-        <Box sx={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', px: 2, py: 2,
-          display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+        <Stack direction="row" spacing={1.5} sx={{ flex: 1, overflowX: 'auto', overflowY: 'hidden', px: 2, py: 2,
+          alignItems: 'flex-start' }}>
           <DndContext sensors={sensors} collisionDetection={closestCorners}
             measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
             onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
@@ -388,11 +386,11 @@ export default function Board() {
                 onTaskClick={openTask}/>
             ))}
             <DragOverlay>
-              {activeTask && <TaskCard task={activeTask} onClick={() => {}}/>}
+              {activeTask && <TaskCard task={activeTask}/>}
             </DragOverlay>
           </DndContext>
-        </Box>
+        </Stack>
       )}
-    </Box>
+    </Stack>
   );
 }

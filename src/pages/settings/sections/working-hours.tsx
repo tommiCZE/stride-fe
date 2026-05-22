@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, TextField, Typography } from '@mui/material';
+import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { SectionHeader, SettingsCard, FieldRow } from '../shared';
 import { useProjectSettings } from '../../../store/project-settings-store';
@@ -58,7 +58,7 @@ export function WorkingHoursSection({ project, readOnly }: { project: ProjectDto
         description="Označte dny v týdnu, kdy tým běžně pracuje."
       >
         <FieldRow label="Dny v týdnu" hint="Klikem přepnete den. Víkend je standardně volný.">
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <Stack direction="row" spacing={0.5} >
             {WEEKDAYS.map(d => {
               const active = wh.days.includes(d.id);
               return (
@@ -67,7 +67,7 @@ export function WorkingHoursSection({ project, readOnly }: { project: ProjectDto
                   onClick={() => toggleDay(d.id)}
                   sx={{
                     px: 1.25, py: 0.5, borderRadius: 0.8,
-                    fontSize: 14, fontWeight: active ? 700 : 500,
+                    fontSize: '14px', fontWeight: active ? 700 : 500,
                     cursor: readOnly ? 'default' : 'pointer', userSelect: 'none',
                     border: 1,
                     borderColor: active ? 'primary.main' : 'divider',
@@ -80,7 +80,7 @@ export function WorkingHoursSection({ project, readOnly }: { project: ProjectDto
                 </Box>
               );
             })}
-          </Box>
+          </Stack>
         </FieldRow>
         <FieldRow label="Začátek dne">
           <TextField
@@ -102,12 +102,11 @@ export function WorkingHoursSection({ project, readOnly }: { project: ProjectDto
         title="Státní svátky a volné dny"
         description="Dny, ve kterých se task se splatností neposouvá a SLA neběží."
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Stack spacing={0.5} >
           {wh.holidays.map((h, i) => (
-            <Box key={i} sx={{
-              display: 'flex', alignItems: 'center', gap: 1, p: 1,
-              borderRadius: 1, border: 1, borderColor: 'divider',
-            }}>
+            <Stack direction="row" spacing={1} key={i} sx={{
+        alignItems: 'center', p: 1,
+              borderRadius: 1, border: 1, borderColor: 'divider' }}>
               <TextField
                 size="small" type="date" value={h.date}
                 onChange={e => updateHoliday(i, { date: e.target.value })}
@@ -123,14 +122,14 @@ export function WorkingHoursSection({ project, readOnly }: { project: ProjectDto
               <IconButton size="small" disabled={readOnly} onClick={() => removeHoliday(i)}>
                 <CloseIcon/>
               </IconButton>
-            </Box>
+            </Stack>
           ))}
           {wh.holidays.length === 0 && (
-            <Typography sx={{ fontSize: 14, color: 'text.disabled', py: 1, textAlign: 'center' }}>
+            <Typography sx={{ fontSize: '14px', color: 'text.disabled', py: 1, textAlign: 'center' }}>
               Žádné svátky.
             </Typography>
           )}
-        </Box>
+        </Stack>
         <Button
           size="small" startIcon={<PlusIcon/>} disabled={readOnly} sx={{ mt: 1 }}
           onClick={addHoliday}

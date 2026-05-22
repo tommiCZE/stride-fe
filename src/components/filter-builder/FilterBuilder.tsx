@@ -1,16 +1,5 @@
 import { useMemo } from 'react';
-import {
-  Autocomplete,
-  Box,
-  Chip,
-  IconButton,
-  MenuItem,
-  Select,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from '@mui/material';
+import { Autocomplete, Box, Chip, IconButton, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import {
   type FilterCombinator,
@@ -106,9 +95,9 @@ export default function FilterBuilder({ value, onChange }: FilterBuilderProps) {
   const leafRules = value.rules.filter((r): r is FilterRule => !isGroup(r));
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+    <Stack spacing={1.5} >
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+        <Typography sx={{ fontSize: '14px', color: 'text.secondary' }}>
           Kombinátor:
         </Typography>
         <ToggleButtonGroup
@@ -116,21 +105,21 @@ export default function FilterBuilder({ value, onChange }: FilterBuilderProps) {
           exclusive
           value={value.combinator}
           onChange={handleCombinatorChange}
-          sx={{ '& .MuiToggleButton-root': { px: 1.5, py: 0.25, fontSize: 14 } }}
+          sx={{ '& .MuiToggleButton-root': { px: 1.5, py: 0.25, fontSize: '14px' } }}
         >
           <ToggleButton value="AND">AND</ToggleButton>
           <ToggleButton value="OR">OR</ToggleButton>
         </ToggleButtonGroup>
         <Box sx={{ flex: 1 }} />
-        <Typography sx={{ fontSize: 13, color: 'text.disabled' }}>
+        <Typography sx={{ fontSize: '13px', color: 'text.disabled' }}>
           {leafRules.length} {leafRules.length === 1 ? 'pravidlo' : 'pravidel'}
         </Typography>
-      </Box>
+      </Stack>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Stack spacing={1} >
         {leafRules.length === 0 && (
           <Box sx={{ p: 2, borderRadius: 1, bgcolor: 'action.hover', textAlign: 'center' }}>
-            <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: '14px', color: 'text.secondary' }}>
               Zatím žádná pravidla. Přidej první pomocí tlačítka níže.
             </Typography>
           </Box>
@@ -147,7 +136,7 @@ export default function FilterBuilder({ value, onChange }: FilterBuilderProps) {
             onRemove={() => removeRule(rule.id)}
           />
         ))}
-      </Box>
+      </Stack>
 
       <Box>
         <Chip
@@ -155,10 +144,10 @@ export default function FilterBuilder({ value, onChange }: FilterBuilderProps) {
           label="Přidat pravidlo"
           size="small"
           onClick={addRule}
-          sx={{ fontSize: 14, cursor: 'pointer' }}
+          sx={{ fontSize: '14px', cursor: 'pointer' }}
         />
       </Box>
-    </Box>
+    </Stack>
   );
 }
 
@@ -195,22 +184,19 @@ function RuleRow({ rule, isFirst, combinator, options, onChange, onRemove }: Rul
   const isMulti = rule.op === 'in';
 
   return (
-    <Box
+    <Stack direction="row" spacing={1}
       sx={{
-        display: 'flex',
         alignItems: 'center',
-        gap: 1,
         p: 1,
         borderRadius: 1,
         border: 1,
         borderColor: 'divider',
-        bgcolor: 'background.default',
-      }}
+        bgcolor: 'background.default' }}
     >
       <Box sx={{ width: 44, flexShrink: 0 }}>
         <Typography
           sx={{
-            fontSize: 13,
+            fontSize: '13px',
             fontWeight: 600,
             color: 'text.secondary',
             textAlign: 'center',
@@ -224,10 +210,10 @@ function RuleRow({ rule, isFirst, combinator, options, onChange, onRemove }: Rul
         size="small"
         value={rule.field}
         onChange={handleFieldChange}
-        sx={{ minWidth: 120, fontSize: 14, '& .MuiSelect-select': { py: 0.5 } }}
+        sx={{ minWidth: 120, fontSize: '14px', '& .MuiSelect-select': { py: 0.5 } }}
       >
         {FIELDS.map(f => (
-          <MenuItem key={f.value} value={f.value} sx={{ fontSize: 14 }}>
+          <MenuItem key={f.value} value={f.value} sx={{ fontSize: '14px' }}>
             {f.label}
           </MenuItem>
         ))}
@@ -237,10 +223,10 @@ function RuleRow({ rule, isFirst, combinator, options, onChange, onRemove }: Rul
         size="small"
         value={rule.op}
         onChange={handleOpChange}
-        sx={{ minWidth: 110, fontSize: 14, '& .MuiSelect-select': { py: 0.5 } }}
+        sx={{ minWidth: 110, fontSize: '14px', '& .MuiSelect-select': { py: 0.5 } }}
       >
         {OPS.map(o => (
-          <MenuItem key={o.value} value={o.value} sx={{ fontSize: 14 }}>
+          <MenuItem key={o.value} value={o.value} sx={{ fontSize: '14px' }}>
             {o.label}
           </MenuItem>
         ))}
@@ -261,7 +247,7 @@ function RuleRow({ rule, isFirst, combinator, options, onChange, onRemove }: Rul
               <TextField
                 {...params}
                 placeholder={(rule.value as string[]).length === 0 ? 'Vyber hodnoty…' : ''}
-                sx={{ '& .MuiInputBase-root': { fontSize: 14, py: 0.25 } }}
+                sx={{ '& .MuiInputBase-root': { fontSize: '14px', py: 0.25 } }}
               />
             )}
           />
@@ -277,7 +263,7 @@ function RuleRow({ rule, isFirst, combinator, options, onChange, onRemove }: Rul
               <TextField
                 {...params}
                 placeholder="Vyber hodnotu…"
-                sx={{ '& .MuiInputBase-root': { fontSize: 14, py: 0.25 } }}
+                sx={{ '& .MuiInputBase-root': { fontSize: '14px', py: 0.25 } }}
               />
             )}
           />
@@ -287,6 +273,6 @@ function RuleRow({ rule, isFirst, combinator, options, onChange, onRemove }: Rul
       <IconButton size="small" onClick={onRemove} aria-label="Odebrat pravidlo">
         <CloseIcon />
       </IconButton>
-    </Box>
+    </Stack>
   );
 }

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Box, Button, MenuItem, TextField, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -24,10 +24,11 @@ export function GeneralSection({ project, readOnly }: { project: ProjectDto; rea
     color: project.color,
     icon: project.icon,
   });
-
-  useEffect(() => {
+  const [prevProjectId, setPrevProjectId] = useState(project.id);
+  if (prevProjectId !== project.id) {
+    setPrevProjectId(project.id);
     setDraft({ name: project.name, color: project.color, icon: project.icon });
-  }, [project.id, project.name, project.color, project.icon]);
+  }
 
   const isDirty =
     draft.name !== project.name ||
@@ -95,35 +96,35 @@ export function GeneralSection({ project, readOnly }: { project: ProjectDto; rea
           />
         </FieldRow>
         <FieldRow label="Lead" hint="Hlavní zodpovědná osoba.">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             {project.lead && (
               <>
                 <FluxAvatar user={project.lead} size={22}/>
-                <Typography sx={{ fontSize: 13 }}>{project.lead.name}</Typography>
+                <Typography variant="caption">{project.lead.name}</Typography>
               </>
             )}
             <Button size="small" variant="outlined" disabled={readOnly} sx={{ ml: 1 }}>Změnit</Button>
-          </Box>
+          </Stack>
         </FieldRow>
         <FieldRow label="Ikona">
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap' }}>
             {ICON_CHOICES.map(ic => (
-              <Box
+              <Stack
                 key={ic}
                 onClick={() => !readOnly && setDraft(d => ({ ...d, icon: ic }))}
                 sx={{
                   width: 30, height: 30, borderRadius: 1,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 16, cursor: readOnly ? 'default' : 'pointer',
+                  alignItems: 'center', justifyContent: 'center',
+                  fontSize: '16px', cursor: readOnly ? 'default' : 'pointer',
                   border: 1, borderColor: draft.icon === ic ? 'primary.main' : 'divider',
                   bgcolor: draft.icon === ic ? 'action.selected' : 'background.paper',
                 }}
-              >{ic}</Box>
+              >{ic}</Stack>
             ))}
-          </Box>
+          </Stack>
         </FieldRow>
         <FieldRow label="Barva">
-          <Box sx={{ display: 'flex', gap: 0.75 }}>
+          <Stack direction="row" spacing={0.75}>
             {COLOR_PALETTE.map(c => (
               <ColorSwatch
                 key={c}
@@ -132,7 +133,7 @@ export function GeneralSection({ project, readOnly }: { project: ProjectDto; rea
                 onClick={readOnly ? undefined : () => setDraft(d => ({ ...d, color: c }))}
               />
             ))}
-          </Box>
+          </Stack>
         </FieldRow>
       </SettingsCard>
 
@@ -194,30 +195,30 @@ export function GeneralSection({ project, readOnly }: { project: ProjectDto; rea
         title="Nebezpečná zóna"
         description="Tyto akce jsou nevratné nebo skryjí projekt z navigace. Pokračuj s rozvahou."
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
+        <Stack spacing={1.5}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+            <Stack sx={{ flex: 1 }}>
+              <Typography variant="label">
                 {settings.archived ? 'Obnovit projekt' : 'Archivovat projekt'}
               </Typography>
-              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+              <Typography variant="caption" color="text.secondary">
                 Archivovaný projekt zmizí z navigace, ale data zůstávají.
               </Typography>
-            </Box>
+            </Stack>
             <Button
               size="small" variant="outlined" disabled={readOnly}
               onClick={() => update({ archived: !settings.archived })}
             >
               {settings.archived ? 'Obnovit' : 'Archivovat'}
             </Button>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Smazat projekt</Typography>
-              <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          </Stack>
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+            <Stack sx={{ flex: 1 }}>
+              <Typography variant="label">Smazat projekt</Typography>
+              <Typography variant="caption" color="text.secondary">
                 Smaže všechny tasky, sprinty a komentáře. Pro potvrzení napiš klíč „{project.key}”.
               </Typography>
-            </Box>
+            </Stack>
             <TextField
               size="small" placeholder={project.key} value={confirmKey}
               onChange={e => setConfirmKey(e.target.value)}
@@ -231,8 +232,8 @@ export function GeneralSection({ project, readOnly }: { project: ProjectDto; rea
             >
               Smazat
             </Button>
-          </Box>
-        </Box>
+          </Stack>
+        </Stack>
       </DangerCard>
     </Box>
   );
