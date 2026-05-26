@@ -1,86 +1,73 @@
-import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { useMemo, useState } from 'react';
+import { Box, Button, CircularProgress, Divider, Stack, Typography } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useProjects } from '../../hooks/useProjects';
 import { useReleases, useCreateRelease } from '../../hooks/useReleases';
-import { PlusIcon } from '../../components/icons/icons';
+import { CaretIcon, CaretRIcon, PlusIcon } from '../../components/icons/icons';
 import type { ReleaseDto, ReleaseStatus } from '../../api/types';
+import ReleaseCard from './components/release-card';
 
-const STATUS_META: Record<ReleaseStatus, { label: string; color: string }> = {
-  unreleased: { label: 'Plánováno', color: 'warning.main' },
-  released:   { label: 'Vydáno',    color: 'success.main' },
-  archived:   { label: 'Archiv',    color: 'text.disabled' },
+type GroupKey = ReleaseStatus;
+
+const GROUP_LABELS: Record<GroupKey, string> = {
+  unreleased: 'Nadcházející',
+  released:   'Vydané',
+  archived:   'Archiv',
 };
 
-function StatusChip({ status }: { status: ReleaseStatus }) {
-  const m = STATUS_META[status];
-  return (
-    <Box sx={{
-      px: 0.75, py: 0.15, borderRadius: 0.75,
-      fontSize: '14px', fontWeight: 700,
-      color: m.color,
-      border: 1, borderColor: m.color,
-      display: 'inline-flex', alignItems: 'center', gap: 0.5,
-    }}>
-      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: m.color }}/>
-      {m.label}
-    </Box>
-  );
+const GROUP_ORDER: GroupKey[] = ['unreleased', 'released', 'archived'];
+
+function compareDates(a: string | null, b: string | null, direction: 'asc' | 'desc'): number {
+  if (a === null && b === null) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return direction === 'asc' ? a.localeCompare(b) : b.localeCompare(a);
 }
 
-function ReleaseCard({ release, onClick }: { release: ReleaseDto; onClick: () => void }) {
-  const progress = release.taskCount > 0
-    ? (release.doneCount / release.taskCount) * 100
-    : 0;
-  const truncatedGoal = release.goal && release.goal.length > 120
-    ? release.goal.slice(0, 117) + '…'
-    : release.goal;
+function sortGroup(group: GroupKey, releases: ReleaseDto[]): ReleaseDto[] {
+  const direction = group === 'unreleased' ? 'asc' : 'desc';
+  return [...releases].sort((a, b) => compareDates(a.releaseDate, b.releaseDate, direction));
+}
 
-  const dateRange = release.startDate || release.releaseDate
-    ? `${release.startDate ?? '?'} → ${release.releaseDate ?? '?'}`
-    : null;
-
+function GroupHeader({
+  label, count, collapsible, collapsed, onToggle,
+}: {
+  label: string;
+  count: number;
+  collapsible?: boolean;
+  collapsed?: boolean;
+  onToggle?: () => void;
+}) {
   return (
-    <Stack spacing={1.25}
-      onClick={onClick}
+    <Stack
+      direction="row" spacing={1}
+      onClick={collapsible ? onToggle : undefined}
       sx={{
-        border: 1, borderColor: 'divider', borderRadius: 1.5, p: 2,
-        cursor: 'default',
-        '&:hover': { borderColor: 'primary.main', bgcolor: theme => alpha(theme.palette.primary.main, 0.02) } }}
+        alignItems: 'center',
+        cursor: collapsible ? 'pointer' : 'default',
+        mt: 2.5, mb: 1,
+        userSelect: 'none',
+      }}
     >
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-        <Typography sx={{
-          fontSize: '16px', fontWeight: 700,
-          fontFamily: 'ui-monospace, monospace',
-        }}>{release.name}</Typography>
-        <StatusChip status={release.status}/>
-        <Box sx={{ flex: 1 }}/>
-        {dateRange && (
-          <Typography sx={{ fontSize: '13px', color: 'text.disabled' }}>
-            {dateRange}
-          </Typography>
-        )}
-      </Stack>
-
-      {truncatedGoal && (
-        <Typography sx={{ fontSize: '14px', color: 'text.secondary' }}>
-          {truncatedGoal}
-        </Typography>
-      )}
-
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-        <Box sx={{ flex: 1, height: 6, borderRadius: 3,
-          bgcolor: 'action.hover', overflow: 'hidden' }}>
-          <Box sx={{ height: '100%', width: `${progress}%`,
-            bgcolor: release.status === 'released' ? 'success.main' : 'primary.main',
-            transition: '0.3s' }}/>
+      {collapsible && (
+        <Box sx={{ display: 'flex', color: 'text.secondary' }}>
+          {collapsed ? <CaretRIcon/> : <CaretIcon/>}
         </Box>
-        <Typography sx={{ fontSize: '13px', color: 'text.secondary',
-          fontVariantNumeric: 'tabular-nums', minWidth: 96, textAlign: 'right' }}>
-          {release.doneCount} / {release.taskCount} ({Math.round(progress)}%)
-        </Typography>
-      </Stack>
+      )}
+      <Typography sx={{
+        fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em',
+        textTransform: 'uppercase', color: 'text.secondary',
+      }}>
+        {label}
+      </Typography>
+      <Typography sx={{
+        fontSize: '11px', fontWeight: 700,
+        color: 'text.disabled', fontVariantNumeric: 'tabular-nums',
+      }}>
+        {count}
+      </Typography>
+      <Divider sx={{ flex: 1, ml: 1 }}/>
     </Stack>
   );
 }
@@ -93,6 +80,17 @@ export default function ReleasesPage() {
   const project = projects.find(p => p.key === projectKey);
   const { data: releases = [], isLoading } = useReleases(project?.id);
   const createRelease = useCreateRelease();
+  const [archivedCollapsed, setArchivedCollapsed] = useState(true);
+
+  const groups = useMemo(() => {
+    const buckets: Record<GroupKey, ReleaseDto[]> = { unreleased: [], released: [], archived: [] };
+    for (const r of releases) buckets[r.status].push(r);
+    return {
+      unreleased: sortGroup('unreleased', buckets.unreleased),
+      released:   sortGroup('released',   buckets.released),
+      archived:   sortGroup('archived',   buckets.archived),
+    };
+  }, [releases]);
 
   if (!project) return null;
 
@@ -106,6 +104,35 @@ export default function ReleasesPage() {
         },
         onError: () => enqueueSnackbar('Chyba při vytváření', { variant: 'error' }),
       },
+    );
+  };
+
+  const goToDetail = (r: ReleaseDto) =>
+    navigate(`/projects/${project.key}/releases/${r.id}`);
+
+  const renderGroup = (key: GroupKey) => {
+    const items = groups[key];
+    const label = GROUP_LABELS[key];
+    const collapsible = key === 'archived';
+    const collapsed = key === 'archived' && archivedCollapsed;
+    if (items.length === 0) return null;
+    return (
+      <Box key={key}>
+        <GroupHeader
+          label={label}
+          count={items.length}
+          collapsible={collapsible}
+          collapsed={collapsed}
+          onToggle={() => setArchivedCollapsed(v => !v)}
+        />
+        {!collapsed && (
+          <Stack spacing={1.25}>
+            {items.map(r => (
+              <ReleaseCard key={r.id} release={r} onClick={() => goToDetail(r)}/>
+            ))}
+          </Stack>
+        )}
+      </Box>
     );
   };
 
@@ -160,15 +187,7 @@ export default function ReleasesPage() {
           </Box>
         )}
 
-        <Stack spacing={1.25} >
-          {releases.map(r => (
-            <ReleaseCard
-              key={r.id}
-              release={r}
-              onClick={() => navigate(`/projects/${project.key}/releases/${r.id}`)}
-            />
-          ))}
-        </Stack>
+        {!isLoading && releases.length > 0 && GROUP_ORDER.map(renderGroup)}
       </Box>
     </Box>
   );
