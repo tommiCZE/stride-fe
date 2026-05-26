@@ -22,6 +22,7 @@ import { MonoKey } from '../components/ui/ui';
 import { CaretIcon, BacklogIcon, PlusIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
 import QueryError from '../components/query-error/QueryError';
+import StatusBreakdown from '../components/status-breakdown';
 import { taskLinkProps } from '../utils/task-link';
 import type { TaskSummaryDto } from '../api/types';
 
@@ -445,7 +446,7 @@ export default function Backlog() {
                     </Button>
                   )}
                 </Stack>
-                <Stack direction="row" spacing={2.5} sx={{ mt: 0.6, alignItems: 'baseline', flexWrap: 'wrap' }}>
+                <Stack direction="row" spacing={2.5} sx={{ mt: 0.6, alignItems: 'baseline', flexWrap: 'wrap', rowGap: 0.6 }}>
                   {(sp.startDate || sp.endDate) && (
                     <SprintMeta label="datum" value={formatDateRange(sp.startDate, sp.endDate)}/>
                   )}
@@ -454,6 +455,11 @@ export default function Backlog() {
                   <SprintMeta label="logged" value={`${totalL}h`}
                     valueColor={totalE > 0 && totalL >= totalE ? 'success.dark' : undefined}/>
                 </Stack>
+                {sprintTasks.length > 0 && (
+                  <Box sx={{ mt: 1 }}>
+                    <StatusBreakdown tasks={sprintTasks} width={180}/>
+                  </Box>
+                )}
               </Box>
               <DroppableList id={sp.id}>
                 <SortableContext items={sprintTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
