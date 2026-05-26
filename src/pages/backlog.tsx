@@ -116,10 +116,32 @@ interface RowProps {
   task: TaskSummaryDto;
   onOpen: (key: string) => void;
   showEstimate?: boolean;
+  showStatus?: boolean;
   isLast?: boolean;
 }
 
-function SortableRow({ task: t, onOpen, showEstimate, isLast }: RowProps) {
+const STATUS_PILL: Record<string, { bg: string; fg: string; label: string }> = {
+  TODO:        { bg: 'action.hover',         fg: 'text.secondary', label: 'todo' },
+  IN_PROGRESS: { bg: 'rgba(14,165,233,0.10)', fg: '#075985',       label: 'v práci' },
+  REVIEW:      { bg: 'rgba(168,85,247,0.10)', fg: '#6b21a8',       label: 'review' },
+  DONE:        { bg: 'rgba(16,185,129,0.10)', fg: 'success.dark',  label: 'done' },
+};
+
+function StatusPill({ status }: { status: string }) {
+  const s = STATUS_PILL[status] ?? STATUS_PILL.TODO;
+  return (
+    <Box sx={{
+      fontSize: 10.5, fontWeight: 600,
+      px: 0.9, py: 0.15, borderRadius: 999,
+      bgcolor: s.bg, color: s.fg,
+      whiteSpace: 'nowrap', flexShrink: 0,
+    }}>
+      {s.label}
+    </Box>
+  );
+}
+
+function SortableRow({ task: t, onOpen, showEstimate, showStatus, isLast }: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: t.id });
   const assignee = t.assigneeId
@@ -138,11 +160,12 @@ function SortableRow({ task: t, onOpen, showEstimate, isLast }: RowProps) {
         bgcolor: isDragging ? 'action.selected' : 'background.paper',
         opacity: isDragging ? 0.45 : 1,
         '&:hover': { bgcolor: isDragging ? 'action.selected' : 'action.hover' },
-        '&:hover .grip': { opacity: 1 },
+        '&:hover .grip': { opacity: 0.8 },
       }}
     >
       <Box className="grip" {...attributes} {...listeners}
-        sx={{ opacity: 0, cursor: 'grab', pl: 1, pr: 0.25, py: 0.85,
+        sx={{ opacity: 0.35, cursor: 'grab', transition: 'opacity 0.12s',
+          pl: 1, pr: 0.25, py: 1.1,
           color: 'text.disabled', flexShrink: 0, '&:active': { cursor: 'grabbing' } }}>
         <GripIcon />
       </Box>
@@ -154,21 +177,27 @@ function SortableRow({ task: t, onOpen, showEstimate, isLast }: RowProps) {
           e.preventDefault();
           onOpen(t.key);
         }}
-        sx={{ flex: 1, alignItems: 'center', px: 1, py: 0.85, minWidth: 0, cursor: 'default',
+        sx={{ flex: 1, alignItems: 'center', px: 1, py: 1.1, minWidth: 0, cursor: 'default',
           textDecoration: 'none', color: 'text.primary' }}>
         <PriorityIcon priority={t.priority} />
         <TypeIcon type={t.type} size={13} />
-        <MonoKey sx={{ minWidth: 60 }}>{t.key}</MonoKey>
-        <Typography variant="body2" sx={{ flex: 1, minWidth: 0,
+        <MonoKey sx={{ minWidth: 60, fontSize: 11 }}>{t.key}</MonoKey>
+        <Typography sx={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {t.title}
         </Typography>
+        {showStatus && <StatusPill status={t.status}/>}
         {showEstimate && (
-          <Typography variant="body2" sx={{ fontWeight: 600, px: 0.5, borderRadius: 0.6, bgcolor: 'action.hover', flexShrink: 0 }}>
+          <Box sx={{
+            border: 1, borderColor: 'divider', borderRadius: 1,
+            px: 0.8, py: 0.1, minWidth: 28, textAlign: 'center',
+            fontSize: 11, fontWeight: 600, color: 'text.secondary',
+            fontVariantNumeric: 'tabular-nums', flexShrink: 0,
+          }}>
             {t.estimate ?? '—'}
-          </Typography>
+          </Box>
         )}
-        <FluxAvatar user={assignee} size={18} />
+        <FluxAvatar user={assignee} size={20} />
       </Stack>
     </Stack>
   );
@@ -464,7 +493,7 @@ export default function Backlog() {
               <DroppableList id={sp.id}>
                 <SortableContext items={sprintTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                   {sprintTasks.map((t, i) => (
-                    <SortableRow key={t.id} task={t} onOpen={openTask} showEstimate
+                    <SortableRow key={t.id} task={t} onOpen={openTask} showEstimate showStatus
                       isLast={i === sprintTasks.length - 1}/>
                   ))}
                 </SortableContext>
