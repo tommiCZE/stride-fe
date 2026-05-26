@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useSnackbar } from 'notistack';
+import { Link as RouterLink } from 'react-router-dom';
 import { useTasks, useUpdateTask, useCreateTask } from '../hooks/useTasks';
 import { useSprints, useUpdateSprint } from '../hooks/useSprints';
 import { useUiStore } from '../store/ui-store';
@@ -520,7 +521,9 @@ export default function Backlog() {
   const backlogTasks = getContainerTasks(null);
   const backlogTotalEstimate = backlogTasks.reduce((a, t) => a + (t.estimate ?? 0), 0);
   const visibleSprints = sprints.filter(s => s.state !== 'COMPLETED');
+  const completedSprints = sprints.filter(s => s.state === 'COMPLETED');
   const hasActiveSprint = sprints.some(s => s.state === 'ACTIVE');
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   if (tasksError || sprintsError) {
     return (
@@ -742,6 +745,84 @@ export default function Backlog() {
             </Box>
           )}
         </Card>
+
+        {completedSprints.length > 0 && (
+          <Card sx={{ borderRadius: 1.5 }}>
+            <Stack
+              direction="row" spacing={0.75}
+              onClick={() => setHistoryOpen(o => !o)}
+              sx={{
+                alignItems: 'center', px: 1.5, py: 1, cursor: 'default',
+                color: 'text.secondary', userSelect: 'none',
+                '&:hover': { bgcolor: 'action.hover' },
+              }}
+            >
+              <Box sx={{
+                display: 'inline-flex', color: 'text.disabled',
+                transform: historyOpen ? 'none' : 'rotate(-90deg)',
+                transition: 'transform 0.15s',
+              }}>
+                <CaretIcon/>
+              </Box>
+              <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
+                Dokončené sprinty
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                · {completedSprints.length}
+              </Typography>
+              <Box sx={{ flex: 1 }}/>
+              <RouterLink
+                to={`/projects/${projectKey}/reports`}
+                onClick={(e) => e.stopPropagation()}
+                style={{ textDecoration: 'none' }}
+              >
+                <Typography variant="caption" sx={{ color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}>
+                  Otevřít historii →
+                </Typography>
+              </RouterLink>
+            </Stack>
+            {historyOpen && completedSprints.slice(0, 5).map(sp => {
+              const sprintAll = tasks.filter(t => t.sprintId === sp.id);
+              const done = sprintAll.filter(t => t.status === 'DONE').length;
+              return (
+                <Stack
+                  key={sp.id} direction="row" spacing={1}
+                  sx={{
+                    alignItems: 'center', px: 1.5, py: 1,
+                    borderTop: 1, borderColor: 'divider',
+                  }}
+                >
+                  <Typography sx={{ fontSize: 13, fontWeight: 500 }}>{sp.name}</Typography>
+                  {(sp.startDate || sp.endDate) && (
+                    <Typography variant="caption" color="text.secondary">
+                      · {formatDateRange(sp.startDate, sp.endDate)}
+                    </Typography>
+                  )}
+                  <Box sx={{ flex: 1 }}/>
+                  {sprintAll.length > 0 && (
+                    <Typography variant="caption" color="text.secondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                      {done}/{sprintAll.length} done
+                      {' · '}
+                      {Math.round((done / sprintAll.length) * 100)}%
+                    </Typography>
+                  )}
+                </Stack>
+              );
+            })}
+            {historyOpen && completedSprints.length > 5 && (
+              <Stack direction="row" sx={{
+                px: 1.5, py: 1, borderTop: 1, borderColor: 'divider',
+                justifyContent: 'center',
+              }}>
+                <RouterLink to={`/projects/${projectKey}/reports`} style={{ textDecoration: 'none' }}>
+                  <Typography variant="caption" sx={{ color: 'primary.main' }}>
+                    Zobrazit dalších {completedSprints.length - 5} →
+                  </Typography>
+                </RouterLink>
+              </Stack>
+            )}
+          </Card>
+        )}
       </Stack>
 
       <NewSprintDialog open={newSprintModalOpen} onClose={closeNewSprintModal} projectId={projectId}/>
