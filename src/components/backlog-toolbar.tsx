@@ -5,6 +5,7 @@ import {
 import { CaretIcon, SearchIcon, CloseIcon } from './icons/icons';
 import { QUICK_CHIPS, SORT_OPTIONS, type QuickChip, type SortBy } from '../utils/backlog-filter';
 import { GROUP_OPTIONS, type GroupBy } from '../utils/backlog-group';
+import type { ReleaseDto } from '../api/types';
 
 interface Props {
   count: number;
@@ -17,6 +18,7 @@ interface Props {
   onGroupByChange: (g: GroupBy) => void;
   sortBy: SortBy;
   onSortByChange: (s: SortBy) => void;
+  activeRelease?: ReleaseDto | null;
 }
 
 function DropdownButton<T extends string>({
@@ -64,7 +66,11 @@ export default function BacklogToolbar({
   quickChip, onQuickChipChange,
   groupBy, onGroupByChange,
   sortBy, onSortByChange,
+  activeRelease,
 }: Props) {
+  const allChips = activeRelease
+    ? [...QUICK_CHIPS, { id: 'active-release' as QuickChip, label: `📦 ${activeRelease.name}` }]
+    : QUICK_CHIPS;
   return (
     <Stack spacing={1} sx={{ p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
       <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
@@ -101,7 +107,7 @@ export default function BacklogToolbar({
       </Stack>
 
       <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
-        {QUICK_CHIPS.map(c => {
+        {allChips.map(c => {
           const active = c.id === quickChip;
           return (
             <Box

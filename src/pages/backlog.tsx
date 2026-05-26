@@ -15,6 +15,7 @@ import { useSnackbar } from 'notistack';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTasks, useUpdateTask, useCreateTask } from '../hooks/useTasks';
 import { useSprints, useUpdateSprint } from '../hooks/useSprints';
+import { useReleases } from '../hooks/useReleases';
 import { useUiStore } from '../store/ui-store';
 import NewSprintDialog from '../components/new-sprint-dialog';
 import SprintCompletionDialog from '../components/sprint-completion-dialog';
@@ -30,6 +31,7 @@ import { CaretIcon, BacklogIcon, PlusIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
 import QueryError from '../components/query-error/QueryError';
 import StatusBreakdown from '../components/status-breakdown';
+import ReleaseScopeStrip from '../components/release-scope-strip';
 import { taskLinkProps } from '../utils/task-link';
 import {
   applyFilter, applySort,
@@ -336,6 +338,14 @@ function GroupSectionHeader({
           — {section.hint}
         </Typography>
       )}
+      {section.key.startsWith('release:') && (
+        <>
+          <Box sx={{ flex: 1 }}/>
+          <Box sx={{ width: 120 }}>
+            <ReleaseScopeStrip tasks={section.tasks}/>
+          </Box>
+        </>
+      )}
     </Stack>
   );
 }
@@ -350,8 +360,8 @@ function DroppableList({ id, children }: { id: string; children: React.ReactNode
   );
 }
 
-const QUICK_CHIP_IDS = ['all', 'mine', 'bugs', 'no-estimate', 'overdue'] as const;
-const GROUP_IDS = ['readiness', 'priority', 'status', 'none'] as const;
+const QUICK_CHIP_IDS = ['all', 'mine', 'bugs', 'no-estimate', 'overdue', 'active-release'] as const;
+const GROUP_IDS = ['readiness', 'priority', 'status', 'fixVersion', 'none'] as const;
 const SORT_IDS = ['manual', 'priority', 'updated', 'created', 'estimate'] as const;
 const isQuickChip = (v: string | null): v is QuickChip => !!v && (QUICK_CHIP_IDS as readonly string[]).includes(v);
 const isGroupBy = (v: string | null): v is GroupBy => !!v && (GROUP_IDS as readonly string[]).includes(v);
@@ -402,6 +412,8 @@ export default function Backlog() {
   const updateTask = useUpdateTask(projectId);
   const updateSprint = useUpdateSprint(projectId!);
   const createTask = useCreateTask();
+  const { data: releases = [] } = useReleases(projectId);
+  const activeRelease = releases.find(r => r.status === 'unreleased') ?? null;
   const { newSprintModalOpen, openNewSprintModal, closeNewSprintModal } = useUiStore();
   const [completingSprint, setCompletingSprint] = useState<SprintDto | null>(null);
   const [pickerSprint, setPickerSprint] = useState<SprintDto | null>(null);
@@ -702,11 +714,12 @@ export default function Backlog() {
             onGroupByChange={setGroupBy}
             sortBy={sortBy}
             onSortByChange={setSortBy}
+            activeRelease={activeRelease}
           />
           {(() => {
-            const filtered = applyFilter(backlogTasks, quickChip, currentUserId, search);
+            const filtered = applyFilter(backlogTasks, quickChip, currentUserId, search, activeRelease?.id ?? null);
             const sorted = applySort(filtered, sortBy);
-            const sections = groupTasks(sorted, groupBy);
+            const sections = groupTasks(sorted, groupBy, releases);
             const isCollapsed = (s: GroupSection) =>
               s.collapsible && collapsedSections.includes(s.key);
             const displayedTasks: TaskSummaryDto[] = [];

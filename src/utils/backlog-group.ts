@@ -1,9 +1,9 @@
-import type { TaskSummaryDto } from '../api/types';
+import type { ReleaseDto, TaskSummaryDto } from '../api/types';
 import {
   groupByReadiness, READINESS_META, READINESS_ORDER,
 } from './task-readiness';
 
-export type GroupBy = 'readiness' | 'priority' | 'status' | 'none';
+export type GroupBy = 'readiness' | 'priority' | 'status' | 'fixVersion' | 'none';
 
 export type GroupTone = 'success' | 'warning' | 'neutral' | 'info' | 'danger';
 
@@ -18,10 +18,11 @@ export interface GroupSection {
 }
 
 export const GROUP_OPTIONS: { id: GroupBy; label: string }[] = [
-  { id: 'readiness', label: 'Readiness' },
-  { id: 'priority',  label: 'Priority' },
-  { id: 'status',    label: 'Status' },
-  { id: 'none',      label: 'None' },
+  { id: 'readiness',  label: 'Readiness' },
+  { id: 'priority',   label: 'Priority' },
+  { id: 'status',     label: 'Status' },
+  { id: 'fixVersion', label: 'Fix version' },
+  { id: 'none',       label: 'None' },
 ];
 
 const PRIORITY_ORDER = ['URGENT', 'HIGH', 'MEDIUM', 'LOW'] as const;
@@ -40,7 +41,11 @@ const STATUS_TONE: Record<string, GroupTone> = {
   TODO: 'neutral', IN_PROGRESS: 'info', REVIEW: 'warning', DONE: 'success',
 };
 
-export function groupTasks(tasks: TaskSummaryDto[], mode: GroupBy): GroupSection[] {
+export function groupTasks(
+  tasks: TaskSummaryDto[],
+  mode: GroupBy,
+  releases: ReleaseDto[] = [],
+): GroupSection[] {
   if (mode === 'none') {
     return [{ key: 'all', label: '', tasks, collapsible: false }];
   }
@@ -75,6 +80,40 @@ export function groupTasks(tasks: TaskSummaryDto[], mode: GroupBy): GroupSection
         collapsible: true,
       }))
       .filter(s => s.tasks.length > 0);
+  }
+  if (mode === 'fixVersion') {
+    const byRelease = new Map<string, TaskSummaryDto[]>();
+    for (const t of tasks) {
+      const key = t.fixVersionId ?? '__none__';
+      const arr = byRelease.get(key) ?? [];
+      arr.push(t);
+      byRelease.set(key, arr);
+    }
+    const sections: GroupSection[] = [];
+    for (const r of releases) {
+      const list = byRelease.get(r.id);
+      if (!list || list.length === 0) continue;
+      sections.push({
+        key: `release:${r.id}`,
+        label: r.name,
+        hint: r.releaseDate ? `→ ${r.releaseDate}` : undefined,
+        tone: r.status === 'released' ? 'success' : 'info',
+        tasks: list,
+        collapsible: true,
+      });
+    }
+    const noVersion = byRelease.get('__none__');
+    if (noVersion && noVersion.length > 0) {
+      sections.push({
+        key: '__no_version__',
+        label: 'Bez release',
+        hint: 'task není přiřazen k žádnému release',
+        tone: 'neutral',
+        tasks: noVersion,
+        collapsible: true,
+      });
+    }
+    return sections;
   }
   return [];
 }

@@ -1,6 +1,6 @@
 import type { TaskSummaryDto } from '../api/types';
 
-export type QuickChip = 'all' | 'mine' | 'bugs' | 'no-estimate' | 'overdue';
+export type QuickChip = 'all' | 'mine' | 'bugs' | 'no-estimate' | 'overdue' | 'active-release';
 
 export const QUICK_CHIPS: { id: QuickChip; label: string }[] = [
   { id: 'all',          label: 'Vše' },
@@ -15,6 +15,7 @@ export function applyFilter(
   quickChip: QuickChip,
   currentUserId: string | null,
   search: string,
+  activeReleaseId: string | null = null,
 ): TaskSummaryDto[] {
   let out = tasks;
 
@@ -33,6 +34,9 @@ export function applyFilter(
       out = out.filter(t => t.dueDate && t.dueDate < today && t.status !== 'DONE');
       break;
     }
+    case 'active-release':
+      if (activeReleaseId) out = out.filter(t => t.fixVersionId === activeReleaseId);
+      break;
     case 'all':
     default:
       break;
