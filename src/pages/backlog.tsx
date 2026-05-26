@@ -575,7 +575,10 @@ export default function Backlog() {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter}
       onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-      <Stack spacing={2} sx={{ overflowY: 'auto', p: 2, bgcolor: 'background.default', height: '100%' }}>
+      <Stack spacing={2} sx={{
+        overflowY: 'auto', p: 2, bgcolor: 'background.default', height: '100%',
+        '& > *': { flexShrink: 0 },
+      }}>
         {visibleSprints.map(sp => {
           const sprintTasks = getContainerTasks(sp.id);
           const totalE = sprintTasks.reduce((a, t) => a + (t.estimate ?? 0), 0);
