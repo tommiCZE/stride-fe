@@ -17,6 +17,9 @@ import { useSprints, useUpdateSprint } from '../hooks/useSprints';
 import { useUiStore } from '../store/ui-store';
 import NewSprintDialog from '../components/new-sprint-dialog';
 import SprintCompletionDialog from '../components/sprint-completion-dialog';
+import SprintAddRow from '../components/sprint-add-row';
+import BacklogPickerDialog from '../components/backlog-picker-dialog';
+import { getReadiness } from '../utils/task-readiness';
 import { useProjectByKey } from '../hooks/useProjects';
 import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
@@ -199,6 +202,17 @@ function SortableRow({ task: t, onOpen, showEstimate, showStatus, isLast }: RowP
           {t.title}
         </Typography>
         {showStatus && <StatusPill status={t.status}/>}
+        {showStatus && (t.needsGrooming === true || (!t.estimate || !t.assigneeId)) && (
+          <Box sx={{
+            fontSize: 9.5, fontWeight: 700, letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+            px: 0.7, py: 0.15, borderRadius: 0.5,
+            bgcolor: 'rgba(245,158,11,0.12)', color: 'warning.dark',
+            whiteSpace: 'nowrap', flexShrink: 0,
+          }}>
+            needs grooming
+          </Box>
+        )}
         {showEstimate && (
           <Box sx={{
             border: 1, borderColor: 'divider', borderRadius: 1,
@@ -389,6 +403,7 @@ export default function Backlog() {
   const createTask = useCreateTask();
   const { newSprintModalOpen, openNewSprintModal, closeNewSprintModal } = useUiStore();
   const [completingSprint, setCompletingSprint] = useState<SprintDto | null>(null);
+  const [pickerSprint, setPickerSprint] = useState<SprintDto | null>(null);
 
   const handleCreateTask = (title: string, sprintId: string | null) => {
     if (!projectId) return;
@@ -660,10 +675,13 @@ export default function Backlog() {
                 </SortableContext>
               </DroppableList>
               {projectId && (
-                <Box sx={{ borderTop: sprintTasks.length > 0 ? 1 : 0, borderColor: 'divider' }}>
-                  <QuickAddTaskRow projectId={projectId} sprintId={sp.id}
-                    isPending={createTask.isPending} onCreate={handleCreateTask}/>
-                </Box>
+                <SprintAddRow
+                  sprintState={sp.state}
+                  isPending={createTask.isPending}
+                  readyCount={backlogTasks.filter(t => getReadiness(t) !== 'ICEBOX').length}
+                  onPickFromBacklog={() => setPickerSprint(sp)}
+                  onQuickCreate={(title) => handleCreateTask(title, sp.id)}
+                />
               )}
             </Card>
           );
@@ -734,6 +752,14 @@ export default function Backlog() {
           sprint={completingSprint}
           incompleteTasks={tasks.filter(t => t.sprintId === completingSprint.id && t.status !== 'DONE')}
           suggestedSprintName={`Sprint ${Math.max(0, ...sprints.map(s => s.number)) + 1}`}
+        />
+      )}
+      {pickerSprint && (
+        <BacklogPickerDialog
+          open
+          onClose={() => setPickerSprint(null)}
+          sprint={pickerSprint}
+          backlogTasks={backlogTasks}
         />
       )}
 
