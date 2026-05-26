@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { useAuthStore } from '../store/auth-store';
 import { useNotificationsStore } from '../store/notifications-store';
+import { forceSessionExpired } from '../api/session-expired';
 import { taskKeys } from './useTasks';
 import { commentKeys } from './useComments';
 import { sprintKeys } from './useSprints';
@@ -59,6 +60,10 @@ interface TimerStoppedPayload {
 }
 
 const RECONNECT_DELAY_MS = 5000;
+// EventSource hides HTTP status codes, so we can't tell a 401 from a network
+// blip. After this many consecutive reconnect failures we assume the token is
+// invalid and force a logout instead of looping forever.
+const MAX_RECONNECT_FAILURES = 3;
 
 /**
  * Subscribes to the backend SSE stream and reacts to real-time task/comment/sprint
@@ -83,6 +88,7 @@ export function useRealtimeEvents(): void {
     let cancelled = false;
     let source: EventSource | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let consecutiveFailures = 0;
 
     const parse = <T,>(raw: string): T | null => {
       try {
@@ -102,6 +108,8 @@ export function useRealtimeEvents(): void {
       source = new EventSource(
         `http://localhost:8080/api/notifications/stream?token=${encodeURIComponent(token)}`,
       );
+
+      source.onopen = () => { consecutiveFailures = 0; };
 
       // Re-sync timer state on every (re)connect — events fired while we were
       // disconnected aren't replayed by the SSE protocol.
@@ -194,11 +202,17 @@ export function useRealtimeEvents(): void {
 
       source.onerror = () => {
         // EventSource auto-reconnects, but if the server closed the connection
-        // (e.g. 30-min timeout) we may end up in CLOSED state — force a fresh
-        // connection after a short delay.
+        // (e.g. 30-min timeout, or 401 from expired token) we may end up in
+        // CLOSED state — force a fresh connection after a short delay, unless
+        // we've failed too many times in a row.
         if (source && source.readyState === EventSource.CLOSED) {
           source.close();
           source = null;
+          consecutiveFailures++;
+          if (consecutiveFailures >= MAX_RECONNECT_FAILURES) {
+            forceSessionExpired();
+            return;
+          }
           if (!cancelled) {
             reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
           }

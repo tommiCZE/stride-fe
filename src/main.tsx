@@ -1,21 +1,16 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { SnackbarProvider } from 'notistack';
 import { buildTheme } from './theme';
 import { useUiStore } from './store/ui-store';
 import App from './App';
 import AppErrorBoundary from './components/error-boundary/app-error-boundary';
+import { queryClient } from './api/query-client';
 import './locales';
 import './index.css';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { staleTime: 1000 * 60 * 5, retry: 1 },
-  },
-});
 
 // eslint-disable-next-line react-refresh/only-export-components -- main.tsx entry point, not HMR-target
 function ThemedApp() {
