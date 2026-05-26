@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sprintsApi } from '../api/sprints';
+import { taskKeys } from './useTasks';
 import type { CreateSprintRequest, UpdateSprintRequest } from '../api/types';
 
 export const sprintKeys = {
@@ -41,5 +42,16 @@ export function useUpdateSprint(projectId: string) {
       sprintsApi.update(id, body),
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: sprintKeys.list(projectId) }),
+  });
+}
+
+export function useDeleteSprint(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => sprintsApi.remove(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: sprintKeys.list(projectId) });
+      qc.invalidateQueries({ queryKey: taskKeys.all });
+    },
   });
 }

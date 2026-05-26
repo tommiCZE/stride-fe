@@ -22,6 +22,9 @@ export const sprintsApi = {
   update: (id: string, body: UpdateSprintRequest) =>
     api.patch<void>(`/api/sprints/${id}`, body).then(r => r.data),
 
+  remove: (id: string) =>
+    api.delete<void>(`/api/sprints/${id}`).then(r => r.data),
+
   velocity: (projectId: string, lastN = 6) =>
     api
       .get<SprintVelocityPoint[]>(`/api/projects/${projectId}/sprints/velocity`, {

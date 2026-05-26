@@ -19,6 +19,8 @@ import { useReleases } from '../hooks/useReleases';
 import { useUiStore } from '../store/ui-store';
 import NewSprintDialog from '../components/new-sprint-dialog';
 import SprintCompletionDialog from '../components/sprint-completion-dialog';
+import SprintDeleteDialog from '../components/sprint-delete-dialog';
+import SprintActionsMenu from '../components/sprint-actions-menu';
 import SprintAddRow from '../components/sprint-add-row';
 import BacklogPickerDialog from '../components/backlog-picker-dialog';
 import { getReadiness } from '../utils/task-readiness';
@@ -417,6 +419,7 @@ export default function Backlog() {
   const { newSprintModalOpen, openNewSprintModal, closeNewSprintModal } = useUiStore();
   const [completingSprint, setCompletingSprint] = useState<SprintDto | null>(null);
   const [pickerSprint, setPickerSprint] = useState<SprintDto | null>(null);
+  const [deletingSprint, setDeletingSprint] = useState<SprintDto | null>(null);
 
   const handleCreateTask = (title: string, sprintId: string | null) => {
     if (!projectId) return;
@@ -639,6 +642,7 @@ export default function Backlog() {
                     <Chip label="Prázdný" size="small" variant="outlined"/>
                     <SprintStateBadge state={sp.state} daysRemaining={daysRemaining}/>
                     {actionButton}
+                    <SprintActionsMenu onDelete={() => setDeletingSprint(sp)}/>
                   </Stack>
                 </DroppableList>
               </Card>
@@ -668,6 +672,7 @@ export default function Backlog() {
                   <SprintStateBadge state={sp.state} daysRemaining={daysRemaining}/>
                   <Box sx={{ flex: 1 }}/>
                   {actionButton}
+                  <SprintActionsMenu onDelete={() => setDeletingSprint(sp)}/>
                 </Stack>
                 <Stack direction="row" spacing={2.5} sx={{ mt: 0.6, alignItems: 'baseline', flexWrap: 'wrap', rowGap: 0.6 }}>
                   {(sp.startDate || sp.endDate) && (
@@ -857,6 +862,14 @@ export default function Backlog() {
           onClose={() => setPickerSprint(null)}
           sprint={pickerSprint}
           backlogTasks={backlogTasks}
+        />
+      )}
+      {deletingSprint && (
+        <SprintDeleteDialog
+          open
+          onClose={() => setDeletingSprint(null)}
+          sprint={deletingSprint}
+          taskCount={tasks.filter(t => t.sprintId === deletingSprint.id).length}
         />
       )}
 
