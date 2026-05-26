@@ -13,7 +13,10 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useSnackbar } from 'notistack';
 import { useTasks, useUpdateTask, useCreateTask } from '../hooks/useTasks';
-import { useSprints, useUpdateSprint, useCreateSprint } from '../hooks/useSprints';
+import { useSprints, useUpdateSprint } from '../hooks/useSprints';
+import { useUiStore } from '../store/ui-store';
+import NewSprintDialog from '../components/new-sprint-dialog';
+import SprintCompletionDialog from '../components/sprint-completion-dialog';
 import { useProjectByKey } from '../hooks/useProjects';
 import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
@@ -33,7 +36,7 @@ import {
 } from '../utils/backlog-group';
 import BacklogToolbar from '../components/backlog-toolbar';
 import { useAuthStore } from '../store/auth-store';
-import type { TaskSummaryDto } from '../api/types';
+import type { SprintDto, TaskSummaryDto } from '../api/types';
 
 function GripIcon() {
   return (
@@ -383,9 +386,9 @@ export default function Backlog() {
   } = useSprints(projectId!);
   const updateTask = useUpdateTask(projectId);
   const updateSprint = useUpdateSprint(projectId!);
-  const createSprint = useCreateSprint();
   const createTask = useCreateTask();
-  const [newSprintName, setNewSprintName] = useState('');
+  const { newSprintModalOpen, openNewSprintModal, closeNewSprintModal } = useUiStore();
+  const [completingSprint, setCompletingSprint] = useState<SprintDto | null>(null);
 
   const handleCreateTask = (title: string, sprintId: string | null) => {
     if (!projectId) return;
@@ -520,18 +523,22 @@ export default function Backlog() {
 
   if (visibleSprints.length === 0 && backlogTasks.length === 0) {
     return (
-      <Stack sx={{ flex: 1, alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', height: '100%' }}>
-        <EmptyState
-          icon={<BacklogIcon />}
-          title="Zatím žádné sprinty"
-          description="Vytvoř první sprint a začni plánovat práci týmu. Tasky můžeš přetáhnout z backlogu do sprintu."
-          action={
-            <Button variant="contained" size="small" startIcon={<PlusIcon />}>
-              Vytvořit sprint
-            </Button>
-          }
-        />
-      </Stack>
+      <>
+        <Stack sx={{ flex: 1, alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', height: '100%' }}>
+          <EmptyState
+            icon={<BacklogIcon />}
+            title="Zatím žádné sprinty"
+            description="Vytvoř první sprint a začni plánovat práci týmu. Tasky můžeš přetáhnout z backlogu do sprintu."
+            action={
+              <Button variant="contained" size="small" startIcon={<PlusIcon />}
+                onClick={openNewSprintModal}>
+                Vytvořit sprint
+              </Button>
+            }
+          />
+        </Stack>
+        <NewSprintDialog open={newSprintModalOpen} onClose={closeNewSprintModal} projectId={projectId}/>
+      </>
     );
   }
 
@@ -571,11 +578,7 @@ export default function Backlog() {
               <Button size="small" variant="contained"
                 sx={{ bgcolor: 'text.primary', color: 'background.paper',
                   '&:hover': { bgcolor: 'text.primary', opacity: 0.9 } }}
-                disabled={updateSprint.isPending}
-                onClick={() => updateSprint.mutate(
-                  { id: sp.id, body: { state: 'COMPLETED' } },
-                  { onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" dokončen`, { variant: 'success' }) },
-                )}>
+                onClick={() => setCompletingSprint(sp)}>
                 Dokončit sprint
               </Button>
             ) : null;
@@ -720,31 +723,19 @@ export default function Backlog() {
                 isPending={createTask.isPending} onCreate={handleCreateTask}/>
             </Box>
           )}
-          <Stack direction="row" spacing={1} sx={{ p: 1.5, borderTop: 1, borderColor: 'divider',
-            alignItems: 'center' }}>
-            <TextField
-              size="small" placeholder="Název nového sprintu…" value={newSprintName}
-              onChange={e => setNewSprintName(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && newSprintName.trim() && projectId) {
-                  createSprint.mutate({ name: newSprintName.trim(), projectId },
-                    { onSuccess: () => setNewSprintName('') });
-                }
-              }}
-              sx={{ flex: 1, '& .MuiInputBase-root': { height: 30, fontSize: '14px' } }}
-            />
-            <Button size="small" variant="outlined"
-              disabled={!newSprintName.trim() || createSprint.isPending}
-              onClick={() => {
-                if (!newSprintName.trim() || !projectId) return;
-                createSprint.mutate({ name: newSprintName.trim(), projectId },
-                  { onSuccess: () => setNewSprintName('') });
-              }}>
-              Nový sprint
-            </Button>
-          </Stack>
         </Card>
       </Stack>
+
+      <NewSprintDialog open={newSprintModalOpen} onClose={closeNewSprintModal} projectId={projectId}/>
+      {completingSprint && (
+        <SprintCompletionDialog
+          open
+          onClose={() => setCompletingSprint(null)}
+          sprint={completingSprint}
+          incompleteTasks={tasks.filter(t => t.sprintId === completingSprint.id && t.status !== 'DONE')}
+          suggestedSprintName={`Sprint ${Math.max(0, ...sprints.map(s => s.number)) + 1}`}
+        />
+      )}
 
       <DragOverlay>
         {activeTask && (

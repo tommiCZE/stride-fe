@@ -4,17 +4,21 @@ interface UiStore {
   themeMode: 'light' | 'dark';
   createModalOpen: boolean;
   mobileMenuOpen: boolean;
+  newSprintModalOpen: boolean;
 
   toggleTheme: () => void;
   openCreateModal: () => void;
   closeCreateModal: () => void;
   setMobileMenu: (open: boolean) => void;
+  openNewSprintModal: () => void;
+  closeNewSprintModal: () => void;
 }
 
 export const useUiStore = create<UiStore>((set) => ({
   themeMode: 'dark',
   createModalOpen: false,
   mobileMenuOpen: false,
+  newSprintModalOpen: false,
 
   toggleTheme: () =>
     set((s) => ({ themeMode: s.themeMode === 'light' ? 'dark' : 'light' })),
@@ -23,4 +27,7 @@ export const useUiStore = create<UiStore>((set) => ({
   closeCreateModal: () => set({ createModalOpen: false }),
 
   setMobileMenu: (open) => set({ mobileMenuOpen: open }),
+
+  openNewSprintModal:  () => set({ newSprintModalOpen: true }),
+  closeNewSprintModal: () => set({ newSprintModalOpen: false }),
 }));

@@ -12,7 +12,7 @@ export default function ProjectTopbar() {
   const nestedMatch = useMatch('/projects/:projectKey/:view/*');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { openCreateModal } = useUiStore();
+  const { openCreateModal, openNewSprintModal } = useUiStore();
   const { t } = useTranslation();
 
   const { data: projects = [] } = useProjects();
@@ -51,6 +51,21 @@ export default function ProjectTopbar() {
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{project.name}</Typography>
           {!isMobile && <Typography sx={{ fontSize: '13px', color: 'text.secondary', lineHeight: 1.4 }}>{project.key} · {project.taskCount} {t('project.tasks')}</Typography>}
         </Box>
+        {view === 'backlog' && (
+          <Box
+            component="button"
+            onClick={openNewSprintModal}
+            sx={{
+              display: 'inline-flex', alignItems: 'center', gap: 0.5,
+              px: 1.25, py: 0.5, borderRadius: 1, fontSize: '14px', fontWeight: 500,
+              bgcolor: 'transparent', color: 'text.primary',
+              border: 1, borderColor: 'divider', cursor: 'pointer', flexShrink: 0,
+              '&:hover': { bgcolor: 'action.hover' },
+            }}>
+            <Box component="span" sx={{ width: 12, height: 12, display: 'inline-flex' }}><PlusIcon/></Box>
+            {isMobile ? 'Sprint' : 'Nový sprint'}
+          </Box>
+        )}
         <Box
           component="button"
           onClick={openCreateModal}
