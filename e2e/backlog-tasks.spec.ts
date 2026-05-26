@@ -10,8 +10,10 @@ async function openBacklog(page: Page): Promise<string> {
 }
 
 async function createSprintViaUI(page: Page, name: string) {
-  await page.getByPlaceholder('Název nového sprintu…').fill(name);
-  await page.getByRole('button', { name: 'Nový sprint' }).click();
+  await page.getByRole('button', { name: /Nový sprint|Vytvořit sprint/ }).first().click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Název').fill(name);
+  await dialog.getByRole('button', { name: 'Vytvořit sprint' }).click();
   await expect(page.getByText(name).first()).toBeVisible({ timeout: 10_000 });
 }
 
@@ -82,23 +84,25 @@ test.describe('Backlog — task interakce', () => {
     await expect(page.getByRole('heading', { level: 3, name: title })).toBeVisible();
   });
 
-  test('TS-321: "Nový sprint" button je disabled při prázdném jménu', async ({ page }) => {
+  test('TS-321: "Vytvořit sprint" v dialogu je disabled při prázdném jménu', async ({ page }) => {
     await openBacklog(page);
 
-    const input = page.getByPlaceholder('Název nového sprintu…');
-    const button = page.getByRole('button', { name: 'Nový sprint' });
+    await page.getByRole('button', { name: /Nový sprint|Vytvořit sprint/ }).first().click();
+    const dialog = page.getByRole('dialog');
+    const input = dialog.getByLabel('Název');
+    const submit = dialog.getByRole('button', { name: 'Vytvořit sprint' });
 
     await expect(input).toHaveValue('');
-    await expect(button).toBeDisabled();
+    await expect(submit).toBeDisabled();
 
     await input.fill('   ');
-    await expect(button).toBeDisabled();
+    await expect(submit).toBeDisabled();
 
     await input.fill('Něco');
-    await expect(button).toBeEnabled();
+    await expect(submit).toBeEnabled();
 
     await input.fill('');
-    await expect(button).toBeDisabled();
+    await expect(submit).toBeDisabled();
   });
 
   test('TS-322: drag task z backlogu do aktivního sprintu', async ({ page }) => {

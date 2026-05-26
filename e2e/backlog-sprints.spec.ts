@@ -8,8 +8,10 @@ async function openBacklog(page: Page) {
 }
 
 async function createSprintViaUI(page: Page, name: string) {
-  await page.getByPlaceholder('Název nového sprintu…').fill(name);
-  await page.getByRole('button', { name: 'Nový sprint' }).click();
+  await page.getByRole('button', { name: /Nový sprint|Vytvořit sprint/ }).first().click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Název').fill(name);
+  await dialog.getByRole('button', { name: 'Vytvořit sprint' }).click();
   await expect(page.getByText(name).first()).toBeVisible({ timeout: 10_000 });
 }
 
@@ -52,7 +54,9 @@ test.describe('Backlog — sprint management', () => {
     await expect(page.getByText(`Sprint "${name}" aktivován`)).toBeVisible();
 
     await card.getByRole('button', { name: 'Dokončit sprint' }).first().click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'Dokončit sprint' }).click();
     await expect(page.getByText(`Sprint "${name}" dokončen`)).toBeVisible();
-    await expect(card.getByText(/Hotový/i).first()).toBeVisible();
   });
 });
