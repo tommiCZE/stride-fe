@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Box, Button, Card, Stack, TextField, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, Chip, Stack, TextField, Tooltip, Typography, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
   DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
@@ -492,6 +492,68 @@ export default function Backlog() {
           const progress = Math.min(100, totalE > 0 ? (totalL / totalE) * 100 : 0);
           const daysRemaining = daysBetween(sp.endDate);
 
+          const actionButton =
+            sp.state === 'PLANNED' ? (
+              <Tooltip title={hasActiveSprint ? 'Nejdřív dokonči aktivní sprint' : ''}>
+                <span>
+                  <Button size="small" variant="contained"
+                    disabled={updateSprint.isPending || hasActiveSprint}
+                    onClick={() => updateSprint.mutate(
+                      { id: sp.id, body: { state: 'ACTIVE' } },
+                      {
+                        onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" aktivován`, { variant: 'success' }),
+                        onError: (err) => {
+                          const detail = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail;
+                          enqueueSnackbar(detail ?? 'Sprint se nepodařilo aktivovat', { variant: 'error' });
+                        },
+                      },
+                    )}>
+                    Spustit sprint
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : sp.state === 'ACTIVE' ? (
+              <Button size="small" variant="contained"
+                sx={{ bgcolor: 'text.primary', color: 'background.paper',
+                  '&:hover': { bgcolor: 'text.primary', opacity: 0.9 } }}
+                disabled={updateSprint.isPending}
+                onClick={() => updateSprint.mutate(
+                  { id: sp.id, body: { state: 'COMPLETED' } },
+                  { onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" dokončen`, { variant: 'success' }) },
+                )}>
+                Dokončit sprint
+              </Button>
+            ) : null;
+
+          if (sprintTasks.length === 0) {
+            return (
+              <Card key={sp.id} sx={{
+                borderRadius: 1.5,
+                ...(isActive && {
+                  borderColor: 'rgba(16,185,129,0.30)',
+                  boxShadow: '0 1px 2px rgba(15,23,42,0.04), 0 0 0 4px rgba(16,185,129,0.06)',
+                }),
+              }}>
+                <DroppableList id={sp.id}>
+                  <Stack direction="row" spacing={1.25} sx={{ p: 1.25, alignItems: 'center' }}>
+                    <Stack sx={{ minWidth: 0 }}>
+                      <Typography sx={{ fontSize: 14, fontWeight: 700, lineHeight: 1.3 }}>
+                        {sp.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Přetáhni tasky z backlogu
+                      </Typography>
+                    </Stack>
+                    <Box sx={{ flex: 1 }}/>
+                    <Chip label="Prázdný" size="small" variant="outlined"/>
+                    <SprintStateBadge state={sp.state} daysRemaining={daysRemaining}/>
+                    {actionButton}
+                  </Stack>
+                </DroppableList>
+              </Card>
+            );
+          }
+
           return (
             <Card key={sp.id} sx={{
               borderRadius: 1.5,
@@ -514,38 +576,7 @@ export default function Backlog() {
                   </Typography>
                   <SprintStateBadge state={sp.state} daysRemaining={daysRemaining}/>
                   <Box sx={{ flex: 1 }}/>
-                  {sp.state === 'PLANNED' && (
-                    <Tooltip title={hasActiveSprint ? 'Nejdřív dokonči aktivní sprint' : ''}>
-                      <span>
-                        <Button size="small" variant="contained"
-                          disabled={updateSprint.isPending || hasActiveSprint}
-                          onClick={() => updateSprint.mutate(
-                            { id: sp.id, body: { state: 'ACTIVE' } },
-                            {
-                              onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" aktivován`, { variant: 'success' }),
-                              onError: (err) => {
-                                const detail = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail;
-                                enqueueSnackbar(detail ?? 'Sprint se nepodařilo aktivovat', { variant: 'error' });
-                              },
-                            },
-                          )}>
-                          Spustit sprint
-                        </Button>
-                      </span>
-                    </Tooltip>
-                  )}
-                  {sp.state === 'ACTIVE' && (
-                    <Button size="small" variant="contained"
-                      sx={{ bgcolor: 'text.primary', color: 'background.paper',
-                        '&:hover': { bgcolor: 'text.primary', opacity: 0.9 } }}
-                      disabled={updateSprint.isPending}
-                      onClick={() => updateSprint.mutate(
-                        { id: sp.id, body: { state: 'COMPLETED' } },
-                        { onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" dokončen`, { variant: 'success' }) },
-                      )}>
-                      Dokončit sprint
-                    </Button>
-                  )}
+                  {actionButton}
                 </Stack>
                 <Stack direction="row" spacing={2.5} sx={{ mt: 0.6, alignItems: 'baseline', flexWrap: 'wrap', rowGap: 0.6 }}>
                   {(sp.startDate || sp.endDate) && (
