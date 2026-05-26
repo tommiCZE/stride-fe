@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Box, Button, Card, Stack, TextField, Tooltip, Typography, useTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
   closestCenter, useDroppable,
@@ -17,7 +18,7 @@ import { useProjectByKey } from '../hooks/useProjects';
 import FluxAvatar from '../components/flux-avatar';
 import TypeIcon from '../components/icons/type-icon';
 import PriorityIcon from '../components/icons/priority-icon';
-import { MonoKey, StatusBadge } from '../components/ui/ui';
+import { MonoKey } from '../components/ui/ui';
 import { CaretIcon, BacklogIcon, PlusIcon } from '../components/icons/icons';
 import EmptyState from '../components/empty-state/EmptyState';
 import QueryError from '../components/query-error/QueryError';
@@ -31,6 +32,82 @@ function GripIcon() {
       <circle cx="2.5" cy="7"   r="1.5"/><circle cx="7.5" cy="7"   r="1.5"/>
       <circle cx="2.5" cy="11.5" r="1.5"/><circle cx="7.5" cy="11.5" r="1.5"/>
     </svg>
+  );
+}
+
+function formatDateRange(start: string | null, end: string | null) {
+  const fmt = (s: string) =>
+    new Date(s).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
+  if (start && end) return `${fmt(start)} – ${fmt(end)}`;
+  return fmt(start ?? end ?? '');
+}
+
+function daysBetween(end: string | null) {
+  if (!end) return 0;
+  return Math.max(0, Math.ceil((new Date(end).getTime() - Date.now()) / 86_400_000));
+}
+
+function czechDaysPlural(n: number) {
+  if (n === 1) return 'den';
+  if (n >= 2 && n <= 4) return 'dny';
+  return 'dní';
+}
+
+function SprintStateBadge({ state, daysRemaining }: { state: string; daysRemaining: number }) {
+  if (state === 'ACTIVE') {
+    return (
+      <Box sx={{
+        display: 'inline-flex', alignItems: 'center', gap: 0.6,
+        px: 1.2, py: 0.3, borderRadius: 999,
+        bgcolor: 'rgba(16,185,129,0.10)', color: 'success.dark',
+        border: '1px solid rgba(16,185,129,0.30)',
+        fontSize: 11, fontWeight: 600, lineHeight: 1.2, whiteSpace: 'nowrap',
+      }}>
+        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }}/>
+        Aktivní · {daysRemaining} {czechDaysPlural(daysRemaining)} zbývá
+      </Box>
+    );
+  }
+  if (state === 'PLANNED') {
+    return (
+      <Box sx={{
+        display: 'inline-flex', alignItems: 'center',
+        px: 1.2, py: 0.3, borderRadius: 999,
+        bgcolor: 'background.paper', color: 'text.secondary',
+        border: 1, borderColor: 'divider',
+        fontSize: 11, fontWeight: 600, lineHeight: 1.2, whiteSpace: 'nowrap',
+      }}>
+        Plánovaný
+      </Box>
+    );
+  }
+  return (
+    <Box sx={{
+      display: 'inline-flex', alignItems: 'center', gap: 0.6,
+      px: 1.2, py: 0.3, borderRadius: 999,
+      bgcolor: 'action.hover', color: 'text.disabled',
+      fontSize: 11, fontWeight: 600, lineHeight: 1.2, whiteSpace: 'nowrap',
+    }}>
+      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'text.disabled' }}/>
+      Hotový
+    </Box>
+  );
+}
+
+function SprintMeta({ label, value, valueColor }: { label: string; value: React.ReactNode; valueColor?: string }) {
+  return (
+    <Stack direction="row" spacing={0.5} sx={{ alignItems: 'baseline' }}>
+      <Typography sx={{ fontSize: 11, color: 'text.disabled', textTransform: 'lowercase' }}>
+        {label}
+      </Typography>
+      <Typography sx={{
+        fontSize: 12, fontWeight: 600,
+        color: valueColor ?? 'text.primary',
+        fontVariantNumeric: 'tabular-nums',
+      }}>
+        {value}
+      </Typography>
+    </Stack>
   );
 }
 
@@ -200,14 +277,6 @@ export default function Backlog() {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
-  const sprintColor = (state: string) =>
-    state === 'ACTIVE'    ? theme.palette.success.main
-    : state === 'PLANNED' ? theme.palette.primary.main
-    : theme.palette.text.secondary;
-
-  const sprintLabel = (state: string) =>
-    state === 'ACTIVE' ? 'Aktivní' : state === 'PLANNED' ? 'Plánovaný' : 'Hotový';
-
   const getContainerTasks = (sprintId: string | null) =>
     sprintId === null
       ? tasks.filter(t => !t.sprintId)
@@ -317,55 +386,75 @@ export default function Backlog() {
           const sprintTasks = getContainerTasks(sp.id);
           const totalE = sprintTasks.reduce((a, t) => a + (t.estimate ?? 0), 0);
           const totalL = sprintTasks.reduce((a, t) => a + (t.logged ?? 0), 0);
+          const isActive = sp.state === 'ACTIVE';
+          const progress = Math.min(100, totalE > 0 ? (totalL / totalE) * 100 : 0);
+          const daysRemaining = daysBetween(sp.endDate);
 
           return (
-            <Card key={sp.id} sx={{ borderRadius: 1.5 }}>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-                <CaretIcon/>
-                <Box>
-                  <Typography sx={{ fontSize: '13.5px', fontWeight: 700 }}>{sp.name}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {sp.startDate && new Date(sp.startDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
-                    {sp.startDate && sp.endDate && ' – '}
-                    {sp.endDate && new Date(sp.endDate).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
-                    {' · '}{sprintTasks.length} tasků · {totalE}h plán / {totalL}h logged
+            <Card key={sp.id} sx={{
+              borderRadius: 1.5,
+              overflow: 'hidden',
+              ...(isActive && {
+                borderColor: 'rgba(16,185,129,0.30)',
+                boxShadow: '0 1px 2px rgba(15,23,42,0.04), 0 0 0 4px rgba(16,185,129,0.06)',
+              }),
+            }}>
+              {isActive && (
+                <Box sx={{
+                  height: 3,
+                  background: `linear-gradient(90deg, ${theme.palette.success.main} ${progress}%, ${alpha(theme.palette.success.main, 0.15)} ${progress}%)`,
+                }}/>
+              )}
+              <Box sx={{ p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                  <Typography sx={{ fontSize: 15, fontWeight: 700, lineHeight: 1.3 }}>
+                    {sp.name}
                   </Typography>
-                </Box>
-                <Box sx={{ flex: 1 }}/>
-                <StatusBadge badgeColor={sprintColor(sp.state)} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {sprintLabel(sp.state)}
-                </StatusBadge>
-                {sp.state === 'PLANNED' && (
-                  <Tooltip title={hasActiveSprint ? 'Nejdřív dokonči aktivní sprint' : ''}>
-                    <span>
-                      <Button size="small" variant="contained"
-                        disabled={updateSprint.isPending || hasActiveSprint}
-                        onClick={() => updateSprint.mutate(
-                          { id: sp.id, body: { state: 'ACTIVE' } },
-                          {
-                            onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" aktivován`, { variant: 'success' }),
-                            onError: (err) => {
-                              const detail = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail;
-                              enqueueSnackbar(detail ?? 'Sprint se nepodařilo aktivovat', { variant: 'error' });
+                  <SprintStateBadge state={sp.state} daysRemaining={daysRemaining}/>
+                  <Box sx={{ flex: 1 }}/>
+                  {sp.state === 'PLANNED' && (
+                    <Tooltip title={hasActiveSprint ? 'Nejdřív dokonči aktivní sprint' : ''}>
+                      <span>
+                        <Button size="small" variant="contained"
+                          disabled={updateSprint.isPending || hasActiveSprint}
+                          onClick={() => updateSprint.mutate(
+                            { id: sp.id, body: { state: 'ACTIVE' } },
+                            {
+                              onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" aktivován`, { variant: 'success' }),
+                              onError: (err) => {
+                                const detail = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail;
+                                enqueueSnackbar(detail ?? 'Sprint se nepodařilo aktivovat', { variant: 'error' });
+                              },
                             },
-                          },
-                        )}>
-                        Spustit sprint
-                      </Button>
-                    </span>
-                  </Tooltip>
-                )}
-                {sp.state === 'ACTIVE' && (
-                  <Button size="small" variant="outlined" color="inherit"
-                    disabled={updateSprint.isPending}
-                    onClick={() => updateSprint.mutate(
-                      { id: sp.id, body: { state: 'COMPLETED' } },
-                      { onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" dokončen`, { variant: 'success' }) },
-                    )}>
-                    Dokončit sprint
-                  </Button>
-                )}
-              </Stack>
+                          )}>
+                          Spustit sprint
+                        </Button>
+                      </span>
+                    </Tooltip>
+                  )}
+                  {sp.state === 'ACTIVE' && (
+                    <Button size="small" variant="contained"
+                      sx={{ bgcolor: 'text.primary', color: 'background.paper',
+                        '&:hover': { bgcolor: 'text.primary', opacity: 0.9 } }}
+                      disabled={updateSprint.isPending}
+                      onClick={() => updateSprint.mutate(
+                        { id: sp.id, body: { state: 'COMPLETED' } },
+                        { onSuccess: () => enqueueSnackbar(`Sprint "${sp.name}" dokončen`, { variant: 'success' }) },
+                      )}>
+                      Dokončit sprint
+                    </Button>
+                  )}
+                </Stack>
+                <Stack direction="row" spacing={2.5} sx={{ mt: 0.6, alignItems: 'baseline', flexWrap: 'wrap' }}>
+                  {(sp.startDate || sp.endDate) && (
+                    <SprintMeta label="datum" value={formatDateRange(sp.startDate, sp.endDate)}/>
+                  )}
+                  <SprintMeta label="tasků" value={sprintTasks.length}/>
+                  <SprintMeta label="est" value={`${totalE}h`}/>
+                  <SprintMeta label="logged" value={`${totalL}h`}
+                    valueColor={totalE > 0 && totalL >= totalE ? 'success.dark' : undefined}/>
+                </Stack>
+              </Box>
               <DroppableList id={sp.id}>
                 <SortableContext items={sprintTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                   {sprintTasks.map((t, i) => (
