@@ -235,6 +235,8 @@ export interface TaskSummaryDto {
   estimate: number | null;
   logged: number;
   dueDate: string | null;
+  updatedAt?: string;
+  needsGrooming?: boolean;
 }
 
 export interface TaskDto {

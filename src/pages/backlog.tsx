@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Box, Button, Card, Stack, TextField, Tooltip, Typography, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -24,6 +24,10 @@ import EmptyState from '../components/empty-state/EmptyState';
 import QueryError from '../components/query-error/QueryError';
 import StatusBreakdown from '../components/status-breakdown';
 import { taskLinkProps } from '../utils/task-link';
+import {
+  groupByReadiness, READINESS_META, READINESS_ORDER,
+  type Readiness,
+} from '../utils/task-readiness';
 import type { TaskSummaryDto } from '../api/types';
 
 function GripIcon() {
@@ -255,6 +259,56 @@ function QuickAddTaskRow({
   );
 }
 
+function ReadinessSectionHeader({
+  readiness, count, collapsed, onToggle,
+}: {
+  readiness: Readiness;
+  count: number;
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
+  const meta = READINESS_META[readiness];
+  const toneColor =
+    meta.tone === 'success' ? 'success.dark'
+    : meta.tone === 'warning' ? 'warning.dark'
+    : 'text.secondary';
+
+  return (
+    <Stack
+      direction="row" spacing={0.75}
+      onClick={onToggle}
+      sx={{
+        alignItems: 'center', px: 1.5, py: 0.85, cursor: 'default',
+        bgcolor: 'background.default',
+        borderBottom: 1, borderColor: 'divider',
+        userSelect: 'none',
+        '&:hover': { bgcolor: 'action.hover' },
+      }}
+    >
+      <Box sx={{
+        display: 'inline-flex',
+        transform: collapsed ? 'rotate(-90deg)' : 'none',
+        transition: 'transform 0.15s',
+        color: 'text.disabled',
+      }}>
+        <CaretIcon/>
+      </Box>
+      <Typography sx={{
+        fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em',
+        textTransform: 'uppercase', color: toneColor,
+      }}>
+        {meta.label}
+      </Typography>
+      <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
+        · {count}
+      </Typography>
+      <Typography sx={{ ml: 0.5, fontSize: 10.5, color: 'text.disabled' }}>
+        — {meta.hint}
+      </Typography>
+    </Stack>
+  );
+}
+
 function DroppableList({ id, children }: { id: string; children: React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
@@ -304,6 +358,24 @@ export default function Backlog() {
   const [localTasks, setLocalTasks] = useState<TaskSummaryDto[] | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const tasks = localTasks ?? remoteTasks;
+
+  const collapsedKey = projectId ? `stride.backlog.${projectId}.collapsed` : null;
+  const [collapsedSections, setCollapsedSections] = useState<Readiness[]>(['ICEBOX']);
+  useEffect(() => {
+    if (!collapsedKey) return;
+    try {
+      const raw = window.localStorage.getItem(collapsedKey);
+      if (raw) setCollapsedSections(JSON.parse(raw) as Readiness[]);
+    } catch { /* ignore parse errors */ }
+  }, [collapsedKey]);
+  useEffect(() => {
+    if (!collapsedKey) return;
+    try { window.localStorage.setItem(collapsedKey, JSON.stringify(collapsedSections)); }
+    catch { /* ignore quota errors */ }
+  }, [collapsedKey, collapsedSections]);
+  const toggleSection = (r: Readiness) => {
+    setCollapsedSections(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]);
+  };
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -510,20 +582,43 @@ export default function Backlog() {
 
         <Card sx={{ borderRadius: 1.5 }}>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center', p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-            <CaretIcon/>
             <Typography sx={{ fontSize: '13.5px', fontWeight: 700 }}>Backlog</Typography>
-            <Typography variant="caption" color="text.secondary">· {getContainerTasks(null).length} tasků</Typography>
+            <Typography variant="caption" color="text.secondary">· {backlogTasks.length} tasků</Typography>
           </Stack>
-          <DroppableList id="backlog">
-            <SortableContext items={getContainerTasks(null).map(t => t.id)} strategy={verticalListSortingStrategy}>
-              {getContainerTasks(null).map((t, i, arr) => (
-                <SortableRow key={t.id} task={t} onOpen={openTask}
-                  isLast={i === arr.length - 1}/>
-              ))}
-            </SortableContext>
-          </DroppableList>
+          {(() => {
+            const grouped = groupByReadiness(backlogTasks);
+            const visibleSections = READINESS_ORDER.filter(r => grouped[r].length > 0);
+            const displayedTasks: TaskSummaryDto[] = [];
+            for (const r of visibleSections) {
+              if (!collapsedSections.includes(r)) displayedTasks.push(...grouped[r]);
+            }
+            return (
+              <DroppableList id="backlog">
+                <SortableContext items={displayedTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                  {visibleSections.map(r => {
+                    const list = grouped[r];
+                    const collapsed = collapsedSections.includes(r);
+                    return (
+                      <Fragment key={r}>
+                        <ReadinessSectionHeader
+                          readiness={r}
+                          count={list.length}
+                          collapsed={collapsed}
+                          onToggle={() => toggleSection(r)}
+                        />
+                        {!collapsed && list.map((t, i) => (
+                          <SortableRow key={t.id} task={t} onOpen={openTask}
+                            isLast={i === list.length - 1}/>
+                        ))}
+                      </Fragment>
+                    );
+                  })}
+                </SortableContext>
+              </DroppableList>
+            );
+          })()}
           {projectId && (
-            <Box sx={{ borderTop: getContainerTasks(null).length > 0 ? 1 : 0, borderColor: 'divider' }}>
+            <Box sx={{ borderTop: backlogTasks.length > 0 ? 1 : 0, borderColor: 'divider' }}>
               <QuickAddTaskRow projectId={projectId} sprintId={null}
                 isPending={createTask.isPending} onCreate={handleCreateTask}/>
             </Box>
