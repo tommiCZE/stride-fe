@@ -25,9 +25,14 @@ import QueryError from '../components/query-error/QueryError';
 import StatusBreakdown from '../components/status-breakdown';
 import { taskLinkProps } from '../utils/task-link';
 import {
-  groupByReadiness, READINESS_META, READINESS_ORDER,
-  type Readiness,
-} from '../utils/task-readiness';
+  applyFilter, applySort,
+  type QuickChip, type SortBy,
+} from '../utils/backlog-filter';
+import {
+  groupTasks, type GroupBy, type GroupSection,
+} from '../utils/backlog-group';
+import BacklogToolbar from '../components/backlog-toolbar';
+import { useAuthStore } from '../store/auth-store';
 import type { TaskSummaryDto } from '../api/types';
 
 function GripIcon() {
@@ -259,52 +264,60 @@ function QuickAddTaskRow({
   );
 }
 
-function ReadinessSectionHeader({
-  readiness, count, collapsed, onToggle,
+const GROUP_TONE_COLOR: Record<string, string> = {
+  success: 'success.dark',
+  warning: 'warning.dark',
+  info:    'info.dark',
+  danger:  'error.dark',
+  neutral: 'text.secondary',
+};
+
+function GroupSectionHeader({
+  section, collapsed, onToggle, collapsible = true,
 }: {
-  readiness: Readiness;
-  count: number;
+  section: GroupSection;
   collapsed: boolean;
   onToggle: () => void;
+  collapsible?: boolean;
 }) {
-  const meta = READINESS_META[readiness];
-  const toneColor =
-    meta.tone === 'success' ? 'success.dark'
-    : meta.tone === 'warning' ? 'warning.dark'
-    : 'text.secondary';
-
+  const toneColor = section.tone ? GROUP_TONE_COLOR[section.tone] : 'text.secondary';
   return (
     <Stack
       direction="row" spacing={0.75}
-      onClick={onToggle}
+      onClick={collapsible ? onToggle : undefined}
       sx={{
-        alignItems: 'center', px: 1.5, py: 0.85, cursor: 'default',
+        alignItems: 'center', px: 1.5, py: 0.85,
+        cursor: collapsible ? 'default' : 'auto',
         bgcolor: 'background.default',
         borderBottom: 1, borderColor: 'divider',
         userSelect: 'none',
-        '&:hover': { bgcolor: 'action.hover' },
+        ...(collapsible && { '&:hover': { bgcolor: 'action.hover' } }),
       }}
     >
-      <Box sx={{
-        display: 'inline-flex',
-        transform: collapsed ? 'rotate(-90deg)' : 'none',
-        transition: 'transform 0.15s',
-        color: 'text.disabled',
-      }}>
-        <CaretIcon/>
-      </Box>
+      {collapsible && (
+        <Box sx={{
+          display: 'inline-flex',
+          transform: collapsed ? 'rotate(-90deg)' : 'none',
+          transition: 'transform 0.15s',
+          color: 'text.disabled',
+        }}>
+          <CaretIcon/>
+        </Box>
+      )}
       <Typography sx={{
         fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em',
         textTransform: 'uppercase', color: toneColor,
       }}>
-        {meta.label}
+        {section.label}
       </Typography>
       <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: 'text.disabled', fontVariantNumeric: 'tabular-nums' }}>
-        · {count}
+        · {section.tasks.length}
       </Typography>
-      <Typography sx={{ ml: 0.5, fontSize: 10.5, color: 'text.disabled' }}>
-        — {meta.hint}
-      </Typography>
+      {section.hint && (
+        <Typography sx={{ ml: 0.5, fontSize: 10.5, color: 'text.disabled' }}>
+          — {section.hint}
+        </Typography>
+      )}
     </Stack>
   );
 }
@@ -319,14 +332,42 @@ function DroppableList({ id, children }: { id: string; children: React.ReactNode
   );
 }
 
+const QUICK_CHIP_IDS = ['all', 'mine', 'bugs', 'no-estimate', 'overdue'] as const;
+const GROUP_IDS = ['readiness', 'priority', 'status', 'none'] as const;
+const SORT_IDS = ['manual', 'priority', 'updated', 'created', 'estimate'] as const;
+const isQuickChip = (v: string | null): v is QuickChip => !!v && (QUICK_CHIP_IDS as readonly string[]).includes(v);
+const isGroupBy = (v: string | null): v is GroupBy => !!v && (GROUP_IDS as readonly string[]).includes(v);
+const isSortBy = (v: string | null): v is SortBy => !!v && (SORT_IDS as readonly string[]).includes(v);
+
 export default function Backlog() {
   const { projectKey } = useParams<{ projectKey: string }>();
   const { data: project } = useProjectByKey(projectKey);
   const projectId = project?.id;
-  const [, setSearchParams] = useSearchParams();
-  const openTask = (key: string) => setSearchParams({ task: key });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openTask = (key: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('task', key);
+    setSearchParams(next);
+  };
   const theme = useTheme();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const currentUserId = useAuthStore(s => s.userId);
+
+  const quickChip: QuickChip = isQuickChip(searchParams.get('filter')) ? (searchParams.get('filter') as QuickChip) : 'all';
+  const groupBy: GroupBy   = isGroupBy(searchParams.get('group')) ? (searchParams.get('group') as GroupBy) : 'readiness';
+  const sortBy: SortBy     = isSortBy(searchParams.get('sort')) ? (searchParams.get('sort') as SortBy) : 'priority';
+  const search = searchParams.get('q') ?? '';
+
+  const updateParam = (key: string, value: string | null, defaultValue: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (!value || value === defaultValue) next.delete(key);
+    else next.set(key, value);
+    setSearchParams(next, { replace: true });
+  };
+  const setQuickChip = (v: QuickChip) => updateParam('filter', v, 'all');
+  const setGroupBy   = (v: GroupBy)   => updateParam('group',  v, 'readiness');
+  const setSortBy    = (v: SortBy)    => updateParam('sort',   v, 'priority');
+  const setSearch    = (v: string)    => updateParam('q',      v, '');
 
   const {
     data: remoteTasks = [],
@@ -360,12 +401,12 @@ export default function Backlog() {
   const tasks = localTasks ?? remoteTasks;
 
   const collapsedKey = projectId ? `stride.backlog.${projectId}.collapsed` : null;
-  const [collapsedSections, setCollapsedSections] = useState<Readiness[]>(['ICEBOX']);
+  const [collapsedSections, setCollapsedSections] = useState<string[]>(['ICEBOX']);
   useEffect(() => {
     if (!collapsedKey) return;
     try {
       const raw = window.localStorage.getItem(collapsedKey);
-      if (raw) setCollapsedSections(JSON.parse(raw) as Readiness[]);
+      if (raw) setCollapsedSections(JSON.parse(raw) as string[]);
     } catch { /* ignore parse errors */ }
   }, [collapsedKey]);
   useEffect(() => {
@@ -373,8 +414,8 @@ export default function Backlog() {
     try { window.localStorage.setItem(collapsedKey, JSON.stringify(collapsedSections)); }
     catch { /* ignore quota errors */ }
   }, [collapsedKey, collapsedSections]);
-  const toggleSection = (r: Readiness) => {
-    setCollapsedSections(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]);
+  const toggleSection = (key: string) => {
+    setCollapsedSections(prev => prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key]);
   };
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
@@ -429,6 +470,19 @@ export default function Backlog() {
         if (from === -1 || to === -1) return arr;
         return [...rest, ...arrayMove(bucket, from, to)];
       });
+      if (activeTask.sprintId === null && sortBy !== 'manual') {
+        const previousSort = sortBy;
+        setSortBy('manual');
+        enqueueSnackbar('Pořadí backlogu uloženo. Sort přepnut na Manual.', {
+          variant: 'info',
+          action: (key) => (
+            <Button color="inherit" size="small"
+              onClick={() => { setSortBy(previousSort); closeSnackbar(key); }}>
+              Undo
+            </Button>
+          ),
+        });
+      }
       return;
     }
 
@@ -446,6 +500,7 @@ export default function Backlog() {
 
   const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
   const backlogTasks = getContainerTasks(null);
+  const backlogTotalEstimate = backlogTasks.reduce((a, t) => a + (t.estimate ?? 0), 0);
   const visibleSprints = sprints.filter(s => s.state !== 'COMPLETED');
   const hasActiveSprint = sprints.some(s => s.state === 'ACTIVE');
 
@@ -612,34 +667,45 @@ export default function Backlog() {
         })}
 
         <Card sx={{ borderRadius: 1.5 }}>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', p: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-            <Typography sx={{ fontSize: '13.5px', fontWeight: 700 }}>Backlog</Typography>
-            <Typography variant="caption" color="text.secondary">· {backlogTasks.length} tasků</Typography>
-          </Stack>
+          <BacklogToolbar
+            count={backlogTasks.length}
+            totalEstimate={backlogTotalEstimate}
+            search={search}
+            onSearchChange={setSearch}
+            quickChip={quickChip}
+            onQuickChipChange={setQuickChip}
+            groupBy={groupBy}
+            onGroupByChange={setGroupBy}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
+          />
           {(() => {
-            const grouped = groupByReadiness(backlogTasks);
-            const visibleSections = READINESS_ORDER.filter(r => grouped[r].length > 0);
+            const filtered = applyFilter(backlogTasks, quickChip, currentUserId, search);
+            const sorted = applySort(filtered, sortBy);
+            const sections = groupTasks(sorted, groupBy);
+            const isCollapsed = (s: GroupSection) =>
+              s.collapsible && collapsedSections.includes(s.key);
             const displayedTasks: TaskSummaryDto[] = [];
-            for (const r of visibleSections) {
-              if (!collapsedSections.includes(r)) displayedTasks.push(...grouped[r]);
-            }
+            for (const s of sections) if (!isCollapsed(s)) displayedTasks.push(...s.tasks);
             return (
               <DroppableList id="backlog">
                 <SortableContext items={displayedTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                  {visibleSections.map(r => {
-                    const list = grouped[r];
-                    const collapsed = collapsedSections.includes(r);
+                  {sections.map(s => {
+                    const collapsed = isCollapsed(s);
+                    const showHeader = s.label.length > 0;
                     return (
-                      <Fragment key={r}>
-                        <ReadinessSectionHeader
-                          readiness={r}
-                          count={list.length}
-                          collapsed={collapsed}
-                          onToggle={() => toggleSection(r)}
-                        />
-                        {!collapsed && list.map((t, i) => (
+                      <Fragment key={s.key}>
+                        {showHeader && (
+                          <GroupSectionHeader
+                            section={s}
+                            collapsed={collapsed}
+                            collapsible={s.collapsible}
+                            onToggle={() => toggleSection(s.key)}
+                          />
+                        )}
+                        {!collapsed && s.tasks.map((t, i) => (
                           <SortableRow key={t.id} task={t} onOpen={openTask}
-                            isLast={i === list.length - 1}/>
+                            isLast={i === s.tasks.length - 1}/>
                         ))}
                       </Fragment>
                     );
