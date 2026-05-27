@@ -9,8 +9,11 @@ import {
   type PatchFn,
 } from '../fields/field-editors';
 import { DevSidebarWidget } from '../dev/dev-sidebar-widget';
+import { ReviewerAvatar } from '../dev/reviewer-avatar';
+import { useDevActivity } from '../../../hooks/useDevActivity';
 import { useWatchers } from '../../../hooks/useWatchers';
 import type { TaskDto } from '../../../api/types';
+import type { DevReviewer } from '../../../types/dev-activity';
 
 interface Props {
   task: TaskDto;
@@ -21,6 +24,18 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
   const { data: watchers = [] } = useWatchers(task.id);
   const visibleWatchers = watchers.slice(0, 4);
   const extraWatchers = watchers.length - visibleWatchers.length;
+
+  const dev = useDevActivity(task.key);
+  const reviewers: DevReviewer[] = [];
+  const seen = new Set<string>();
+  for (const b of dev.branches) {
+    if (!b.mr) continue;
+    for (const r of b.mr.reviewers) {
+      if (seen.has(r.user.id)) continue;
+      seen.add(r.user.id);
+      reviewers.push(r);
+    }
+  }
 
   return (
     <Stack spacing={1.25} sx={{ borderLeft: { xs: 0, md: 1 }, borderTop: { xs: 1, md: 0 }, borderColor: 'divider',
@@ -53,6 +68,13 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
           <Typography sx={{ fontSize: '13px', color: 'text.disabled' }}>Nikdo</Typography>
         )}
       </FieldRow>
+      {reviewers.length > 0 && (
+        <FieldRow label="Reviewers">
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+            {reviewers.map(r => <ReviewerAvatar key={r.user.id} reviewer={r} size={20}/>)}
+          </Stack>
+        </FieldRow>
+      )}
 
       <Divider sx={{ my: 1 }}/>
       <SectionLabel>Plánování</SectionLabel>
