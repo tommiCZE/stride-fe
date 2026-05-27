@@ -4,7 +4,9 @@ import { alpha } from '@mui/material/styles';
 import { useSnackbar } from 'notistack';
 import FluxAvatar from '../../../components/flux-avatar';
 import FilterChip from '../../../components/ui/filter-chip';
-import { AttachIcon, BranchIcon, CheckIcon, CloseIcon } from '../../../components/icons/icons';
+import { AttachIcon, CheckIcon, CloseIcon } from '../../../components/icons/icons';
+import { BranchCommitsCard } from '../dev/branch-commits-card';
+import { MrCard } from '../dev/mr-card';
 import { useComments, useCreateComment } from '../../../hooks/useComments';
 import { useActivity } from '../../../hooks/useActivity';
 import { useAttachments, useUploadAttachment } from '../../../hooks/useAttachments';
@@ -198,76 +200,19 @@ function BranchEventItem({ branch, at }: { branch: DevBranch; at: string }) {
 
 function PushEventItem({ branch, commits, at }: { branch: DevBranch; commits: DevCommit[]; at: string }) {
   const author = commits[0]?.author ?? branch.createdBy;
+  const verb = commits.length === 1 ? 'commit' : commits.length < 5 ? 'commity' : 'commitů';
   return (
     <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
       <FluxAvatar user={author} size={20}/>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <DevHeaderLine user={author} at={at}>
-          pushnul {commits.length} {commits.length === 1 ? 'commit' : commits.length < 5 ? 'commity' : 'commitů'} do <Mono>{branch.name}</Mono>
-        </DevHeaderLine>
-        <Box sx={theme => ({
-          mt: 0.5, border: 1, borderColor: 'divider', borderRadius: 1.25,
-          bgcolor: alpha(theme.palette.info.main, 0.04),
-        })}>
-          <Stack direction="row" spacing={0.75} sx={{
-            alignItems: 'center', px: 1.25, py: 0.75,
-            borderBottom: 1, borderColor: 'divider',
-          }}>
-            <BranchIcon/>
-            <Mono>{branch.name}</Mono>
-          </Stack>
-          <Stack>
-            {commits.map(c => (
-              <Stack key={c.sha} direction="row" spacing={1.25} sx={{ alignItems: 'baseline', px: 1.5, py: 0.6 }}>
-                <Mono>{c.sha}</Mono>
-                <Typography sx={{ fontSize: '13px', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {c.message}
-                </Typography>
-                <Typography sx={{ fontSize: '12px', color: 'text.disabled', flexShrink: 0 }}>
-                  {c.author.initials}
-                </Typography>
-              </Stack>
-            ))}
-          </Stack>
+        <Box sx={{ mb: 0.5 }}>
+          <DevHeaderLine user={author} at={at}>
+            pushnul {commits.length} {verb} do <Mono>{branch.name}</Mono>
+          </DevHeaderLine>
         </Box>
+        <BranchCommitsCard branch={branch} collapseCommits={false}/>
       </Box>
     </Stack>
-  );
-}
-
-function MrCard({ mr, label }: { mr: DevMergeRequest; label: string }) {
-  return (
-    <Box sx={theme => ({
-      mt: 0.5, border: 1, borderColor: 'divider', borderRadius: 1.25,
-      bgcolor: alpha(theme.palette.warning.main, 0.04), p: 1.25,
-    })}>
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.5 }}>
-        <Box component="span" sx={{
-          fontFamily: 'ui-monospace, monospace', fontSize: '13px', fontWeight: 700, color: 'info.main',
-        }}>!{mr.id}</Box>
-        <Box sx={{
-          display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.15,
-          borderRadius: 1, fontSize: '12px', fontWeight: 600,
-          color: 'success.main', bgcolor: 'success.main' + '22', border: 1, borderColor: 'success.main' + '55',
-        }}>{label}</Box>
-        <Box sx={{ flex: 1 }}/>
-        <Typography sx={{ fontSize: '12px', color: 'text.disabled' }}>→ {mr.base}</Typography>
-      </Stack>
-      <Box
-        component="a"
-        href={mr.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        sx={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: 'text.primary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
-      >
-        {mr.title}
-      </Box>
-      <Typography sx={{ fontSize: '12px', color: 'text.secondary', mt: 0.25 }}>
-        <Box component="span" sx={{ color: 'success.main', fontWeight: 600 }}>+{mr.plus}</Box>{' '}
-        <Box component="span" sx={{ color: 'error.main', fontWeight: 600 }}>−{mr.minus}</Box>{' '}
-        · {mr.files} {mr.files === 1 ? 'soubor' : mr.files < 5 ? 'soubory' : 'souborů'}
-      </Typography>
-    </Box>
   );
 }
 
@@ -279,7 +224,7 @@ function MrOpenEventItem({ mr, at }: { mr: DevMergeRequest; at: string }) {
         <DevHeaderLine user={mr.openedBy} at={at}>
           otevřel MR <Mono>!{mr.id}</Mono>
         </DevHeaderLine>
-        <MrCard mr={mr} label="Open"/>
+        <MrCard mr={mr}/>
       </Box>
     </Stack>
   );
@@ -293,7 +238,7 @@ function MrMergeEventItem({ mr, at }: { mr: DevMergeRequest; at: string }) {
         <DevHeaderLine user={mr.openedBy} at={at}>
           smergoval MR <Mono>!{mr.id}</Mono> do <Mono>{mr.base}</Mono>
         </DevHeaderLine>
-        <MrCard mr={mr} label="Merged"/>
+        <MrCard mr={mr}/>
       </Box>
     </Stack>
   );
@@ -302,17 +247,14 @@ function MrMergeEventItem({ mr, at }: { mr: DevMergeRequest; at: string }) {
 function CiEventItem({ build, at }: { build: DevBuild; at: string }) {
   const failed = build.state === 'failed';
   const running = build.state === 'running';
-  const tone = failed ? 'error.main' : running ? 'warning.main' : 'success.main';
-  const label = failed
-    ? `${build.passed}/${build.total} checks${build.failedJob ? ` · ${build.failedJob}` : ''}`
-    : running
-      ? `běží · ${build.passed}/${build.total}`
-      : `${build.passed}/${build.total} checks prošlo`;
+  const toneKey = failed ? 'error' : running ? 'warning' : 'success';
   return (
     <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
       <Box sx={theme => ({
-        width: 20, height: 20, borderRadius: '50%', bgcolor: alpha(theme.palette.action.hover, 1),
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: tone, flexShrink: 0,
+        width: 20, height: 20, borderRadius: '50%',
+        bgcolor: theme.palette.action.hover,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        color: theme.palette[toneKey].main, flexShrink: 0,
       })}>
         {failed ? <CloseIcon/> : <CheckIcon/>}
       </Box>
@@ -326,13 +268,40 @@ function CiEventItem({ build, at }: { build: DevBuild; at: string }) {
           </Tooltip>
         </Typography>
         <Box sx={theme => ({
-          display: 'inline-block', mt: 0.5, px: 1, py: 0.4,
-          border: 1, borderColor: alpha(theme.palette[failed ? 'error' : running ? 'warning' : 'success'].main, 0.4),
-          bgcolor: alpha(theme.palette[failed ? 'error' : running ? 'warning' : 'success'].main, 0.08),
-          color: tone, fontSize: '12px', fontWeight: 600, borderRadius: 1,
+          mt: 0.5, px: 1.25, py: 0.85, borderRadius: 1.25,
+          border: 1, borderColor: 'divider', borderLeft: 3,
+          borderLeftColor: theme.palette[toneKey].main,
+          bgcolor: alpha(theme.palette[toneKey].main, 0.04),
         })}>
-          {failed ? '⚠ ' : running ? '⋯ ' : '✓ '}{label}
-          {build.duration && <Box component="span" sx={{ color: 'text.disabled', ml: 1 }}>{build.duration}</Box>}
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <Typography sx={theme => ({
+              fontSize: '13px', fontWeight: 600, color: theme.palette[toneKey].main,
+            })}>
+              {build.passed}/{build.total} checks
+            </Typography>
+            {failed && build.failedJob && (
+              <Typography sx={{ fontSize: '12px', color: 'text.secondary' }}>
+                · <Mono>{build.failedJob}</Mono>
+              </Typography>
+            )}
+            <Box sx={{ flex: 1 }}/>
+            <Typography sx={{ fontSize: '12px', color: 'text.disabled' }}>{build.duration}</Typography>
+          </Stack>
+          {failed && (
+            <Box sx={{ mt: 0.5 }}>
+              <Box
+                component="a"
+                href="#"
+                onClick={(e: React.MouseEvent) => e.preventDefault()}
+                sx={{
+                  fontSize: '12px', color: 'primary.main', textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
+                Zobrazit log →
+              </Box>
+            </Box>
+          )}
         </Box>
       </Box>
     </Stack>
@@ -533,7 +502,7 @@ export function ActivityStream({ taskId, taskKey }: Props) {
       {isLoading && <CircularProgress size={16}/>}
 
       <Stack spacing={1.75}>
-        {filtered.length === 0 && !isLoading && (
+        {filtered.length === 0 && !isLoading && stream.length > 0 && (
           <Typography variant="body2" color="text.disabled" sx={{ py: 2, textAlign: 'center' }}>
             Žádná aktivita pro tento filtr
           </Typography>
