@@ -113,7 +113,7 @@ export default function CreateReleaseDrawer({ open, onClose, projectId, projectK
         component="form"
         onSubmit={onSubmit}
         onKeyDown={onKeyDown}
-        sx={{ width: 360, height: '100%' }}
+        sx={{ width: { xs: '100vw', sm: 460 }, height: '100%' }}
       >
         <Stack direction="row" spacing={1.5} sx={{
           alignItems: 'center',
