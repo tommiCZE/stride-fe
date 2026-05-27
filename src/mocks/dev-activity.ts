@@ -35,6 +35,9 @@ const MOCK: Record<string, TaskDevActivity> = {
         createdAt: '2026-05-25T09:12:00Z',
         createdBy: USERS.tv,
         commits: [
+          { sha: '2b9d100', message: 'WIP: trace redirect chain', at: '2026-05-25T09:30:00Z', author: USERS.tv },
+          { sha: '5a3c712', message: 'guard against missing redirect_uri', at: '2026-05-25T09:55:00Z', author: USERS.tv },
+          { sha: 'e08f9a4', message: 'extract redirectAllowlist helper', at: '2026-05-25T10:18:00Z', author: USERS.tv },
           { sha: 'd4f01a2', message: 'strip query from target URL', at: '2026-05-25T10:48:00Z', author: USERS.tv },
           { sha: '7c83b12', message: 'cover OAuth callback edge case', at: '2026-05-25T13:20:00Z', author: USERS.tv },
           { sha: 'a1f24e9', message: 'validate redirect_uri against allowlist', at: '2026-05-25T15:02:00Z', author: USERS.tv },

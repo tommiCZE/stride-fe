@@ -8,6 +8,7 @@ import {
   FixVersionEditor, EstimateProgressCard,
   type PatchFn,
 } from '../fields/field-editors';
+import { DevSidebarWidget } from '../dev/dev-sidebar-widget';
 import { useWatchers } from '../../../hooks/useWatchers';
 import type { TaskDto } from '../../../api/types';
 
@@ -82,6 +83,14 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
       <FieldRow label="Priorita">
         <PriorityEditor task={task} onPatch={onPatch}/>
       </FieldRow>
+
+      <Divider sx={{ my: 1 }}/>
+      <DevSidebarWidget
+        taskId={task.id}
+        taskKey={task.key}
+        taskTitle={task.title}
+        projectId={task.projectId}
+      />
 
       {task.createdAt && (
         <>
