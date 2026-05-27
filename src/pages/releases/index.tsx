@@ -230,7 +230,7 @@ export default function ReleasesPage() {
   };
 
   return (
-    <Box sx={{ flex: 1, overflowY: 'auto', bgcolor: 'background.default' }}>
+    <Box sx={{ height: '100%', overflowY: 'auto', bgcolor: 'background.default' }}>
       <Stack direction="row" spacing={1.5} sx={{
         position: 'sticky', top: 0, zIndex: 2,
         px: { xs: 2, md: 4 }, pt: 2.5, pb: 2,

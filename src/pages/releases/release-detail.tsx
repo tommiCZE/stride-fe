@@ -131,7 +131,7 @@ export default function ReleaseDetailPage() {
   };
 
   return (
-    <Box sx={{ flex: 1, overflowY: 'auto', bgcolor: 'background.default' }}>
+    <Box sx={{ height: '100%', overflowY: 'auto', bgcolor: 'background.default' }}>
       <ReleaseHero
         release={release}
         projectKey={project.key}
