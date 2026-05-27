@@ -29,12 +29,10 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE,
-        ...(process.env.CI
-          ? { viewport: { width: 1920, height: 1080 } }
-          : { viewport: null, deviceScaleFactor: undefined }),
-        launchOptions: {
-          args: process.env.CI ? [] : ['--start-maximized'],
-        },
+        // Fixed desktop viewport. Locally `viewport: null` + `--start-maximized` left
+        // headless Chromium sub-md, which collapsed the sidebar into a Drawer and
+        // switched "Nový task" → "Task" — both broke a chunk of the suite.
+        viewport: process.env.CI ? { width: 1920, height: 1080 } : { width: 1440, height: 900 },
       },
       dependencies: ['setup'],
     },

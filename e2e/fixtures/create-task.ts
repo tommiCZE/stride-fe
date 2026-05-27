@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { openFirstProject } from './nav';
 
 export type TaskType = 'STORY' | 'TASK' | 'BUG' | 'EPIC';
 
@@ -25,9 +26,7 @@ export async function createTaskViaUI(
 ): Promise<CreatedTask> {
   const title = `${opts.titlePrefix} ${Date.now()}`;
 
-  await page.goto('/');
-  await page.getByRole('button', { name: /aktivních úkolů$/ }).first().click();
-  await expect(page).toHaveURL(/\/projects\/[^/]+\/board/);
+  await openFirstProject(page);
 
   await page.getByRole('button', { name: /Nový task|New Task/ }).click();
 

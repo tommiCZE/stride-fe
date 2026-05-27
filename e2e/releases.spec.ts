@@ -1,23 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
+import { openFirstProject } from './fixtures/nav';
 
-// Navigate via the dashboard "Projekty" card, which is visible regardless of sidebar state.
-// (The shared openFirstProject fixture depends on the sidebar being mounted, which doesn't
-// hold at the default Playwright viewport — would break the whole spec.)
 async function openReleases(page: Page): Promise<string> {
-  await page.goto('/');
-  // Dashboard project tiles render "<KEY> · <Lead>" as a paragraph; clicking the tile
-  // navigates to /projects/<key>/board. Click on the text bubbles up to the tile's onClick.
-  await page.locator('text=/^[A-Z]+ · /').first().click();
-  await expect(page).toHaveURL(/\/projects\/[^/]+\/board/);
-  const match = page.url().match(/\/projects\/([^/]+)\//);
-  if (!match) throw new Error('Project key not found in URL after dashboard click');
-  const projectKey = match[1];
-
+  const projectKey = await openFirstProject(page);
   await page.goto(`/projects/${projectKey}/releases`);
   await expect(page).toHaveURL(/\/releases$/);
   // "Releases" header is a plain Typography (renders as <p>, not a heading), and
-  // "Nová verze" appears both as a list-header button and the empty-state CTA — so we
-  // use the toolbar button to confirm the page mounted.
+  // "Nová verze" appears both as toolbar button and the empty-state CTA — use the
+  // toolbar button to confirm the page mounted.
   await expect(page.getByRole('button', { name: 'Nová verze' }).first()).toBeVisible();
   return projectKey;
 }
@@ -30,9 +20,13 @@ async function createReleaseViaDrawer(page: Page): Promise<{ name: string; id: s
   const submit = page.getByRole('button', { name: 'Vytvořit verzi' });
   await expect(submit).toBeVisible();
 
-  // First textbox in the drawer is the name field (the goal textarea also has role=textbox,
-  // but renders later). DatePickers expose role=spinbutton, not textbox, so they don't interfere.
-  const nameInput = page.locator('input[type="text"]').first();
+  // The Stack inside the drawer renders as <form> (component="form"), so we scope to it.
+  // First text input inside that form is the name field; DatePickers expose role=spinbutton,
+  // not textbox, so they don't interfere. Scoping avoids grabbing the header search input,
+  // which sits ahead of the drawer in document order at desktop viewports.
+  const nameInput = page.locator('form').filter({
+    has: page.getByRole('button', { name: 'Vytvořit verzi' }),
+  }).locator('input[type="text"]').first();
   const uniqueName = `v9.${Date.now() % 1_000_000}.0`;
   await nameInput.fill(uniqueName);
 

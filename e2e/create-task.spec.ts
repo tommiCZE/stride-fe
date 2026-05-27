@@ -1,10 +1,9 @@
 import { expect, test } from '@playwright/test';
+import { openFirstProject } from './fixtures/nav';
 
 test.describe('Vytvoření tasku — happy path', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: /aktivních úkolů$/ }).first().click();
-    await expect(page).toHaveURL(/\/projects\/[^/]+\/board/);
+    await openFirstProject(page);
   });
 
   test('TS-001: minimální task přes tlačítko Vytvořit', async ({ page }) => {
