@@ -113,7 +113,12 @@ export default function CreateReleaseDrawer({ open, onClose, projectId, projectK
         component="form"
         onSubmit={onSubmit}
         onKeyDown={onKeyDown}
-        sx={{ width: { xs: '100vw', sm: 460 }, height: '100%' }}
+        sx={{
+          width: { xs: '100vw', sm: 'auto' },
+          minWidth: { sm: 520 },
+          maxWidth: { sm: '90vw' },
+          height: '100%',
+        }}
       >
         <Stack direction="row" spacing={1.5} sx={{
           alignItems: 'center',
@@ -125,7 +130,7 @@ export default function CreateReleaseDrawer({ open, onClose, projectId, projectK
           </IconButton>
         </Stack>
 
-        <Stack spacing={2.5} sx={{ flex: 1, overflowY: 'auto', px: 2.5, py: 2.5 }}>
+        <Stack spacing={2.5} sx={{ flex: 1, px: 2.5, py: 2.5 }}>
           <Box>
             <Typography variant="label" sx={{ mb: 0.5, display: 'block' }}>Název</Typography>
             <Controller
