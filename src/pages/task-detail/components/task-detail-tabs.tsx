@@ -1,24 +1,21 @@
 import { Box, Stack } from '@mui/material';
-import { DevPanel } from '../panels/dev-panel';
-import { Attachments } from '../panels/attachments';
 import { ActivityStream } from '../panels/activity-stream';
+import { WorklogPanel } from '../panels/worklog-panel';
 import type { TaskDto } from '../../../api/types';
 
-export type TaskDetailTab = 'activity' | 'attachments' | 'dev';
+export type TaskDetailTab = 'activity' | 'worklog';
 type TabKey = TaskDetailTab;
 
 interface Props {
   task: TaskDto;
   tab: TabKey;
-  devCount: number;
   onChange: (tab: TabKey) => void;
 }
 
-export default function TaskDetailTabs({ task, tab, devCount, onChange }: Props) {
+export default function TaskDetailTabs({ task, tab, onChange }: Props) {
   const tabs: [TabKey, string][] = [
-    ['activity',    `Aktivita · ${task.commentCount}`],
-    ['attachments', 'Přílohy'],
-    ['dev',         devCount > 0 ? `Vývoj · ${devCount}` : 'Vývoj'],
+    ['activity', `Aktivita · ${task.commentCount}`],
+    ['worklog',  `Worklog · ${task.logged.toFixed(1)}h`],
   ];
 
   return (
@@ -32,9 +29,8 @@ export default function TaskDetailTabs({ task, tab, devCount, onChange }: Props)
         ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
-        {tab === 'activity'    && <ActivityStream taskId={task.id}/>}
-        {tab === 'attachments' && <Attachments    taskId={task.id}/>}
-        {tab === 'dev'         && <DevPanel       taskId={task.id} taskKey={task.key} taskTitle={task.title} projectId={task.projectId}/>}
+        {tab === 'activity' && <ActivityStream taskId={task.id} taskKey={task.key}/>}
+        {tab === 'worklog'  && <WorklogPanel   taskId={task.id}/>}
       </Box>
     </>
   );

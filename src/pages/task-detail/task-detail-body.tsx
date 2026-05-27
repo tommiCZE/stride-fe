@@ -10,7 +10,6 @@ import Subtasks from './panels/subtasks';
 import { PRIORITIES } from '../../constants/priorities';
 import { BOARD_STATUSES } from '../../constants/statuses';
 import { attachmentsApi } from '../../api/attachments';
-import { useTaskRemoteLinks } from '../../hooks/useTaskRemoteLinks';
 import type { TaskDto, ProjectDto, UpdateTaskRequest } from '../../api/types';
 import type { JSONContent } from '@tiptap/core';
 
@@ -24,8 +23,6 @@ interface Props {
 
 export default function TaskDetailBody({ task, proj, tab, onTabChange, onPatch }: Props) {
   const prio = PRIORITIES.find(p => p.id === task.priority);
-  const { data: remoteLinks = [] } = useTaskRemoteLinks(task.id);
-  const devCount = remoteLinks.length;
 
   return (
     <Box sx={{ flex: 1, display: 'grid',
@@ -70,7 +67,7 @@ export default function TaskDetailBody({ task, proj, tab, onTabChange, onPatch }
           onUploadImage={(file) => attachmentsApi.uploadImage(task.id, file)}
         />
         <Subtasks taskId={task.id}/>
-        <TaskDetailTabs task={task} tab={tab} devCount={devCount} onChange={onTabChange}/>
+        <TaskDetailTabs task={task} tab={tab} onChange={onTabChange}/>
       </Box>
 
       <TaskDetailSidebar task={task} onPatch={onPatch}/>
