@@ -3,6 +3,7 @@ import type { AxiosError } from 'axios';
 import { releasesApi } from '../api/releases';
 import type {
   ReleaseDto, CreateReleaseRequest, UpdateReleaseRequest, TaskSummaryDto,
+  ReleaseActivityItemDto,
 } from '../api/types';
 
 export const releaseKeys = {
@@ -10,6 +11,7 @@ export const releaseKeys = {
   byProject: (projectId: string) => [...releaseKeys.all, 'by-project', projectId] as const,
   detail: (id: string) => [...releaseKeys.all, 'detail', id] as const,
   tasks: (id: string) => [...releaseKeys.all, 'tasks', id] as const,
+  activity: (id: string) => [...releaseKeys.all, 'activity', id] as const,
 };
 
 function isNotFound(err: unknown): boolean {
@@ -46,6 +48,21 @@ export function useReleaseTasks(id: string | undefined) {
     queryFn: async (): Promise<TaskSummaryDto[]> => {
       try {
         return await releasesApi.tasks(id as string);
+      } catch (e) {
+        if (isNotFound(e)) return [];
+        throw e;
+      }
+    },
+    enabled: !!id,
+  });
+}
+
+export function useReleaseActivity(id: string | undefined) {
+  return useQuery({
+    queryKey: releaseKeys.activity(id ?? ''),
+    queryFn: async (): Promise<ReleaseActivityItemDto[]> => {
+      try {
+        return await releasesApi.activity(id as string);
       } catch (e) {
         if (isNotFound(e)) return [];
         throw e;

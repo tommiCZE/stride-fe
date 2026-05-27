@@ -1,93 +1,68 @@
-import { useMemo } from 'react';
-import { Box, Button, Card, CircularProgress, MenuItem, Stack, TextField, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { useState } from 'react';
+import { Box, CircularProgress, Stack, Tab, Tabs } from '@mui/material';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useProjects } from '../../hooks/useProjects';
-import { useRelease, useReleaseTasks, useUpdateRelease, useDeleteRelease } from '../../hooks/useReleases';
-import TypeIcon from '../../components/icons/type-icon';
-import PriorityIcon from '../../components/icons/priority-icon';
-import FluxAvatar from '../../components/flux-avatar';
-import { BOARD_STATUSES } from '../../constants/statuses';
-import { TASK_TYPES } from '../../constants/taskTypes';
-import { useTeamMembers } from '../../hooks/useTeam';
-import type { ReleaseStatus, TaskSummaryDto } from '../../api/types';
-import { taskLinkProps } from '../../utils/task-link';
+import {
+  useRelease, useReleaseTasks, useUpdateRelease, useDeleteRelease,
+} from '../../hooks/useReleases';
+import ReleaseHero from './components/release-hero';
+import ReleaseStatStrip from './components/release-stat-strip';
+import ReleaseDetailMeta from './components/release-detail-meta';
+import ReleaseTaskList, { type ReleaseGroupBy } from './components/release-task-list';
+import ReleaseNotesTab from './components/release-notes-tab';
+import ReleaseActivityTab from './components/release-activity-tab';
+import ReleaseDeploymentsTab from './components/release-deployments-tab';
+import AddTaskToReleaseDialog from './components/add-task-to-release-dialog';
+import {
+  DndContext, MeasuringStrategy, PointerSensor,
+  useSensor, useSensors, closestCenter,
+} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import { useQueryClient } from '@tanstack/react-query';
+import { useUpdateTask, taskKeys } from '../../hooks/useTasks';
+import { releaseKeys } from '../../hooks/useReleases';
+import type { ReleaseStatus } from '../../api/types';
 
-const STATUS_META: Record<ReleaseStatus, { label: string; color: string }> = {
-  unreleased: { label: 'Plánováno', color: 'warning.main' },
-  released:   { label: 'Vydáno',    color: 'success.main' },
-  archived:   { label: 'Archiv',    color: 'text.disabled' },
-};
+type TabKey = 'tasky' | 'notes' | 'aktivita' | 'deployments';
 
-function StatusChip({ status }: { status: ReleaseStatus }) {
-  const m = STATUS_META[status];
-  return (
-    <Stack direction="row" spacing={0.5} sx={{
-      px: 0.75, py: 0.15, borderRadius: 0.75,
-      alignItems: 'center',
-      fontWeight: 700,
-      color: m.color,
-      border: 1, borderColor: m.color,
-      display: 'inline-flex',
-    }}>
-      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: m.color }}/>
-      <Typography variant="body2" sx={{ fontWeight: 700, color: 'inherit' }}>{m.label}</Typography>
-    </Stack>
-  );
-}
+const TAB_ORDER: TabKey[] = ['tasky', 'notes', 'aktivita', 'deployments'];
 
-function buildReleaseNotes(release: { name: string; goal: string | null; releaseDate: string | null }, tasks: TaskSummaryDto[]): string {
-  const done = tasks.filter(t => t.status === 'DONE');
-  const byType = new Map<string, TaskSummaryDto[]>();
-  for (const t of done) {
-    const arr = byType.get(t.type) ?? [];
-    arr.push(t);
-    byType.set(t.type, arr);
-  }
-
-  const lines: string[] = [];
-  lines.push(`# ${release.name}`);
-  if (release.releaseDate) lines.push('', `_Vydáno ${release.releaseDate}_`);
-  if (release.goal) lines.push('', release.goal);
-
-  for (const tt of TASK_TYPES) {
-    const items = byType.get(tt.id.toUpperCase());
-    if (!items?.length) continue;
-    lines.push('', `## ${tt.name}`);
-    for (const t of items) lines.push(`- **${t.key}** — ${t.title}`);
-  }
-
-  if (done.length === 0) {
-    lines.push('', '_Zatím žádné dokončené tasky._');
-  }
-
-  return lines.join('\n');
+function asTabKey(value: string | undefined): TabKey {
+  if (value === 'notes' || value === 'aktivita' || value === 'deployments') return value;
+  return 'tasky';
 }
 
 export default function ReleaseDetailPage() {
-  const { projectKey, releaseId } = useParams<{ projectKey: string; releaseId: string }>();
+  const { projectKey, releaseId, tab } = useParams<{
+    projectKey: string; releaseId: string; tab?: string;
+  }>();
   const navigate = useNavigate();
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { enqueueSnackbar } = useSnackbar();
-  const openTask = (key: string) => setSearchParams(prev => {
-    const next = new URLSearchParams(prev);
-    next.set('task', key);
-    return next;
-  });
+  const qc = useQueryClient();
 
   const { data: projects = [] } = useProjects();
   const project = projects.find(p => p.key === projectKey);
   const { data: release, isLoading } = useRelease(releaseId);
   const { data: tasks = [] } = useReleaseTasks(releaseId);
-  const { data: members = [] } = useTeamMembers();
   const updateRelease = useUpdateRelease();
   const deleteRelease = useDeleteRelease(project?.id ?? '');
+  const updateTask = useUpdateTask(project?.id);
 
-  const notesMarkdown = useMemo(
-    () => release ? buildReleaseNotes(release, tasks) : '',
-    [release, tasks],
-  );
+  const [groupBy, setGroupBy] = useState<ReleaseGroupBy>('status');
+  const [hiddenStatuses, setHiddenStatuses] = useState<Set<string>>(new Set(['DONE']));
+  const [addOpen, setAddOpen] = useState(false);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const activeTab = asTabKey(tab);
+
+  const openTask = (key: string) =>
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('task', key);
+      return next;
+    });
 
   if (!project) return null;
   if (isLoading || !release) {
@@ -98,20 +73,33 @@ export default function ReleaseDetailPage() {
     );
   }
 
-  const progress = release.taskCount > 0
-    ? Math.round((release.doneCount / release.taskCount) * 100)
-    : 0;
-
-  const handleStatus = (next: ReleaseStatus) => {
-    updateRelease.mutate({ id: release.id, body: { status: next } });
+  const handleChangeTab = (next: TabKey) => {
+    const search = searchParams.toString();
+    const url = `/projects/${project.key}/releases/${release.id}/${next}${search ? '?' + search : ''}`;
+    navigate(url);
   };
 
-  const handleCopyNotes = async () => {
+  const handlePublish = () => {
+    if (release.status === 'released') {
+      enqueueSnackbar('Verze už je vydaná', { variant: 'info' });
+      return;
+    }
+    if (!window.confirm(`Vydat verzi „${release.name}”?`)) return;
+    updateRelease.mutate(
+      { id: release.id, body: { status: 'released' as ReleaseStatus } },
+      {
+        onSuccess: () => enqueueSnackbar('Verze vydána', { variant: 'success' }),
+        onError: () => enqueueSnackbar('Publish selhal', { variant: 'error' }),
+      },
+    );
+  };
+
+  const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(notesMarkdown);
-      enqueueSnackbar('Release notes zkopírovány', { variant: 'success' });
+      await navigator.clipboard.writeText(window.location.href);
+      enqueueSnackbar('Odkaz zkopírován', { variant: 'success' });
     } catch {
-      enqueueSnackbar('Kopírování selhalo', { variant: 'error' });
+      enqueueSnackbar('Kopírování odkazu selhalo', { variant: 'error' });
     }
   };
 
@@ -122,196 +110,106 @@ export default function ReleaseDetailPage() {
         enqueueSnackbar('Verze smazána', { variant: 'success' });
         navigate(`/projects/${project.key}/releases`);
       },
+      onError: () => enqueueSnackbar('Mazání selhalo', { variant: 'error' }),
     });
+  };
+
+  const onDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    const taskMatch = activeId.match(/^t:([^:]+):(.+)$/);
+    const dropMatch = overId.match(/^r:([^:]+):status:(.+)$/);
+    if (!taskMatch || !dropMatch) return;
+    const [, , taskId] = taskMatch;
+    const [, , toStatus] = dropMatch;
+    if (!toStatus) return;
+
+    updateTask.mutate(
+      { id: taskId, body: { status: toStatus } },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: releaseKeys.tasks(release.id) });
+          qc.invalidateQueries({ queryKey: taskKeys.list(project.id) });
+        },
+        onError: () => enqueueSnackbar('Změna statusu selhala', { variant: 'error' }),
+      },
+    );
+  };
+
+  const tabLabel = (key: TabKey): string => {
+    if (key === 'tasky')       return `Tasky · ${tasks.length}`;
+    if (key === 'notes')       return 'Release notes';
+    if (key === 'aktivita')    return 'Aktivita';
+    return 'Deployments';
   };
 
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', bgcolor: 'background.default' }}>
+      <ReleaseHero
+        release={release}
+        projectKey={project.key}
+        onPublish={handlePublish}
+        onAddTask={() => setAddOpen(true)}
+        onShare={handleShare}
+        onDelete={handleDelete}
+      />
+
+      <ReleaseStatStrip release={release} tasks={tasks}/>
+
+      <Box sx={{ mt: 3 }}>
+        <ReleaseDetailMeta release={release}/>
+      </Box>
+
       <Box sx={{
-        position: 'sticky', top: 0, zIndex: 1,
-        px: { xs: 2, md: 4 }, pt: 2.5, pb: 2,
-        bgcolor: 'background.default',
         borderBottom: 1, borderColor: 'divider',
+        px: { xs: 2, md: 4 },
       }}>
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.5 }}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            onClick={() => navigate(`/projects/${project.key}/releases`)}
-            sx={{ cursor: 'default',
-              '&:hover': { color: 'text.primary', textDecoration: 'underline' } }}
+        <Tabs
+          value={activeTab}
+          onChange={(_, v) => handleChangeTab(v as TabKey)}
+          sx={{ minHeight: 36, '& .MuiTab-root': { minHeight: 36, fontSize: 13, py: 0.5 } }}
+        >
+          {TAB_ORDER.map(t => (
+            <Tab key={t} value={t} label={tabLabel(t)}/>
+          ))}
+        </Tabs>
+      </Box>
+
+      {activeTab === 'tasky' && (
+        <Box sx={{
+          mx: { xs: 0, md: 0 }, mt: 0,
+          border: 0,
+        }}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
+            onDragEnd={onDragEnd}
           >
-            ← Releases
-          </Typography>
-        </Stack>
-        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-          <Typography variant="h3" sx={{ fontFamily: 'ui-monospace, monospace' }}>{release.name}</Typography>
-          <StatusChip status={release.status}/>
-        </Stack>
-      </Box>
-
-      <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '1fr 320px' },
-        gap: 3, px: { xs: 2, md: 4 }, py: 3,
-      }}>
-        <Box>
-          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 2 }}>
-            <Box sx={{ flex: 1, height: 8, borderRadius: 4,
-              bgcolor: 'action.hover', overflow: 'hidden' }}>
-              <Box sx={{ height: '100%', width: `${progress}%`,
-                bgcolor: release.status === 'released' ? 'success.main' : 'primary.main',
-                transition: '0.3s' }}/>
-            </Box>
-            <Typography variant="caption" sx={{ fontWeight: 600,
-              fontVariantNumeric: 'tabular-nums', minWidth: 120, textAlign: 'right' }}>
-              {release.doneCount} / {release.taskCount} dokončeno
-            </Typography>
-          </Stack>
-
-          <Typography variant="body2" sx={{ fontWeight: 700,
-            letterSpacing: '0.06em', textTransform: 'uppercase',
-            color: 'text.disabled', mb: 0.75 }}>
-            Tasky v této verzi
-          </Typography>
-
-          {tasks.length === 0 ? (
-            <Box sx={{
-              p: 3, textAlign: 'center', border: 1, borderStyle: 'dashed',
-              borderColor: 'divider', borderRadius: 1.25, color: 'text.secondary',
-            }}>
-              <Typography variant="body2">
-                Žádné tasky. V detailu tasku nastavte „Fix version” na tuto verzi.
-              </Typography>
-            </Box>
-          ) : (
-            <Stack>
-              {tasks.map(t => {
-                const assignee = t.assigneeId ? members.find(m => m.id === t.assigneeId) : null;
-                const status = BOARD_STATUSES.find(s => s.id === t.status);
-                return (
-                  <Stack
-                    key={t.id}
-                    direction="row"
-                    spacing={1.25}
-                    {...taskLinkProps(t.key, openTask)}
-                    sx={{
-                      alignItems: 'center',
-                      px: 1.25, py: 0.85,
-                      borderBottom: 1, borderColor: 'divider',
-                      cursor: 'default',
-                      textDecoration: 'none', color: 'text.primary',
-                      '&:hover': { bgcolor: 'action.hover' },
-                    }}
-                  >
-                    <TypeIcon type={t.type} size={14}/>
-                    <Typography variant="caption" sx={{
-                      fontFamily: 'ui-monospace, monospace',
-                      fontWeight: 600, color: 'text.disabled', width: 80,
-                    }}>{t.key}</Typography>
-                    <Typography variant="caption" sx={{ flex: 1, minWidth: 0,
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {t.title}
-                    </Typography>
-                    <PriorityIcon priority={t.priority}/>
-                    {status && (
-                      <Box sx={{
-                        px: 0.75, py: 0.1, borderRadius: 0.75,
-                        fontWeight: 700,
-                        color: status.color, bgcolor: alpha(status.color, 0.13),
-                        border: 1, borderColor: alpha(status.color, 0.4),
-                      }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'inherit' }}>{status.name}</Typography>
-                      </Box>
-                    )}
-                    {assignee ? <FluxAvatar user={assignee} size={20}/>
-                      : <Box sx={{ width: 20, height: 20 }}/>}
-                  </Stack>
-                );
-              })}
-            </Stack>
-          )}
-
-          <Box sx={{ mt: 3 }}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.75 }}>
-              <Typography variant="body2" sx={{ fontWeight: 700,
-                letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.disabled' }}>
-                Release notes
-              </Typography>
-              <Button size="small" variant="text" onClick={handleCopyNotes}>
-                Kopírovat markdown
-              </Button>
-            </Stack>
-            <Box sx={{
-              p: 2, border: 1, borderColor: 'divider', borderRadius: 1.25,
-              bgcolor: 'background.paper',
-              fontFamily: 'ui-monospace, monospace', fontSize: '14px',
-              whiteSpace: 'pre-wrap', maxHeight: 400, overflowY: 'auto',
-            }}>
-              {notesMarkdown}
-            </Box>
-          </Box>
+            <ReleaseTaskList
+              releaseId={release.id}
+              groupBy={groupBy}
+              onChangeGroupBy={setGroupBy}
+              hiddenStatuses={hiddenStatuses}
+              onChangeHiddenStatuses={setHiddenStatuses}
+              onAddTasks={() => setAddOpen(true)}
+              onOpenTask={openTask}
+            />
+          </DndContext>
         </Box>
+      )}
 
-        <Stack spacing={1.5}>
-          <Card variant="outlined" sx={{ p: 2, bgcolor: 'background.paper' }}>
-            <Stack spacing={1.25}>
-              <TextField
-                size="small" label="Název" fullWidth value={release.name}
-                onChange={e => updateRelease.mutate({ id: release.id, body: { name: e.target.value } })}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
-              <TextField
-                size="small" label="Status" fullWidth select value={release.status}
-                onChange={e => handleStatus(e.target.value as ReleaseStatus)}
-                slotProps={{ inputLabel: { shrink: true } }}
-              >
-                <MenuItem value="unreleased">Plánováno</MenuItem>
-                <MenuItem value="released">Vydáno</MenuItem>
-                <MenuItem value="archived">Archiv</MenuItem>
-              </TextField>
-              <TextField
-                size="small" label="Start" type="date" fullWidth
-                value={release.startDate ?? ''}
-                onChange={e => updateRelease.mutate({ id: release.id, body: { startDate: e.target.value || null } })}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
-              <TextField
-                size="small" label="Release date" type="date" fullWidth
-                value={release.releaseDate ?? ''}
-                onChange={e => updateRelease.mutate({ id: release.id, body: { releaseDate: e.target.value || null } })}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
-              <TextField
-                size="small" label="Goal" multiline minRows={2} fullWidth
-                value={release.goal ?? ''}
-                onChange={e => updateRelease.mutate({ id: release.id, body: { goal: e.target.value || null } })}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
-              <TextField
-                size="small" label="Popis" multiline minRows={3} fullWidth
-                value={release.description ?? ''}
-                onChange={e => updateRelease.mutate({ id: release.id, body: { description: e.target.value || null } })}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
-            </Stack>
-          </Card>
+      {activeTab === 'notes'       && <ReleaseNotesTab release={release} projectKey={project.key}/>}
+      {activeTab === 'aktivita'    && <ReleaseActivityTab releaseId={release.id}/>}
+      {activeTab === 'deployments' && <ReleaseDeploymentsTab/>}
 
-          {release.status === 'unreleased' && (
-            <Button variant="contained" color="success" onClick={() => handleStatus('released')}>
-              Označit jako vydané
-            </Button>
-          )}
-          {release.status === 'released' && (
-            <Button variant="outlined" onClick={() => handleStatus('archived')}>
-              Archivovat
-            </Button>
-          )}
-          <Button variant="outlined" color="error" onClick={handleDelete}>
-            Smazat verzi
-          </Button>
-        </Stack>
-      </Box>
+      <AddTaskToReleaseDialog
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        release={release}
+      />
     </Box>
   );
 }

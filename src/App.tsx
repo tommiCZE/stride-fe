@@ -87,6 +87,7 @@ const router = createBrowserRouter([
           { path: 'reports',   element: <Reports /> },
           { path: 'releases',  element: <ReleasesPage /> },
           { path: 'releases/:releaseId', element: <ReleaseDetailPage /> },
+          { path: 'releases/:releaseId/:tab', element: <ReleaseDetailPage /> },
           { path: 'settings',  element: <Settings /> },
         ],
       },

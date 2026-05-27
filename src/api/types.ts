@@ -216,6 +216,26 @@ export interface UpdateReleaseRequest {
   goal?: string | null;
 }
 
+export type ReleaseActivityType =
+  | 'RELEASE_CREATED'
+  | 'TASK_ADDED'
+  | 'TASK_REMOVED'
+  | 'DATE_CHANGED'
+  | 'RENAMED'
+  | 'PUBLISHED'
+  | 'ARCHIVED';
+
+export interface ReleaseActivityItemDto {
+  id: string;
+  type: ReleaseActivityType;
+  timestamp: string;
+  actorId: string | null;
+  actorName: string | null;
+  actorInitials: string | null;
+  actorColor: string | null;
+  payload: Record<string, unknown>;
+}
+
 export interface TaskSummaryDto {
   id: string;
   key: string;

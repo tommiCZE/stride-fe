@@ -1,6 +1,7 @@
 import api from './axios';
 import type {
   ReleaseDto, CreateReleaseRequest, UpdateReleaseRequest, TaskSummaryDto,
+  ReleaseActivityItemDto,
 } from './types';
 
 export const releasesApi = {
@@ -21,4 +22,7 @@ export const releasesApi = {
 
   tasks: (id: string) =>
     api.get<TaskSummaryDto[]>(`/api/releases/${id}/tasks`).then(r => r.data),
+
+  activity: (id: string) =>
+    api.get<ReleaseActivityItemDto[]>(`/api/releases/${id}/activity`).then(r => r.data),
 };
