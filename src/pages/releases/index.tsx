@@ -1,12 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Box, Button, CircularProgress, Divider, Stack, Typography } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
+import {
+  DndContext, MeasuringStrategy, PointerSensor,
+  useSensor, useSensors, closestCenter,
+} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import { useQueryClient } from '@tanstack/react-query';
 import { useProjects } from '../../hooks/useProjects';
-import { useReleases, useCreateRelease } from '../../hooks/useReleases';
+import { useReleases, useCreateRelease, releaseKeys } from '../../hooks/useReleases';
+import { useUpdateTask, taskKeys } from '../../hooks/useTasks';
 import { CaretIcon, CaretRIcon, PlusIcon } from '../../components/icons/icons';
 import type { ReleaseDto, ReleaseStatus } from '../../api/types';
 import ReleaseCard from './components/release-card';
+import type { ReleaseGroupBy } from './components/release-task-list';
 
 type GroupKey = ReleaseStatus;
 
@@ -18,6 +26,16 @@ const GROUP_LABELS: Record<GroupKey, string> = {
 
 const GROUP_ORDER: GroupKey[] = ['unreleased', 'released', 'archived'];
 
+const GROUP_BY_STORAGE_KEY = 'releases.groupBy';
+const HIDDEN_STATUSES_DEFAULT = new Set<string>(['DONE']);
+
+function loadGroupBy(): ReleaseGroupBy {
+  if (typeof window === 'undefined') return 'status';
+  const raw = window.localStorage.getItem(GROUP_BY_STORAGE_KEY);
+  if (raw === 'status' || raw === 'type' || raw === 'priority' || raw === 'assignee') return raw;
+  return 'status';
+}
+
 function compareDates(a: string | null, b: string | null, direction: 'asc' | 'desc'): number {
   if (a === null && b === null) return 0;
   if (a === null) return 1;
@@ -28,6 +46,11 @@ function compareDates(a: string | null, b: string | null, direction: 'asc' | 'de
 function sortGroup(group: GroupKey, releases: ReleaseDto[]): ReleaseDto[] {
   const direction = group === 'unreleased' ? 'asc' : 'desc';
   return [...releases].sort((a, b) => compareDates(a.releaseDate, b.releaseDate, direction));
+}
+
+function parseExpandParam(value: string | null): Set<string> {
+  if (!value) return new Set();
+  return new Set(value.split(',').filter(Boolean));
 }
 
 function GroupHeader({
@@ -46,8 +69,7 @@ function GroupHeader({
       sx={{
         alignItems: 'center',
         cursor: collapsible ? 'pointer' : 'default',
-        mt: 2.5, mb: 1,
-        userSelect: 'none',
+        mt: 2.5, mb: 1, userSelect: 'none',
       }}
     >
       {collapsible && (
@@ -81,6 +103,18 @@ export default function ReleasesPage() {
   const { data: releases = [], isLoading } = useReleases(project?.id);
   const createRelease = useCreateRelease();
   const [archivedCollapsed, setArchivedCollapsed] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const expandSet = useMemo(() => parseExpandParam(searchParams.get('expand')), [searchParams]);
+  const [groupBy, setGroupBy] = useState<ReleaseGroupBy>(loadGroupBy);
+  const [hiddenStatuses, setHiddenStatuses] = useState<Set<string>>(HIDDEN_STATUSES_DEFAULT);
+  const updateTask = useUpdateTask(project?.id);
+  const qc = useQueryClient();
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(GROUP_BY_STORAGE_KEY, groupBy);
+  }, [groupBy]);
 
   const groups = useMemo(() => {
     const buckets: Record<GroupKey, ReleaseDto[]> = { unreleased: [], released: [], archived: [] };
@@ -110,6 +144,66 @@ export default function ReleasesPage() {
   const goToDetail = (r: ReleaseDto) =>
     navigate(`/projects/${project.key}/releases/${r.id}`);
 
+  const openTask = (key: string) =>
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('task', key);
+      return next;
+    });
+
+  const writeExpand = (next: Set<string>) => {
+    setSearchParams(prev => {
+      const out = new URLSearchParams(prev);
+      if (next.size === 0) out.delete('expand');
+      else out.set('expand', [...next].join(','));
+      return out;
+    });
+  };
+
+  const toggleExpand = (release: ReleaseDto) => {
+    const next = new Set(expandSet);
+    if (next.has(release.id)) next.delete(release.id);
+    else next.add(release.id);
+    writeExpand(next);
+  };
+
+  const expandAll = () => writeExpand(new Set(releases.map(r => r.id)));
+  const collapseAll = () => writeExpand(new Set());
+
+  const onDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    // active: `t:<releaseId>:<taskId>`
+    // over:   `r:<releaseId>:status:<statusId>`
+    const taskMatch = activeId.match(/^t:([^:]+):(.+)$/);
+    const dropMatch = overId.match(/^r:([^:]+):status:(.+)$/);
+    if (!taskMatch || !dropMatch) return;
+    const [, fromReleaseId, taskId] = taskMatch;
+    const [, toReleaseId, toStatus] = dropMatch;
+
+    const body: { status?: string; fixVersionId?: string | null } = {};
+    if (toStatus) body.status = toStatus;
+    if (toReleaseId !== fromReleaseId) body.fixVersionId = toReleaseId;
+    if (Object.keys(body).length === 0) return;
+
+    updateTask.mutate(
+      { id: taskId, body },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: releaseKeys.tasks(fromReleaseId) });
+          if (toReleaseId !== fromReleaseId) {
+            qc.invalidateQueries({ queryKey: releaseKeys.tasks(toReleaseId) });
+            qc.invalidateQueries({ queryKey: releaseKeys.byProject(project.id) });
+          }
+          qc.invalidateQueries({ queryKey: taskKeys.list(project.id) });
+        },
+        onError: () => enqueueSnackbar('Nepodařilo se přesunout task', { variant: 'error' }),
+      },
+    );
+  };
+
   const renderGroup = (key: GroupKey) => {
     const items = groups[key];
     const label = GROUP_LABELS[key];
@@ -128,7 +222,18 @@ export default function ReleasesPage() {
         {!collapsed && (
           <Stack spacing={1.25}>
             {items.map(r => (
-              <ReleaseCard key={r.id} release={r} onClick={() => goToDetail(r)}/>
+              <ReleaseCard
+                key={r.id}
+                release={r}
+                expanded={expandSet.has(r.id)}
+                onToggleExpand={() => toggleExpand(r)}
+                onOpenDetail={() => goToDetail(r)}
+                onOpenTask={openTask}
+                groupBy={groupBy}
+                onChangeGroupBy={setGroupBy}
+                hiddenStatuses={hiddenStatuses}
+                onChangeHiddenStatuses={setHiddenStatuses}
+              />
             ))}
           </Stack>
         )}
@@ -139,7 +244,7 @@ export default function ReleasesPage() {
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', bgcolor: 'background.default' }}>
       <Stack direction="row" spacing={1.5} sx={{
-        position: 'sticky', top: 0, zIndex: 1,
+        position: 'sticky', top: 0, zIndex: 2,
         px: { xs: 2, md: 4 }, pt: 2.5, pb: 2,
         bgcolor: 'background.default',
         borderBottom: 1, borderColor: 'divider',
@@ -154,6 +259,16 @@ export default function ReleasesPage() {
             Releases
           </Typography>
         </Box>
+        {releases.length > 0 && (
+          <Stack direction="row" spacing={0.5}>
+            <Button size="small" variant="text" onClick={expandAll} disabled={expandSet.size === releases.length}>
+              Rozbalit vše
+            </Button>
+            <Button size="small" variant="text" onClick={collapseAll} disabled={expandSet.size === 0}>
+              Sbalit vše
+            </Button>
+          </Stack>
+        )}
         <Button
           size="small" variant="contained" startIcon={<PlusIcon/>}
           disabled={createRelease.isPending}
@@ -187,7 +302,16 @@ export default function ReleasesPage() {
           </Box>
         )}
 
-        {!isLoading && releases.length > 0 && GROUP_ORDER.map(renderGroup)}
+        {!isLoading && releases.length > 0 && (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
+            onDragEnd={onDragEnd}
+          >
+            {GROUP_ORDER.map(renderGroup)}
+          </DndContext>
+        )}
       </Box>
     </Box>
   );
