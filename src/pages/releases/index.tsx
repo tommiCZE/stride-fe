@@ -9,11 +9,12 @@ import {
 import type { DragEndEvent } from '@dnd-kit/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProjects } from '../../hooks/useProjects';
-import { useReleases, useCreateRelease, releaseKeys } from '../../hooks/useReleases';
+import { useReleases, releaseKeys } from '../../hooks/useReleases';
 import { useUpdateTask, taskKeys } from '../../hooks/useTasks';
 import { CaretIcon, CaretRIcon, PlusIcon } from '../../components/icons/icons';
 import type { ReleaseDto, ReleaseStatus } from '../../api/types';
 import ReleaseCard from './components/release-card';
+import CreateReleaseDrawer from './components/create-release-drawer';
 import type { ReleaseGroupBy } from './components/release-task-list';
 
 type GroupKey = ReleaseStatus;
@@ -101,8 +102,8 @@ export default function ReleasesPage() {
   const { data: projects = [] } = useProjects();
   const project = projects.find(p => p.key === projectKey);
   const { data: releases = [], isLoading } = useReleases(project?.id);
-  const createRelease = useCreateRelease();
   const [archivedCollapsed, setArchivedCollapsed] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const expandSet = useMemo(() => parseExpandParam(searchParams.get('expand')), [searchParams]);
   const [groupBy, setGroupBy] = useState<ReleaseGroupBy>(loadGroupBy);
@@ -127,19 +128,6 @@ export default function ReleasesPage() {
   }, [releases]);
 
   if (!project) return null;
-
-  const handleCreate = () => {
-    createRelease.mutate(
-      { projectId: project.id, name: `v${releases.length + 1}.0.0` },
-      {
-        onSuccess: (r) => {
-          enqueueSnackbar('Release vytvořen', { variant: 'success' });
-          navigate(`/projects/${project.key}/releases/${r.id}`);
-        },
-        onError: () => enqueueSnackbar('Chyba při vytváření', { variant: 'error' }),
-      },
-    );
-  };
 
   const goToDetail = (r: ReleaseDto) =>
     navigate(`/projects/${project.key}/releases/${r.id}`);
@@ -271,8 +259,7 @@ export default function ReleasesPage() {
         )}
         <Button
           size="small" variant="contained" startIcon={<PlusIcon/>}
-          disabled={createRelease.isPending}
-          onClick={handleCreate}
+          onClick={() => setCreateOpen(true)}
         >
           Nová verze
         </Button>
@@ -296,7 +283,7 @@ export default function ReleasesPage() {
             <Typography sx={{ fontSize: '14px', mb: 2 }}>
               Verze (např. „v1.2.0”) slouží pro plánování releases a release notes.
             </Typography>
-            <Button size="small" variant="outlined" startIcon={<PlusIcon/>} onClick={handleCreate}>
+            <Button size="small" variant="outlined" startIcon={<PlusIcon/>} onClick={() => setCreateOpen(true)}>
               Vytvořit první verzi
             </Button>
           </Box>
@@ -313,6 +300,14 @@ export default function ReleasesPage() {
           </DndContext>
         )}
       </Box>
+
+      <CreateReleaseDrawer
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        projectId={project.id}
+        projectKey={project.key}
+        releases={releases}
+      />
     </Box>
   );
 }
