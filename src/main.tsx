@@ -1,9 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider, CssBaseline } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { SnackbarProvider } from 'notistack';
+import 'dayjs/locale/cs';
 import { buildTheme } from './theme';
 import { useUiStore } from './store/ui-store';
 import App from './App';
@@ -19,15 +22,17 @@ function ThemedApp() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppErrorBoundary>
-        <SnackbarProvider
-          maxSnack={3}
-          autoHideDuration={3000}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          <App />
-        </SnackbarProvider>
-      </AppErrorBoundary>
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="cs">
+        <AppErrorBoundary>
+          <SnackbarProvider
+            maxSnack={3}
+            autoHideDuration={3000}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <App />
+          </SnackbarProvider>
+        </AppErrorBoundary>
+      </LocalizationProvider>
     </ThemeProvider>
   );
 }
