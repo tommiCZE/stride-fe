@@ -4,7 +4,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useProjects } from '../../hooks/useProjects';
 import {
-  useRelease, useReleaseTasks, useUpdateRelease, useDeleteRelease,
+  useRelease, useReleaseTasks, useReleases,
 } from '../../hooks/useReleases';
 import ReleaseHero from './components/release-hero';
 import ReleaseStatStrip from './components/release-stat-strip';
@@ -14,6 +14,8 @@ import ReleaseNotesTab from './components/release-notes-tab';
 import ReleaseActivityTab from './components/release-activity-tab';
 import ReleaseDeploymentsTab from './components/release-deployments-tab';
 import AddTaskToReleaseDialog from './components/add-task-to-release-dialog';
+import PublishReleaseDialog from './components/publish-release-dialog';
+import DeleteReleaseDialog from './components/delete-release-dialog';
 import {
   DndContext, MeasuringStrategy, PointerSensor,
   useSensor, useSensors, closestCenter,
@@ -22,7 +24,6 @@ import type { DragEndEvent } from '@dnd-kit/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUpdateTask, taskKeys } from '../../hooks/useTasks';
 import { releaseKeys } from '../../hooks/useReleases';
-import type { ReleaseStatus } from '../../api/types';
 
 type TabKey = 'tasky' | 'notes' | 'aktivita' | 'deployments';
 
@@ -46,13 +47,14 @@ export default function ReleaseDetailPage() {
   const project = projects.find(p => p.key === projectKey);
   const { data: release, isLoading } = useRelease(releaseId);
   const { data: tasks = [] } = useReleaseTasks(releaseId);
-  const updateRelease = useUpdateRelease();
-  const deleteRelease = useDeleteRelease(project?.id ?? '');
+  const { data: siblingReleases = [] } = useReleases(project?.id);
   const updateTask = useUpdateTask(project?.id);
 
   const [groupBy, setGroupBy] = useState<ReleaseGroupBy>('status');
   const [hiddenStatuses, setHiddenStatuses] = useState<Set<string>>(new Set(['DONE']));
   const [addOpen, setAddOpen] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   const activeTab = asTabKey(tab);
@@ -81,17 +83,11 @@ export default function ReleaseDetailPage() {
 
   const handlePublish = () => {
     if (release.status === 'released') {
-      enqueueSnackbar('Verze už je vydaná', { variant: 'info' });
+      // Re-publish notes: keep status, just toast for now (regenerated client-side).
+      enqueueSnackbar('Release notes regenerovány', { variant: 'success' });
       return;
     }
-    if (!window.confirm(`Vydat verzi „${release.name}”?`)) return;
-    updateRelease.mutate(
-      { id: release.id, body: { status: 'released' as ReleaseStatus } },
-      {
-        onSuccess: () => enqueueSnackbar('Verze vydána', { variant: 'success' }),
-        onError: () => enqueueSnackbar('Publish selhal', { variant: 'error' }),
-      },
-    );
+    setPublishOpen(true);
   };
 
   const handleShare = async () => {
@@ -101,17 +97,6 @@ export default function ReleaseDetailPage() {
     } catch {
       enqueueSnackbar('Kopírování odkazu selhalo', { variant: 'error' });
     }
-  };
-
-  const handleDelete = () => {
-    if (!window.confirm(`Smazat verzi „${release.name}”?`)) return;
-    deleteRelease.mutate(release.id, {
-      onSuccess: () => {
-        enqueueSnackbar('Verze smazána', { variant: 'success' });
-        navigate(`/projects/${project.key}/releases`);
-      },
-      onError: () => enqueueSnackbar('Mazání selhalo', { variant: 'error' }),
-    });
   };
 
   const onDragEnd = (event: DragEndEvent) => {
@@ -153,7 +138,7 @@ export default function ReleaseDetailPage() {
         onPublish={handlePublish}
         onAddTask={() => setAddOpen(true)}
         onShare={handleShare}
-        onDelete={handleDelete}
+        onDelete={() => setDeleteOpen(true)}
       />
 
       <ReleaseStatStrip release={release} tasks={tasks}/>
@@ -209,6 +194,21 @@ export default function ReleaseDetailPage() {
         open={addOpen}
         onClose={() => setAddOpen(false)}
         release={release}
+      />
+
+      <PublishReleaseDialog
+        open={publishOpen}
+        onClose={() => setPublishOpen(false)}
+        release={release}
+        tasks={tasks}
+        siblingReleases={siblingReleases}
+      />
+
+      <DeleteReleaseDialog
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        release={release}
+        onDeleted={() => navigate(`/projects/${project.key}/releases`)}
       />
     </Box>
   );
