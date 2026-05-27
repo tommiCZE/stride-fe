@@ -282,7 +282,7 @@ export default function ReleaseCard({
       </Stack>
 
       {expanded && (
-        <Box sx={{ borderTop: 1, borderColor: 'divider' }} data-no-toggle>
+        <Box sx={{ borderTop: 1, borderColor: 'divider', position: 'relative' }} data-no-toggle>
           <ReleaseTaskList
             releaseId={release.id}
             groupBy={groupBy}
