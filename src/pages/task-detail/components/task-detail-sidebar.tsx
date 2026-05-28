@@ -25,7 +25,7 @@ export default function TaskDetailSidebar({ task, onPatch }: Props) {
   const visibleWatchers = watchers.slice(0, 4);
   const extraWatchers = watchers.length - visibleWatchers.length;
 
-  const dev = useDevActivity(task.key);
+  const dev = useDevActivity(task.id);
   const reviewers: DevReviewer[] = [];
   const seen = new Set<string>();
   for (const b of dev.branches) {

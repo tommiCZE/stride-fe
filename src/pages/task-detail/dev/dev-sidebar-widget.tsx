@@ -32,9 +32,9 @@ interface Props {
   projectId: string;
 }
 
-export function DevSidebarWidget({ taskId: _taskId, taskKey, taskTitle, projectId }: Props) {
+export function DevSidebarWidget({ taskId, taskKey, taskTitle, projectId }: Props) {
   const { enqueueSnackbar } = useSnackbar();
-  const dev = useDevActivity(taskKey);
+  const dev = useDevActivity(taskId);
   const { data: projects = [] } = useProjects();
   const project = projects.find(p => p.id === projectId);
   const projectKey = project?.key ?? taskKey.split('-')[0];

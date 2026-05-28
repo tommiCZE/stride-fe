@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Box, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useSnackbar } from 'notistack';
-import { BranchIcon, CheckIcon, CloseIcon, LinkIcon } from '../../../components/icons/icons';
+import { BranchIcon, CheckIcon, CloseIcon, CommentIcon, LinkIcon } from '../../../components/icons/icons';
 import { ReviewerAvatar } from './reviewer-avatar';
+import FluxAvatar from '../../../components/flux-avatar';
 import type { DevBranch } from '../../../types/dev-activity';
 
 const SHOW_FIRST_COMMITS = 3;
@@ -236,12 +237,37 @@ export function BranchCommitsCard({ branch, collapseCommits = true, density = 'c
             <Box component="span" sx={{ ml: 0.5, color: 'text.disabled' }}>→ {mr.base}</Box>
           </Typography>
           <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center' }}>
+            {mr.assignee && (
+              <Tooltip title={`Přiřazeno: ${mr.assignee.name}`}>
+                <Box sx={{ display: 'inline-flex' }}>
+                  <FluxAvatar user={mr.assignee} size={18}/>
+                </Box>
+              </Tooltip>
+            )}
             {mr.reviewers.length > 0 && (
               <Stack direction="row" spacing={-0.4}>
                 {mr.reviewers.map(r => <ReviewerAvatar key={r.user.id} reviewer={r} size={18}/>)}
               </Stack>
             )}
             <Box sx={{ flex: 1 }}/>
+            {mr.unresolvedThreadCount != null && mr.unresolvedThreadCount > 0 && (
+              <Tooltip title={`${mr.unresolvedThreadCount} nevyřešených komentářů`}>
+                <Box sx={theme => ({
+                  display: 'inline-flex', alignItems: 'center', gap: 0.4,
+                  px: 0.75, py: 0.15,
+                  borderRadius: 1,
+                  border: 1, borderColor: alpha(theme.palette.warning.main, 0.4),
+                  bgcolor: alpha(theme.palette.warning.main, 0.10),
+                  color: 'warning.main',
+                  fontSize: '11.5px', fontWeight: 600,
+                })}>
+                  <Box component="span" sx={{ display: 'inline-flex' }}>
+                    <CommentIcon/>
+                  </Box>
+                  {mr.unresolvedThreadCount}
+                </Box>
+              </Tooltip>
+            )}
             {build && (
               <Tooltip title={
                 build.state === 'failed' && build.failedJob

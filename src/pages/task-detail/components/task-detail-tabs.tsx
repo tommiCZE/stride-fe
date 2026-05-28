@@ -29,7 +29,7 @@ export default function TaskDetailTabs({ task, tab, onChange }: Props) {
         ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
-        {tab === 'activity' && <ActivityStream taskId={task.id} taskKey={task.key}/>}
+        {tab === 'activity' && <ActivityStream taskId={task.id}/>}
         {tab === 'worklog'  && <WorklogPanel   taskId={task.id}/>}
       </Box>
     </>

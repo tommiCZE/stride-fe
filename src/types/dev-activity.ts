@@ -36,6 +36,8 @@ export interface DevMergeRequest {
   minus: number;
   files: number;
   reviewers: DevReviewer[];
+  assignee?: UserDto | null;
+  unresolvedThreadCount?: number;
   url: string;
   openedAt: string;
   mergedAt?: string;

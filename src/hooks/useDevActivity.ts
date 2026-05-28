@@ -1,13 +1,23 @@
-import { useMemo } from 'react';
-import { getMockDevActivity } from '../mocks/dev-activity';
+import { useQuery } from '@tanstack/react-query';
+import { devActivityApi } from '../api/dev-activity';
 import type { TaskDevActivity } from '../types/dev-activity';
 
+const EMPTY: TaskDevActivity = { branches: [], reviews: [] };
+
+export const devActivityKeys = {
+  byTask: (taskId: string) => ['dev-activity', taskId] as const,
+};
+
 /**
- * Dev/Git activity (branches, commits, MRs, CI, reviews) for a task.
- *
- * Backed by FE mock data until the BE exposes git events. Lookup is by task key;
- * unknown keys return an empty dataset (no dev activity).
+ * Dev/Git activity (branches, commits, MRs) for a task, pulled from the BE
+ * webhook-populated tables. Empty dataset until a matching push hook arrives.
  */
-export function useDevActivity(taskKey: string | undefined): TaskDevActivity {
-  return useMemo(() => getMockDevActivity(taskKey), [taskKey]);
+export function useDevActivity(taskId: string | undefined): TaskDevActivity {
+  const { data } = useQuery({
+    queryKey: devActivityKeys.byTask(taskId ?? ''),
+    queryFn: () => devActivityApi.get(taskId!),
+    enabled: !!taskId,
+    staleTime: 30_000,
+  });
+  return data ?? EMPTY;
 }
