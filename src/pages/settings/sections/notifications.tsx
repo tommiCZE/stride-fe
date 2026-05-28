@@ -74,9 +74,9 @@ export function NotificationsSection({ project, readOnly }: { project: ProjectDt
           disabled={readOnly}
         />
         <ToggleRow
-          label="Začátek / konec sprintu" hint="Notifikace v den startu / uzavření sprintu."
-          checked={notifications.events.sprintStart}
-          onChange={v => setEvent('sprintStart', v)}
+          label="Změny sprintu" hint="Notifikace o úpravách sprintu (start, konec, přesun)."
+          checked={notifications.events.sprintUpdated}
+          onChange={v => setEvent('sprintUpdated', v)}
           disabled={readOnly}
         />
       </SettingsCard>

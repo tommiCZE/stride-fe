@@ -76,7 +76,7 @@ export interface ProjectSettings {
       statusChange: boolean;
       dueSoon: boolean;
       commentAdded: boolean;
-      sprintStart: boolean;
+      sprintUpdated: boolean;
     };
     digest: DigestCadence;
   };
@@ -135,7 +135,7 @@ function defaultBlob(): Required<ProjectSettingsBlob> {
         statusChange: false,
         dueSoon: true,
         commentAdded: true,
-        sprintStart: true,
+        sprintUpdated: true,
       },
       digest: 'realtime',
     },
