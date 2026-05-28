@@ -13,7 +13,7 @@ function WorklogRow({ worklog }: { worklog: WorklogDto }) {
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', mb: 0.25, flexWrap: 'wrap' }}>
           <Typography component="span" sx={{ fontSize: '13.5px', fontWeight: 600 }}>
-            {worklog.user.name}
+            {worklog.user?.name ?? 'Neznámý uživatel'}
           </Typography>
           <Typography component="span" sx={{ fontSize: '12px', color: 'text.disabled' }}>
             zalogoval{' '}

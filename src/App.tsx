@@ -12,6 +12,8 @@ import Reports from './pages/reports';
 import Settings from './pages/settings';
 import WorkspaceSettings from './pages/workspace-settings';
 import MyWork from './pages/my-work';
+import MyTime from './pages/my-time';
+import RequireAdmin from './components/require-admin';
 import Inbox from './pages/inbox';
 import TaskDetail from './pages/task-detail';
 import TaskPage from './pages/task-page';
@@ -70,8 +72,9 @@ const router = createBrowserRouter([
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'inbox',     element: <Inbox /> },
       { path: 'my-work',   element: <MyWork /> },
+      { path: 'my-time',   element: <MyTime /> },
       { path: 'calendar',  element: <Suspense fallback={<PageFallback />}><Calendar /></Suspense> },
-      { path: 'reports',   element: <Reports /> },
+      { path: 'reports',   element: <RequireAdmin><Reports /></RequireAdmin> },
       { path: 'profile',   element: <Profile /> },
       { path: 'search',    element: <SearchPage /> },
       { path: 'task/:taskKey', element: <TaskPage /> },
@@ -84,7 +87,7 @@ const router = createBrowserRouter([
           { path: 'board',     element: <Board /> },
           { path: 'backlog',   element: <Backlog /> },
           { path: 'list',      element: <ListView /> },
-          { path: 'reports',   element: <Reports /> },
+          { path: 'reports',   element: <RequireAdmin><Reports /></RequireAdmin> },
           { path: 'releases',  element: <ReleasesPage /> },
           { path: 'releases/:releaseId', element: <ReleaseDetailPage /> },
           { path: 'releases/:releaseId/:tab', element: <ReleaseDetailPage /> },

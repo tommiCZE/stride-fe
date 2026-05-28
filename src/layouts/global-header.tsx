@@ -3,20 +3,25 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Badge, Box, IconButton, InputAdornment, Menu, MenuItem, Stack, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
 import { useUiStore } from '../store/ui-store';
 import { useAuthStore } from '../store/auth-store';
 import { useNotificationsStore } from '../store/notifications-store';
 import { useRunningTimer, useStopTimer } from '../hooks/useTimer';
+import { worklogsApi } from '../api/worklogs';
+import { worklogKeys } from '../hooks/useWorklogs';
+import { dayKeys } from '../hooks/useDays';
+import { taskKeys } from '../hooks/useTasks';
 import FluxAvatar from '../components/flux-avatar';
 import LanguageSwitcher from '../components/language-switcher';
 import NotificationsPopover from '../components/notifications-popover';
-import { WorklogDialog } from '../components/worklog-dialog';
 import {
   SearchIcon, BellIcon, HelpIcon, SunIcon, MoonIcon,
   HamburgerIcon, CloseIcon,
 } from '../components/icons/icons';
-import type { StopTimerResponse } from '../api/types';
+import { addMinutesToHM, isoLocal } from '../lib/time';
 
 function fmtTimer(sec: number) {
   const safe = Math.max(0, sec);
@@ -27,11 +32,18 @@ function fmtTimer(sec: number) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+function minutesBetween(startHM: string, endHM: string): number {
+  const [sh, sm] = startHM.split(':').map(Number);
+  const [eh, em] = endHM.split(':').map(Number);
+  return (eh * 60 + em) - (sh * 60 + sm);
+}
+
 export default function GlobalHeader() {
   const { themeMode, toggleTheme, setMobileMenu } = useUiStore();
   const { data: runningTimer } = useRunningTimer();
   const stopTimerMutation = useStopTimer();
-  const [pendingWorklog, setPendingWorklog] = useState<StopTimerResponse | null>(null);
+  const userId = useAuthStore(s => s.userId);
+  const { enqueueSnackbar } = useSnackbar();
 
   const startedAtMs = runningTimer ? new Date(runningTimer.startedAt).getTime() : 0;
   const subscribeTick = useCallback((cb: () => void) => {
@@ -81,11 +93,61 @@ export default function GlobalHeader() {
   };
 
   const handleStopTimer = () => {
-    if (stopTimerMutation.isPending) return;
+    if (stopTimerMutation.isPending || !runningTimer || !userId) return;
+    const startedAt = new Date(runningTimer.startedAt);
+    const taskId = runningTimer.taskId;
     stopTimerMutation.mutate(undefined, {
-      onSuccess: (data) => setPendingWorklog(data),
+      onSuccess: async () => {
+        const end = new Date();
+        const minutes = Math.round((end.getTime() - startedAt.getTime()) / 60000);
+        if (minutes < 1) {
+          enqueueSnackbar('Příliš krátký záznam (<1 min), zahozeno', { variant: 'info' });
+          return;
+        }
+        try {
+          const startDate = isoLocal(startedAt);
+          const endDate = isoLocal(end);
+          const startHM = dayjs(startedAt).format('HH:mm');
+          const endHM = dayjs(end).format('HH:mm');
+          if (startDate === endDate) {
+            await worklogsApi.createForUser(userId, {
+              taskId, minutes, loggedAt: startDate,
+              start: startHM, end: endHM,
+              kind: 'TASK', mode: 'TIME',
+            });
+          } else {
+            // Crossed midnight: split into two worklogs.
+            const firstEnd = '23:59';
+            const firstMin = Math.max(1, minutesBetween(startHM, firstEnd));
+            const secondMin = Math.max(0, minutes - firstMin);
+            await worklogsApi.createForUser(userId, {
+              taskId, minutes: firstMin, loggedAt: startDate,
+              start: startHM, end: firstEnd,
+              note: 'rozděleno z timeru', kind: 'TASK', mode: 'TIME',
+            });
+            if (secondMin > 0) {
+              await worklogsApi.createForUser(userId, {
+                taskId, minutes: secondMin, loggedAt: endDate,
+                start: '00:00', end: endHM,
+                note: 'rozděleno z timeru', kind: 'TASK', mode: 'TIME',
+              });
+            }
+          }
+          enqueueSnackbar(`Zaznamenáno ${fmtTimer(minutes * 60)}`, { variant: 'success' });
+          qc.invalidateQueries({ queryKey: worklogKeys.userScope(userId) });
+          qc.invalidateQueries({ queryKey: dayKeys.userScope(userId) });
+          qc.invalidateQueries({ queryKey: worklogKeys.list(taskId) });
+          qc.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
+        } catch (e: unknown) {
+          const detail = (e as { response?: { data?: { detail?: string } } }).response?.data?.detail ?? 'Uložení záznamu selhalo';
+          enqueueSnackbar(detail, { variant: 'error' });
+        }
+      },
     });
   };
+
+  // Suppress so addMinutesToHM is reachable for future midnight calcs; not used directly here.
+  void addMinutesToHM;
 
   return (
     <Stack direction="row" spacing={1} sx={{ height: 44, alignItems: 'center', px: { xs: 1, md: 2 }, borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
@@ -132,16 +194,6 @@ export default function GlobalHeader() {
             </span>
           </Tooltip>
         </Stack>
-      )}
-
-      {pendingWorklog && (
-        <WorklogDialog
-          open
-          taskId={pendingWorklog.taskId}
-          taskKey={pendingWorklog.taskKey}
-          defaultMinutes={Math.round(pendingWorklog.elapsedSeconds / 60)}
-          onClose={() => setPendingWorklog(null)}
-        />
       )}
 
       <LanguageSwitcher />

@@ -11,7 +11,7 @@ import StrideLogoIcon from '../components/icons/stride-logo-icon';
 import CountBadge from './count-badge';
 import {
   PlusIcon, BellIcon, DashboardIcon, ReportsIcon, SettingsIcon,
-  CaretIcon, CheckIcon, CalendarIcon,
+  CaretIcon, CheckIcon, CalendarIcon, ClockIcon,
 } from '../components/icons/icons';
 
 interface ProjectCounts {
@@ -96,8 +96,9 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         {navItem('/dashboard', t('nav.dashboard'), <DashboardIcon/>)}
         {navItem('/inbox',     t('nav.inbox'),     <BellIcon/>,   unreadCount)}
         {navItem('/my-work',   t('nav.myWork'),    <CheckIcon/>,  myWorkCount)}
+        {navItem('/my-time',   'Můj výkaz',        <ClockIcon/>)}
         {navItem('/calendar',  t('nav.calendar'),  <CalendarIcon/>)}
-        {navItem('/reports',   t('nav.reports'),   <ReportsIcon/>)}
+        {isAdmin && navItem('/reports', t('nav.reports'), <ReportsIcon/>)}
       </Box>
 
       <Divider/>

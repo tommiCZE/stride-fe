@@ -352,20 +352,67 @@ export interface UpdateCommentRequest {
   text: string;
 }
 
+export type WorklogKind = 'TASK' | 'MEETING';
+export type WorklogMode = 'TIME' | 'DURATION';
+
 export interface WorklogDto {
   id: string;
-  taskId: string;
+  taskId: string | null;
   userId: string;
-  user: UserDto;
+  user: UserDto | null;
   minutes: number;
   loggedAt: string;
+  date: string;
+  start: string | null;
+  end: string | null;
+  note: string | null;
   comment: string | null;
+  kind: WorklogKind;
+  mode: WorklogMode;
 }
 
 export interface CreateWorklogRequest {
   minutes: number;
   loggedAt: string;
-  comment?: string;
+  taskId?: string | null;
+  start?: string | null;
+  end?: string | null;
+  note?: string | null;
+  comment?: string | null;
+  kind?: WorklogKind;
+  mode?: WorklogMode;
+}
+
+export interface UpdateWorklogRequest {
+  minutes?: number;
+  loggedAt?: string;
+  taskId?: string | null;
+  clearTaskId?: boolean;
+  start?: string | null;
+  end?: string | null;
+  note?: string | null;
+  comment?: string | null;
+  kind?: WorklogKind;
+  mode?: WorklogMode;
+}
+
+export type DayType = 'PTO' | 'SICK' | 'HOLIDAY' | 'PERSONAL';
+
+export interface DayDto {
+  userId: string;
+  date: string;
+  closed: boolean;
+  type: DayType | null;
+  typeNote: string | null;
+  note: string | null;
+}
+
+export interface UpsertDayRequest {
+  closed?: boolean;
+  type?: DayType | null;
+  clearType?: boolean;
+  typeNote?: string | null;
+  note?: string | null;
 }
 
 export interface RunningTimerDto {
