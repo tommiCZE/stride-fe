@@ -30,7 +30,10 @@ test.describe('Operace nad taskem — obsah', () => {
     const commentText = `E2E komentář ${Date.now()}.`;
 
     const panel = detailPanel(page, title);
-    await panel.getByText('Napiš komentář…').click();
+    // Composer placeholder text was "Napiš komentář…"; activity-stream now hints
+    // "Napiš komentář, /commit pro odkaz na commit, @ pro mention…" before the editor mounts.
+    // Match the stable prefix to survive either form.
+    await panel.getByText(/Napiš komentář/).first().click();
 
     const editor = panel.locator('[contenteditable="true"]').last();
     await expect(editor).toBeVisible();
@@ -73,7 +76,10 @@ test.describe('Operace nad taskem — obsah', () => {
 
     const panel = detailPanel(page, title);
 
-    await panel.getByText('Napiš komentář…').click();
+    // Composer placeholder text was "Napiš komentář…"; activity-stream now hints
+    // "Napiš komentář, /commit pro odkaz na commit, @ pro mention…" before the editor mounts.
+    // Match the stable prefix to survive either form.
+    await panel.getByText(/Napiš komentář/).first().click();
     const composer = panel.locator('[contenteditable="true"]').last();
     await composer.click();
     await composer.pressSequentially(parentText);

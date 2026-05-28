@@ -30,10 +30,15 @@ function backlogCard(page: Page): Locator {
 }
 
 function rowByTaskKey(page: Page, taskKey: string): Locator {
+  // Match Stacks that contain the exact key text AND a .grip handle. `hasText: taskKey`
+  // does substring matching and bubbles up to the outermost ancestor (clicking that lands
+  // on a random row in the middle of the viewport). Pin to the exact key and pick the
+  // innermost matching Stack via .last() — that is the row container.
   return page
-    .locator('.MuiStack-root', { hasText: taskKey })
+    .locator('.MuiStack-root')
+    .filter({ has: page.getByText(taskKey, { exact: true }) })
     .filter({ has: page.locator('.grip') })
-    .first();
+    .last();
 }
 
 async function startSprint(page: Page, name: string): Promise<Locator> {

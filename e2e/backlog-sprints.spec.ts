@@ -15,6 +15,20 @@ async function createSprintViaUI(page: Page, name: string) {
   await expect(page.getByText(name).first()).toBeVisible({ timeout: 10_000 });
 }
 
+// Backlog has an "only one active sprint" invariant — seed data (e.g. "Sprint 1") or a
+// prior test run can leave one running, which disables "Spustit sprint" on planned
+// sprints. Close it before creating a fresh sprint to start.
+async function ensureNoActiveSprint(page: Page) {
+  const completeBtn = page.getByRole('button', { name: 'Dokončit sprint' }).first();
+  if (await completeBtn.count() === 0) return;
+  if (!(await completeBtn.isVisible())) return;
+  await completeBtn.click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Dokončit sprint' }).click();
+  await expect(dialog).toBeHidden();
+}
+
 function sprintCard(page: Page, name: string) {
   return page.locator('.MuiCard-root', {
     has: page.getByText(name, { exact: true }),
@@ -35,6 +49,7 @@ test.describe('Backlog — sprint management', () => {
   });
 
   test('TS-302: spuštění sprintu', async ({ page }) => {
+    await ensureNoActiveSprint(page);
     const name = `E2E TS-302 sprint ${Date.now()}`;
     await createSprintViaUI(page, name);
 
@@ -46,6 +61,7 @@ test.describe('Backlog — sprint management', () => {
   });
 
   test('TS-303: dokončení sprintu', async ({ page }) => {
+    await ensureNoActiveSprint(page);
     const name = `E2E TS-303 sprint ${Date.now()}`;
     await createSprintViaUI(page, name);
 

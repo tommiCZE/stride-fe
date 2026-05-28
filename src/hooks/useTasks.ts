@@ -62,7 +62,10 @@ export function useAllProjectTasks(projectIds: string[]) {
   const results = useQueries({
     queries: projectIds.map(id => ({
       queryKey: taskKeys.list(id),
-      queryFn: () => tasksApi.list(id),
+      // BE paginates /tasks at 50/page by default. All consumers of this hook (search,
+      // dashboard stats, sidebar badges, my-work, calendar, reports) expect the full set,
+      // so request a high page size up front.
+      queryFn: () => tasksApi.list(id, { size: 500 }),
       enabled: !!id,
     })),
   });

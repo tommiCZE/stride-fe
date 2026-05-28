@@ -9,7 +9,7 @@ import { BranchCommitsCard } from '../dev/branch-commits-card';
 import { MrCard } from '../dev/mr-card';
 import { useComments, useCreateComment } from '../../../hooks/useComments';
 import { useActivity } from '../../../hooks/useActivity';
-import { useAttachments, useUploadAttachment } from '../../../hooks/useAttachments';
+import { useAttachments, useUploadAttachment, useDeleteAttachment } from '../../../hooks/useAttachments';
 import { useDevActivity } from '../../../hooks/useDevActivity';
 import { useAuthStore } from '../../../store/auth-store';
 import { CommentEditor, CommentItem, timeAgo, exactDate } from './comments';
@@ -339,17 +339,17 @@ function ReviewEventItem({ review }: { review: DevReviewEvent }) {
 
 interface Props {
   taskId: string;
-  taskKey: string;
 }
 
-export function ActivityStream({ taskId, taskKey }: Props) {
+export function ActivityStream({ taskId }: Props) {
   const { enqueueSnackbar } = useSnackbar();
   const { data: comments = [], isLoading: commentsLoading } = useComments(taskId);
   const { data: events = [], isLoading: eventsLoading } = useActivity(taskId);
   const { data: attachments = [], isLoading: attachmentsLoading } = useAttachments(taskId);
-  const dev = useDevActivity(taskKey);
+  const dev = useDevActivity(taskId);
   const createComment = useCreateComment(taskId);
   const upload = useUploadAttachment(taskId);
+  const deleteAttachment = useDeleteAttachment(taskId);
   const me = useAuthStore(s => s.user);
   const meId = useAuthStore(s => s.userId);
 
@@ -510,7 +510,10 @@ export function ActivityStream({ taskId, taskKey }: Props) {
 
         {filtered.map(item => {
           if (item.kind === 'event')      return <SystemEventItem key={`e-${item.data.id}`} event={item.data}/>;
-          if (item.kind === 'attachment') return <AttachmentEventItem key={`a-${item.data.id}`} attachment={item.data} currentUserId={meId} onDelete={() => { /* delete handled in dedicated tab — could wire here */ }}/>;
+          if (item.kind === 'attachment') return <AttachmentEventItem key={`a-${item.data.id}`} attachment={item.data} currentUserId={meId} onDelete={a => deleteAttachment.mutate(a.id, {
+            onSuccess: () => enqueueSnackbar('Soubor smazán', { variant: 'success' }),
+            onError: () => enqueueSnackbar('Smazání selhalo', { variant: 'error' }),
+          })}/>;
           if (item.kind === 'branch')     return <BranchEventItem key={`br-${item.data.branch.name}`} branch={item.data.branch} at={item.at}/>;
           if (item.kind === 'push')       return <PushEventItem key={`push-${item.data.branch.name}-${item.at}`} branch={item.data.branch} commits={item.data.commits} at={item.at}/>;
           if (item.kind === 'mr-open')    return <MrOpenEventItem key={`mro-${item.data.mr.id}`} mr={item.data.mr} at={item.at}/>;

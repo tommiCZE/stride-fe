@@ -92,10 +92,17 @@ test.describe('Vyhledávání tasků', () => {
     await page.keyboard.press('Escape');
 
     await page.goto('/search');
+
     const input = page.getByPlaceholder(SEARCH_INPUT_PLACEHOLDER);
-    await input.fill('[E2E TS-1407]');
+    // Search by the unique full title so we don't depend on ranking against older
+    // `[E2E TS-1407] ...` tasks left over from prior runs.
+    await input.fill(title);
     await input.press('Enter');
-    await expect(page.getByText(title)).toBeVisible();
+    // useAllProjectTasks refetches per-project on mount after the create-task invalidation;
+    // search is client-side over that cache, so the new task only appears after refetch
+    // returns. Generous timeout absorbs the in-flight refetch (networkidle won't fire —
+    // the notifications SSE stream keeps the network busy).
+    await expect(page.getByText(title)).toBeVisible({ timeout: 15_000 });
 
     await page.getByRole('button', { name: 'Typ', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Bug' }).click();
