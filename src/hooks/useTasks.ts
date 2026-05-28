@@ -15,7 +15,9 @@ export const taskKeys = {
 export function useTasks(projectId: string, filters?: TaskFilters) {
   return useQuery({
     queryKey: taskKeys.list(projectId, filters),
-    queryFn: () => tasksApi.list(projectId, filters),
+    // BE paginates at 50/page; board, backlog, list view all expect the full set, so
+    // request a high page size unless the caller explicitly asked otherwise.
+    queryFn: () => tasksApi.list(projectId, { size: 500, ...filters }),
     enabled: !!projectId,
   });
 }
